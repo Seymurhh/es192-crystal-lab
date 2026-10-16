@@ -91,13 +91,19 @@ details li span.ans { display: block; color: var(--muted); font-size: 14px; marg
 .under { display: grid; gap: 8px; margin-top: 18px; }
 .cap { font-size: 13px; color: var(--muted); }
 footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
-.pdviews { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
-@media (max-width: 560px) { .pdviews { grid-template-columns: minmax(0, 1fr); } }
+.pdhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-bottom: 12px; }
+.pdtool { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; margin-bottom: 12px; }
+.pdtool .group { min-width: 0; flex: 1 1 360px; }
+.pdtop { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (max-width: 1100px) { .pdtop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .pdtop > :first-child { grid-column: 1 / -1; } }
+@media (max-width: 560px) { .pdtop { grid-template-columns: minmax(0, 1fr); } }
+.pdbot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 16px; align-items: start; }
+@media (max-width: 980px) { .pdbot { grid-template-columns: minmax(0, 1fr); } }
 figure.stage { margin: 0; }
 figure.stage figcaption { font-size: 12px; line-height: 1.35; color: var(--muted); padding: 7px 10px; border-top: 1px solid var(--rule); background: var(--panel); }
 figure.stage figcaption b { color: var(--ink); }
-.pdin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
-.pdin label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+.pdin { display: flex; gap: 10px; }
+.pdin label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; width: 150px; }
 .pdin input { font: 600 15px var(--mono); padding: 7px 9px; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); color: var(--ink); width: 100%; min-width: 0; }
 .log { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
 .log li.on { color: var(--ink); font-weight: 600; }
@@ -439,48 +445,46 @@ body.present .side p { font-size: 15px; }
 
   <!-- ============ PHASE DIAGRAMS ============ -->
   <section class="tabpanel" id="p-phase" role="tabpanel" aria-labelledby="t-phase" hidden>
-    <div class="panel">
-      <div class="group" style="gap:14px; min-width:0">
-        <div class="stage cross"><canvas id="pdCv" tabindex="0" aria-label="Phase diagram. Move over it, or use the arrow keys, to choose a composition and temperature"></canvas><span class="hint" id="pdHint">move over the diagram · click to pin a point</span></div>
-        <div class="pdviews">
-          <figure class="stage"><canvas id="pdMicro" aria-label="Microstructure at the chosen point"></canvas><figcaption><b>Microstructure</b> · a polished, etched section under an optical microscope (schematic; layer spacing exaggerated)</figcaption></figure>
-          <figure class="stage"><canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas><figcaption><b>Atomic arrangement</b> · one plane of atoms, about 2–3 nm across</figcaption></figure>
-        </div>
+    <div class="pdhead">
+      <h2 id="pdTitle">Lead–tin: the solder diagram</h2>
+      <div class="chips" id="pdSys">
+        <button class="chip" data-v="cuni">Cu–Ni · mix in any ratio</button>
+        <button class="chip" data-v="pbsn" aria-pressed="true">Pb–Sn · solder</button>
+        <button class="chip" data-v="fec">Fe–C · steel</button>
+      </div>
+    </div>
+    <div class="pdtool">
+      <div class="group">
+        <div class="chips" id="pdAlloys" aria-label="Real alloys"></div>
+      </div>
+      <div class="pdin">
+        <label for="pdC"><span id="pdCLab">Composition (wt% Sn)</span><input type="number" id="pdC" step="0.1"></label>
+        <label for="pdT">Temperature (°C)<input type="number" id="pdT" step="1"></label>
+      </div>
+      <div class="chips">
+        <button class="chip go" id="pdCool">Cool slowly from the top</button>
+        <button class="chip" id="pdFollow" hidden>Follow the mouse</button>
+      </div>
+    </div>
+    <div class="pdtop">
+      <figure class="stage cross"><canvas id="pdCv" tabindex="0" aria-label="Phase diagram. Move over it, or use the arrow keys, to choose a composition and temperature"></canvas><figcaption><b>Phase diagram</b> · <span id="pdHint">move over the diagram; click to pin a point</span></figcaption></figure>
+      <figure class="stage"><canvas id="pdMicro" aria-label="Microstructure at the chosen point"></canvas><figcaption><b>Microstructure</b> · polished, etched, under an optical microscope (schematic)</figcaption></figure>
+      <figure class="stage"><canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas><figcaption><b>Atomic arrangement</b> · one plane of atoms, about 2–3 nm across</figcaption></figure>
+    </div>
+    <div class="pdbot">
+      <div class="readout">
+        <p class="status" id="pdRegion">–</p>
+        <dl class="kv" id="pdRead"></dl>
       </div>
       <div class="side">
-        <div>
-          <h2 id="pdTitle">Lead–tin: the solder diagram</h2>
-          <p id="pdIntro" style="margin-top:6px">A phase diagram is a map. Pick a composition (across) and a temperature (up), and it tells you which phases are stable, what each one is made of, and how much of each there is. A <b>phase</b> is a region of uniform structure and composition: a liquid, or one kind of crystal.</p>
-        </div>
-        <div class="group">
-          <h3>System</h3>
-          <div class="chips" id="pdSys">
-            <button class="chip" data-v="cuni">Cu–Ni · mix in any ratio</button>
-            <button class="chip" data-v="pbsn" aria-pressed="true">Pb–Sn · solder</button>
-            <button class="chip" data-v="fec">Fe–C · steel</button>
-          </div>
-        </div>
-        <div class="group">
-          <h3>Real alloys</h3>
-          <div class="chips" id="pdAlloys"></div>
-        </div>
-        <div class="pdin">
-          <label for="pdC"><span id="pdCLab">Composition (wt% Sn)</span><input type="number" id="pdC" step="0.1"></label>
-          <label for="pdT">Temperature (°C)<input type="number" id="pdT" step="1"></label>
-        </div>
-        <div class="chips">
-          <button class="chip go" id="pdCool">Cool slowly from the top</button>
-          <button class="chip" id="pdFollow" hidden>Follow the mouse</button>
-        </div>
-        <div class="readout">
-          <p class="status" id="pdRegion">–</p>
-          <dl class="kv" id="pdRead"></dl>
-        </div>
         <div class="readout why" id="pdWhy"></div>
         <div class="group">
           <h3>Cooling this alloy slowly</h3>
           <ol class="log" id="pdLog"></ol>
         </div>
+      </div>
+      <div class="side">
+        <p id="pdIntro">A phase diagram is a map. Pick a composition (across) and a temperature (up), and it tells you which phases are stable, what each one is made of, and how much of each there is. A <b>phase</b> is a region of uniform structure and composition: a liquid, or one kind of crystal.</p>
         <p class="cap" id="pdSrc"></p>
         <details>
           <summary>Try this in class</summary>
@@ -1779,15 +1783,15 @@ function clipPlanesFrom(v, defs) {
     },
     pbsn: {
       title: "Lead–tin: the solder diagram", A: "Pb", B: "Sn", MA: 207.2, MB: 118.71, rA: 0.175, rB: 0.151,
-      cMin: 0, cMax: 100, tMin: 20, tMax: 350, cLab: "Composition (wt% Sn)", unit: "wt% Sn", def: [40, 150], step: 0.5,
+      cMin: 0, cMax: 100, tMin: 20, tMax: 350, cLab: "Composition (wt% Sn)", unit: "wt% Sn", def: [40, 150], step: 0.5, box: "right",
       lines: [
-        { pts: PB.liqL, name: "liquidus", at: [33, 262] }, { pts: PB.liqR, name: "liquidus", at: [86, 222] },
+        { pts: PB.liqL, name: "liquidus", at: [33, 262] }, { pts: PB.liqR, name: "liquidus", at: [63, 207] },
         { pts: PB.solA, name: "solidus", at: [3, 268] }, { pts: PB.solvA.slice(0, 7), name: "solvus", at: [9, 108] },
         { pts: PB.solvA.slice(6), dash: true }, { pts: PB.solB }, { pts: PB.solvB.slice(0, 9) }, { pts: PB.solvB.slice(8), dash: true },
-        { pts: [[18.3, 183], [97.8, 183]], name: "eutectic line, 183 °C", at: [40, 189] }
+        { pts: [[18.3, 183], [97.8, 183]], name: "eutectic line, 183 °C", at: [27, 172] }
       ],
       marks: [[0, 327, "327 °C"], [100, 232, "232 °C"], [18.3, 183, "18.3"], [61.9, 183, "61.9"], [97.8, 183, "97.8"]],
-      labels: [["L", 55, 300], ["α", 5, 150], ["β", 99, 140], ["α + L", 16, 245], ["β + L", 84, 205], ["α + β", 55, 110]],
+      labels: [["L", 55, 300], ["α", 5, 150], ["β", 99, 140], ["α + L", 16, 245], ["β + L", 88, 199], ["α + β", 55, 110]],
       alloys: [[63, "63Sn–37Pb · electronics solder"], [50, "50Sn–50Pb"], [40, "40Sn–60Pb · Example 9.2"], [30, "30Sn–70Pb · plumber's solder"], [10, "10Sn–90Pb"]],
       classify(C, T) {
         if (T >= 183) {
@@ -1866,8 +1870,8 @@ function clipPlanesFrom(v, defs) {
 
   /* ---------- diagram */
   function drawDiagram() {
-    const { ctx, w, h } = fit(cv, 0.62, 520, 300);
-    const L = 58, R = 18, Tp = 16, B = 46;
+    const { ctx, w, h } = fit(cv, 0.8, 560, 300);
+    const L = 58, R = 14, Tp = 16, B = 46;
     const X = c => L + (c - sys.cMin) / (sys.cMax - sys.cMin) * (w - L - R);
     const Y = t => Tp + (sys.tMax - t) / (sys.tMax - sys.tMin) * (h - Tp - B);
     const Ci = px => sys.cMin + (px - L) / (w - L - R) * (sys.cMax - sys.cMin);
@@ -1920,10 +1924,10 @@ function clipPlanesFrom(v, defs) {
     });
     ctx.setLineDash([]); ctx.restore();
     ctx.font = "italic 12px " + FONT.body(); ctx.fillStyle = muted; ctx.textAlign = "left";
-    sys.lines.forEach(ln => { if (ln.name && w > 520) ctx.fillText(ln.name, X(ln.at[0]) + 4, Y(ln.at[1])); });
+    sys.lines.forEach(ln => { if (ln.name && w > 430) ctx.fillText(ln.name, X(ln.at[0]) + 4, Y(ln.at[1])); });
     ctx.font = "600 11px " + mono; ctx.fillStyle = ink;
     sys.marks.forEach(([c, t, s, below]) => { ctx.beginPath(); ctx.arc(X(c), Y(t), 3, 0, Math.PI * 2); ctx.fill(); ctx.textAlign = c > (sys.cMax * 0.9) ? "right" : "left"; ctx.fillText(s, X(c) + (c > sys.cMax * 0.9 ? -6 : 6), Y(t) + (below ? 14 : -6)); });
-    ctx.font = "700 " + (w > 520 ? 15 : 12) + "px " + FONT.body(); ctx.textAlign = "center";
+    ctx.font = "700 " + (w > 430 ? 15 : 12) + "px " + FONT.body(); ctx.textAlign = "center";
     sys.labels.forEach(([s, c, t]) => { ctx.fillStyle = ink; ctx.globalAlpha = 0.75; ctx.fillText(s, X(c), Y(t)); ctx.globalAlpha = 1; });
     // the chosen point, tie line and lever arms
     const r = sys.classify(C, T), px = X(C), py = Y(T);
@@ -1940,7 +1944,12 @@ function clipPlanesFrom(v, defs) {
       if (r.c2 > sys.cMax) tag(ctx, "Fe₃C at 6.70% C →", w - R - 4, py + 16, "right", acc);
     }
     ball(ctx, px, py, 7, acc, { ring: "#ffffff", ringW: 2 });
-    $("#pdHint").textContent = pinned ? "pinned · drag to move · arrow keys nudge" : "move over the diagram · click to pin a point";
+    // live readout on the diagram itself: region and lever-rule fractions
+    const lvb = lever(r), short = { L: "liquid", "α+L": "α + liquid", "β+L": "β + liquid", "L+γ": "γ + liquid" }[r.k] || r.k.replace("+", " + ");
+    const bx = sys.box === "right" ? w - R - 8 : L + 8, al = sys.box === "right" ? "right" : "left";
+    tag(ctx, short + (lvb ? "" : "  ·  one phase"), bx, Tp + 14, al, ink);
+    if (lvb) tag(ctx, "W" + r.p1 + " = " + lvb.w1.toFixed(2) + "   W" + r.p2 + " = " + lvb.w2.toFixed(2), bx, Tp + 38, al, acc);
+    $("#pdHint").textContent = pinned ? "point pinned: drag it, use the arrow keys, or type a value" : "move over the diagram; click to pin a point";
   }
   function fmtC(c) { return sysKey === "fec" ? c.toFixed(c < 0.1 ? 3 : 2) : c.toFixed(1); }
 
@@ -2106,8 +2115,8 @@ function clipPlanesFrom(v, defs) {
     // captions per phase
     parts.forEach((pt, i) => {
       const t1 = phaseName(pt.p), t2 = latticeName(pt.p), t3 = pt.p === "Fe₃C" ? "6.70 wt% C" : fmtC(pt.c) + " " + sys.unit;
-      if (i === 0) { tag(ctx, t1, 8, 16, "left", tok("--ink")); tag(ctx, t2, 8, 40, "left", tok("--muted")); tag(ctx, t3, 8, 64, "left", tok("--accent")); }
-      else { tag(ctx, t3, w - 8, h - 86, "right", tok("--accent")); tag(ctx, t2, w - 8, h - 62, "right", tok("--muted")); tag(ctx, t1, w - 8, h - 38, "right", tok("--ink")); }
+      if (i === 0) { tag(ctx, t1 + " · " + t2, 8, 16, "left", tok("--ink")); tag(ctx, t3, 8, 40, "left", tok("--accent")); }
+      else { tag(ctx, t3, w - 8, h - 62, "right", tok("--accent")); tag(ctx, t1 + " · " + t2, w - 8, h - 38, "right", tok("--ink")); }
     });
     // species key
     const els = sysKey === "fec" ? ["Fe", "C"] : [sys.A, sys.B];
