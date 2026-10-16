@@ -4,16 +4,22 @@ Interactive models for **ES 192: Materials Selection in Mechanical Design** (Har
 
 **Live page:** https://seymurhh.github.io/es192-crystal-lab/
 
-| Tab | Link | Lecture | What it shows |
-|---|---|---|---|
-| Bonds | [#bonds](https://seymurhh.github.io/es192-crystal-lab/#bonds) | 9A | Ionic, covalent, metallic, van der Waals and hydrogen bonds; energy–distance and force–distance curves; bond energy vs melting point for 20 substances |
-| Unit cells | [#cells](https://seymurhh.github.io/es192-crystal-lab/#cells) | 9A | SC, BCC, FCC, HCP, rock salt and diamond cubic in 3D; atoms per cell, coordination shells, densest planes, real metals with computed lattice constant and density, iron's BCC ↔ FCC change |
-| Stack the layers | [#stack](https://seymurhh.github.io/es192-crystal-lab/#stack) | 9A | Build close-packed layers: ABAB → HCP, ABCABC → FCC, stacking faults |
-| Atom raft | [#raft](https://seymurhh.github.io/es192-crystal-lab/#raft) | 9A · 10A | Live 2D Lennard-Jones simulation (~1,800 atoms): melting, slow cooling vs quenching, grain orientation map, vacancies, solutes, glass formation |
-| Dislocations | [#disl](https://seymurhh.github.io/es192-crystal-lab/#disl) | 10A | Edge dislocation glide vs rigid slip, Burgers circuit, solute and grain-boundary pinning |
-| Phase diagrams | [#phase](https://seymurhh.github.io/es192-crystal-lab/#phase) | Lab 9 · 10B | Cu–Ni, Pb–Sn (solder) and Fe–C (steel): hover or pin a point to see the phases, tie line and lever-rule fractions, a live microstructure and the atomic arrangement; "cool slowly" logs every phase change |
+| # | Tab | Link | Lecture | What it shows |
+|---|---|---|---|---|
+| 1 | Bonds | [#bonds](https://seymurhh.github.io/es192-crystal-lab/#bonds) | 9A | Ionic, covalent, metallic, van der Waals and hydrogen bonds; energy–distance and force–distance curves; bond energy vs melting point for 20 substances |
+| 2 | Unit cells | [#cells](https://seymurhh.github.io/es192-crystal-lab/#cells) | 9A | SC, BCC, FCC, HCP, rock salt and diamond cubic in 3D; atoms per cell, coordination shells, densest planes, real metals with computed lattice constant and density, iron's BCC ↔ FCC change |
+| 3 | Stacking | [#stack](https://seymurhh.github.io/es192-crystal-lab/#stack) | 9A | Build close-packed layers: ABAB → HCP, ABCABC → FCC, stacking faults |
+| 4 | Atom raft | [#raft](https://seymurhh.github.io/es192-crystal-lab/#raft) | 9A · 10A | Live 2D Lennard-Jones simulation (~1,800 atoms): melting, slow cooling vs quenching, grain orientation map, vacancies, solutes, glass formation |
+| 5 | Dislocations | [#disl](https://seymurhh.github.io/es192-crystal-lab/#disl) | 10A | Edge dislocation glide vs rigid slip, Burgers circuit, solute and grain-boundary pinning |
+| 6 | Phase diagrams | [#phase](https://seymurhh.github.io/es192-crystal-lab/#phase) | Lab 9 · 10B | Cu–Ni, Pb–Sn (solder) and Fe–C (steel): hover or pin a point to see the phases, tie line and lever-rule fractions, a live microstructure and the atomic arrangement; "Cool slowly from the top" logs every phase change |
 
-**Present mode** (top right) enlarges the models for projection.
+## Using it in class
+
+- **Explore questions.** Every tab has a short set of questions at the top of its panel. **Set it up** puts the model in the state the question needs; **Show answer** reveals the answer. The link button copies a link that opens that question already set up.
+- **Links to a question:** add `:n` to a tab link. `#cells:2` opens Unit cells with question 2 set up; `#phase:cuni:1` opens Cu–Ni with its first question set up (systems: `cuni`, `pbsn`, `fec`).
+- **Keys:** `1`–`6` switch tabs, `←`/`→` move along the tab bar, `P` toggles Present mode (full screen, larger models). Double-click a 3D model, or use its ⟲ button, to reset the view.
+- **Light/dark:** the moon/sun button; the choice is remembered on that computer.
+- Without WebGL the two 3D tabs show a message and every other tab still works.
 
 ## Embed in Canvas
 
@@ -23,7 +29,7 @@ In a Canvas page, switch the editor to HTML and paste:
 <iframe src="https://seymurhh.github.io/es192-crystal-lab/#cells" width="100%" height="900" style="border:0" allowfullscreen title="ES 192 Crystal Lab"></iframe>
 ```
 
-Change `#cells` to any tab name above.
+Change `#cells` to any tab name above, or to a question link such as `#cells:2`.
 
 ## Data sources
 
@@ -34,7 +40,9 @@ Change `#cells` to any tab name above.
 
 Bond-curve shapes (Morse form), raft temperatures (reduced Lennard-Jones units) and dislocation stresses (0–100 schematic scale) are teaching schematics that show trends, not measured values.
 
-## Files
+## Files and workflow
 
-- `index.html`: the published page (self-contained; loads three.js r128 from cdnjs and fonts from Google Fonts).
-- `crystal-lab.html`: the same page without the HTML document wrapper (source used for the claude.ai artifact).
+- `crystal-lab.html`: the source (styles, markup and script with no document wrapper, so it can also be published as a claude.ai artifact). Edit this file.
+- `index.html`: the published page, generated by `python3 tools/build.py`. Loads three.js r128 from cdnjs and fonts from Google Fonts; everything else is inline.
+- `tests/`: browser tests in headless Chrome. Once: `cd tests && npm install`. Then `npm test` runs all four suites against `../index.html` (interaction, phase-diagram numbers, navigation/layout, no-WebGL fallback); `npm run audit` writes screenshots of every tab and every Explore setup to `tests/out/`. Pass a URL to test the live site, e.g. `node ui-test.js https://seymurhh.github.io/es192-crystal-lab/`.
+- GitHub Pages caches the page for 10 minutes. After a deploy, open it with a new `?v=` number (for example `…/es192-crystal-lab/?v=5#phase`) or hard-refresh (⌘⇧R).
