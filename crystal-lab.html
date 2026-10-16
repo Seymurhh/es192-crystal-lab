@@ -91,6 +91,18 @@ details li span.ans { display: block; color: var(--muted); font-size: 14px; marg
 .under { display: grid; gap: 8px; margin-top: 18px; }
 .cap { font-size: 13px; color: var(--muted); }
 footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+.pdviews { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
+@media (max-width: 560px) { .pdviews { grid-template-columns: minmax(0, 1fr); } }
+figure.stage { margin: 0; }
+figure.stage figcaption { font-size: 12px; line-height: 1.35; color: var(--muted); padding: 7px 10px; border-top: 1px solid var(--rule); background: var(--panel); }
+figure.stage figcaption b { color: var(--ink); }
+.pdin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.pdin label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; }
+.pdin input { font: 600 15px var(--mono); padding: 7px 9px; border: 1px solid var(--rule); border-radius: 6px; background: var(--panel); color: var(--ink); width: 100%; min-width: 0; }
+.log { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; color: var(--muted); }
+.log li.on { color: var(--ink); font-weight: 600; }
+.why { font-size: 15px; line-height: 1.5; }
+#pdCv:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
 /* Present mode: big stage for the projector */
 body.present header.top, body.present footer, body.present details, body.present .cap, body.present .lede { display: none; }
 body.present .wrap { max-width: none; padding-block: 10px 16px; }
@@ -107,7 +119,7 @@ body.present .side p { font-size: 15px; }
       <div class="eyebrow">ES 192 · Materials Fundamentals · <span style="white-space:nowrap">Weeks 9–10</span></div>
       <h1>Crystal <span>Lab</span></h1>
     </div>
-    <p class="lede">Five live models: how atoms bond, how they pack into crystals, and how defects let metals bend. Drag to rotate the 3D models; scroll or pinch to zoom; click an atom to inspect it.</p>
+    <p class="lede">Six live models: how atoms bond, how they pack into crystals, how defects let metals bend, and how phase diagrams connect processing to structure. Drag to rotate the 3D models; scroll or pinch to zoom; click an atom to inspect it.</p>
   </header>
 
   <div class="navrow">
@@ -117,6 +129,7 @@ body.present .side p { font-size: 15px; }
       <button role="tab" id="t-stack" data-tab="stack" aria-selected="false">Stack the layers <span class="wk">9A</span></button>
       <button role="tab" id="t-raft" data-tab="raft" aria-selected="false">Atom raft <span class="wk">9A · 10A</span></button>
       <button role="tab" id="t-disl" data-tab="disl" aria-selected="false">Dislocations <span class="wk">10A</span></button>
+      <button role="tab" id="t-phase" data-tab="phase" aria-selected="false">Phase diagrams <span class="wk">Lab 9 · 10B</span></button>
     </nav>
     <button class="chip" id="presentBtn" aria-pressed="false" title="Larger models for the projector">Present mode</button>
   </div>
@@ -424,7 +437,60 @@ body.present .side p { font-size: 15px; }
     </div>
   </section>
 
-  <footer>ES 192 Materials Selection in Mechanical Design · Harvard SEAS · Fall 2026. Models are teaching schematics: bond-curve shapes, raft temperatures and dislocation stresses show trends. Bond energies, melting points, atomic radii and densities are measured values from the sources named.</footer>
+  <!-- ============ PHASE DIAGRAMS ============ -->
+  <section class="tabpanel" id="p-phase" role="tabpanel" aria-labelledby="t-phase" hidden>
+    <div class="panel">
+      <div class="group" style="gap:14px; min-width:0">
+        <div class="stage cross"><canvas id="pdCv" tabindex="0" aria-label="Phase diagram. Move over it, or use the arrow keys, to choose a composition and temperature"></canvas><span class="hint" id="pdHint">move over the diagram · click to pin a point</span></div>
+        <div class="pdviews">
+          <figure class="stage"><canvas id="pdMicro" aria-label="Microstructure at the chosen point"></canvas><figcaption><b>Microstructure</b> · a polished, etched section under an optical microscope (schematic; layer spacing exaggerated)</figcaption></figure>
+          <figure class="stage"><canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas><figcaption><b>Atomic arrangement</b> · one plane of atoms, about 2–3 nm across</figcaption></figure>
+        </div>
+      </div>
+      <div class="side">
+        <div>
+          <h2 id="pdTitle">Lead–tin: the solder diagram</h2>
+          <p id="pdIntro" style="margin-top:6px">A phase diagram is a map. Pick a composition (across) and a temperature (up), and it tells you which phases are stable, what each one is made of, and how much of each there is. A <b>phase</b> is a region of uniform structure and composition: a liquid, or one kind of crystal.</p>
+        </div>
+        <div class="group">
+          <h3>System</h3>
+          <div class="chips" id="pdSys">
+            <button class="chip" data-v="cuni">Cu–Ni · mix in any ratio</button>
+            <button class="chip" data-v="pbsn" aria-pressed="true">Pb–Sn · solder</button>
+            <button class="chip" data-v="fec">Fe–C · steel</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Real alloys</h3>
+          <div class="chips" id="pdAlloys"></div>
+        </div>
+        <div class="pdin">
+          <label for="pdC"><span id="pdCLab">Composition (wt% Sn)</span><input type="number" id="pdC" step="0.1"></label>
+          <label for="pdT">Temperature (°C)<input type="number" id="pdT" step="1"></label>
+        </div>
+        <div class="chips">
+          <button class="chip go" id="pdCool">Cool slowly from the top</button>
+          <button class="chip" id="pdFollow" hidden>Follow the mouse</button>
+        </div>
+        <div class="readout">
+          <p class="status" id="pdRegion">–</p>
+          <dl class="kv" id="pdRead"></dl>
+        </div>
+        <div class="readout why" id="pdWhy"></div>
+        <div class="group">
+          <h3>Cooling this alloy slowly</h3>
+          <ol class="log" id="pdLog"></ol>
+        </div>
+        <p class="cap" id="pdSrc"></p>
+        <details>
+          <summary>Try this in class</summary>
+          <ol id="pdTry"></ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer>ES 192 Materials Selection in Mechanical Design · Harvard SEAS · Fall 2026. Models are teaching schematics: bond-curve shapes, raft temperatures and dislocation stresses show trends. Bond energies, melting points, atomic radii, densities and phase-diagram curves are taken from the sources named.</footer>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1648,6 +1714,645 @@ function clipPlanesFrom(v, defs) {
     }
   };
   draw();
+})();
+
+/* =========================================================== PHASE DIAGRAMS */
+(function phaseDiagrams() {
+  /* ---------- polyline helpers: a boundary is [[C, T], ...] */
+  function cAt(poly, T) {
+    for (let i = 0; i < poly.length - 1; i++) {
+      const [c1, t1] = poly[i], [c2, t2] = poly[i + 1];
+      if ((t1 - T) * (t2 - T) <= 0 && t1 !== t2) return c1 + (c2 - c1) * (T - t1) / (t2 - t1);
+    }
+    return null;
+  }
+  const quadInv = (a, b, T) => { // T = 1085 + aC + bC^2  ->  C in [0, 100]
+    const k = 1085 - T, d = a * a - 4 * b * k;
+    if (d < 0) return null;
+    const r1 = (-a + Math.sqrt(d)) / (2 * b), r2 = (-a - Math.sqrt(d)) / (2 * b);
+    return [r1, r2].filter(r => r >= -1e-6 && r <= 100 + 1e-6).sort((p, q) => p - q)[0];
+  };
+  const sample = (fn, c0, c1, n) => Array.from({ length: n + 1 }, (_, i) => { const c = c0 + (c1 - c0) * i / n; return [c, fn(c)]; });
+  const wtToAt = (w, MA, MB) => (w / MB) / (w / MB + (100 - w) / MA); // atom fraction of B
+
+  /* ---------- the three systems (curves from Callister & Rethwisch 10e; see caption) */
+  const TLq = C => 1085 + 5.945 * C - 0.02245 * C * C;   // Cu-Ni liquidus through 1085, (31.5, 1250), 1455
+  const TSq = C => 1085 + 4.017 * C - 0.00317 * C * C;   // Cu-Ni solidus through 1085, (42.5, 1250), 1455
+  const PB = {
+    solA: [[0, 327], [4.11, 312.1], [7.88, 292.9], [11.97, 265.3], [15.67, 228.8], [18.3, 183]],
+    solvA: [[18.3, 183], [17.37, 180.5], [14.99, 172.3], [11.74, 156.8], [8.23, 132.5], [5.07, 98.0], [2.84, 52.0], [1.29, 20]],
+    liqL: [[0, 327], [2.05, 321.5], [4.05, 315.6], [6.57, 308.6], [9.46, 301.0], [12.56, 293.4], [22.45, 271.6], [32.44, 250.7], [41.97, 231.1], [50.45, 213.0], [57.31, 196.9], [61.9, 183]],
+    liqR: [[61.9, 183], [100, 232]],
+    solB: [[100, 232], [99.94, 231.3], [99.41, 226.6], [98.75, 218.6], [98.14, 207.3], [97.8, 183]],
+    solvB: [[97.8, 183], [97.86, 174.1], [98.09, 162.8], [98.35, 151.7], [98.6, 139.7], [98.83, 126.2], [99.01, 109.9], [99.09, 90.1], [99.09, 52.2], [99.1, 20]]
+  };
+  const FE = {
+    A3: [[0.76, 727], [0.61, 748.0], [0.46, 775.7], [0.33, 808.1], [0.21, 842.9], [0.1, 878.3], [0, 912]],
+    ag: [[0, 912], [0.022, 727]],
+    aSolv: [[0.022, 727], [0.005, 400]],
+    Acm: [[0.76, 727], [2.14, 1147]],
+    gSol: [[2.14, 1147], [0.23, 1493]],
+    liq: [[1.77, 1401.9], [2.52, 1333.4], [3.25, 1262.3], [3.88, 1197.2], [4.3, 1147]]
+  };
+  const SYS = {
+    cuni: {
+      title: "Copper–nickel: a complete solid solution", A: "Cu", B: "Ni", MA: 63.55, MB: 58.69, rA: 0.128, rB: 0.125,
+      cMin: 0, cMax: 100, tMin: 1000, tMax: 1600, cLab: "Composition (wt% Ni)", unit: "wt% Ni", def: [35, 1250], step: 0.5,
+      lines: [
+        { pts: sample(TLq, 0, 100, 80), name: "liquidus", at: [55, 1335] },
+        { pts: sample(TSq, 0, 100, 80), name: "solidus", at: [70, 1325] }
+      ],
+      marks: [[0, 1085, "1085 °C"], [100, 1455, "1455 °C"]],
+      labels: [["L", 30, 1470], ["α", 72, 1180], ["α + L", 46, 1290]],
+      alloys: [[10, "90Cu–10Ni · seawater pipe"], [25, "75Cu–25Ni · US 5¢ coin"], [30, "70Cu–30Ni · C71500"], [35, "35 wt% Ni · textbook §9.8"], [67, "≈67Ni · Monel-type"]],
+      classify(C, T) {
+        if (T >= TLq(C)) return { k: "L" };
+        if (T <= TSq(C)) return { k: "α" };
+        return { k: "α+L", c1: quadInv(5.945, -0.02245, T), c2: quadInv(4.017, -0.00317, T), p1: "L", p2: "α" };
+      },
+      src: "Cu–Ni curves fitted through the melting points of Cu (1085 °C) and Ni (1455 °C) and the 1250 °C tie line of Callister & Rethwisch 10e, Fig. 9.3b and §9.8; within about 15 °C of Fig. 9.3a and of real cupronickel melting ranges.",
+      tries: [
+        ["Pick “35 wt% Ni” and set 1250 °C. What fraction is liquid? Check it with the lever rule.", "C_L = 31.5, C_α = 42.5 wt% Ni, so W_L = (42.5 − 35)/(42.5 − 31.5) = 0.68. This is Callister's §9.8 example."],
+        ["Why can Cu and Ni mix in any proportion, when Pb and Sn cannot?", "Both are FCC with nearly the same atom size (0.128 vs 0.125 nm), so a Ni atom can sit on any Cu site. Pb (FCC) and Sn (tetragonal) have different lattices and sizes."],
+        ["Cool the 70Cu–30Ni alloy. Which element is the first solid richer in?", "Nickel: read the tie line's right end. Fast cooling therefore leaves uneven ('cored') grains."]
+      ]
+    },
+    pbsn: {
+      title: "Lead–tin: the solder diagram", A: "Pb", B: "Sn", MA: 207.2, MB: 118.71, rA: 0.175, rB: 0.151,
+      cMin: 0, cMax: 100, tMin: 20, tMax: 350, cLab: "Composition (wt% Sn)", unit: "wt% Sn", def: [40, 150], step: 0.5,
+      lines: [
+        { pts: PB.liqL, name: "liquidus", at: [33, 262] }, { pts: PB.liqR, name: "liquidus", at: [86, 222] },
+        { pts: PB.solA, name: "solidus", at: [3, 268] }, { pts: PB.solvA.slice(0, 7), name: "solvus", at: [9, 108] },
+        { pts: PB.solvA.slice(6), dash: true }, { pts: PB.solB }, { pts: PB.solvB.slice(0, 9) }, { pts: PB.solvB.slice(8), dash: true },
+        { pts: [[18.3, 183], [97.8, 183]], name: "eutectic line, 183 °C", at: [40, 189] }
+      ],
+      marks: [[0, 327, "327 °C"], [100, 232, "232 °C"], [18.3, 183, "18.3"], [61.9, 183, "61.9"], [97.8, 183, "97.8"]],
+      labels: [["L", 55, 300], ["α", 5, 150], ["β", 99, 140], ["α + L", 16, 245], ["β + L", 84, 205], ["α + β", 55, 110]],
+      alloys: [[63, "63Sn–37Pb · electronics solder"], [50, "50Sn–50Pb"], [40, "40Sn–60Pb · Example 9.2"], [30, "30Sn–70Pb · plumber's solder"], [10, "10Sn–90Pb"]],
+      classify(C, T) {
+        if (T >= 183) {
+          if (T >= 327) return { k: "L" };
+          const ca = cAt(PB.solA, T), cl = cAt(PB.liqL, T);
+          if (C <= ca) return { k: "α" };
+          if (C < cl) return { k: "α+L", c1: ca, c2: cl, p1: "α", p2: "L" };
+          if (T >= 232) return { k: "L" };
+          const cr = cAt(PB.liqR, T), cb = cAt(PB.solB, T);
+          if (C <= cr) return { k: "L" };
+          if (C < cb) return { k: "β+L", c1: cr, c2: cb, p1: "L", p2: "β" };
+          return { k: "β" };
+        }
+        const sa = cAt(PB.solvA, Math.max(T, 20)), sb = cAt(PB.solvB, Math.max(T, 20));
+        if (C <= sa) return { k: "α" };
+        if (C >= sb) return { k: "β" };
+        return { k: "α+β", c1: sa, c2: sb, p1: "α", p2: "β" };
+      },
+      src: "Pb–Sn curves traced from Callister & Rethwisch 10e, Fig. 9.8 (vector data; invariant points snapped to the labelled 18.3, 61.9, 97.8 wt% Sn and 183 °C). The traced liquidus gives 214 °C at 50 wt% Sn, matching Table 9.1. Dashed solvus below 52 °C is extrapolated.",
+      tries: [
+        ["Set 40 wt% Sn and 150 °C. What are the compositions and amounts of α and β?", "C_α ≈ 11 and C_β ≈ 98 wt% Sn; W_α ≈ 0.67, W_β ≈ 0.33 (Callister Example Problem 9.2)."],
+        ["Cool 63Sn–37Pb and 30Sn–70Pb. Over what temperature range is each one partly liquid?", "63Sn: none; it freezes at 183 °C. 30Sn: from about 256 °C down to 183 °C, a 70-degree 'pasty' range."],
+        ["Which would you pick for a circuit board with heat-sensitive chips, and why?", "The eutectic: lowest melting point, so the least heat reaches the parts, and no pasty range in which a joint can be disturbed."]
+      ]
+    },
+    fec: {
+      title: "Iron–carbon: the steel diagram", A: "Fe", B: "C", MA: 55.845, MB: 12.011, rA: 0.124, rB: 0.071,
+      cMin: 0, cMax: 2.2, tMin: 400, tMax: 1200, cLab: "Composition (wt% C)", unit: "wt% C", def: [0.45, 700], step: 0.01,
+      lines: [
+        { pts: FE.A3, name: "A₃", at: [0.3, 860] }, { pts: FE.ag }, { pts: FE.aSolv }, { pts: FE.Acm, name: "A_cm", at: [1.55, 1010] },
+        { pts: FE.gSol }, { pts: [[0.022, 727], [2.2, 727]], name: "eutectoid line, 727 °C", at: [1.25, 737] }, { pts: [[2.14, 1147], [2.2, 1147]] }
+      ],
+      marks: [[0, 912, "912 °C"], [0.76, 727, "0.76", true], [2.14, 1147, "2.14", true]],
+      labels: [["γ (austenite)", 0.75, 1040], ["α + γ", 0.22, 760], ["γ + Fe₃C", 1.75, 860], ["α + Fe₃C", 1.1, 560], ["L + γ", 2.06, 1180], ["α", 0.045, 640]],
+      alloys: [[0.2, "0.20% C · 1020, low-carbon"], [0.45, "0.45% C · 1045, medium-carbon"], [0.76, "0.76% C · eutectoid"], [1.0, "1.0% C · high-carbon"]],
+      classify(C, T) {
+        if (T >= 727) {
+          if (T > 1147) { const cs = cAt(FE.gSol, T); if (C > cs) return { k: "L+γ", c1: cs, c2: cAt(FE.liq, T), p1: "γ", p2: "L" }; return { k: "γ" }; }
+          if (T < 912) {
+            const ag = cAt(FE.ag, T), a3 = cAt(FE.A3, T);
+            if (C <= ag) return { k: "α" };
+            if (C < a3) return { k: "α+γ", c1: ag, c2: a3, p1: "α", p2: "γ" };
+          }
+          const acm = cAt(FE.Acm, T);
+          if (C > acm) return { k: "γ+Fe₃C", c1: acm, c2: 6.70, p1: "γ", p2: "Fe₃C" };
+          return { k: "γ" };
+        }
+        const sa = cAt(FE.aSolv, T);
+        if (C <= sa) return { k: "α" };
+        return { k: "α+Fe₃C", c1: sa, c2: 6.70, p1: "α", p2: "Fe₃C" };
+      },
+      src: "Fe–Fe₃C curves traced from Callister & Rethwisch 10e, Fig. 9.24 (vector data; snapped to 727 °C, 0.76, 0.022 and 2.14 wt% C, 912 and 1147 °C). Only the steel corner (up to 2.2 wt% C, 400–1200 °C) is shown. Below 727 °C the slowly cooled structure does not change down to room temperature.",
+      tries: [
+        ["Pick 0.45% C and cool it. At what temperature does ferrite first appear, and what happens at 727 °C?", "About 778 °C (the A₃ line). At 727 °C the remaining austenite, now 0.76% C, turns into pearlite all at once."],
+        ["What fraction of a slowly cooled 0.45% C steel is pearlite?", "W_p = (0.45 − 0.022)/(0.76 − 0.022) ≈ 0.58 (Callister Eq. 9.20)."],
+        ["Why can austenite hold 100 times more carbon than ferrite?", "Carbon sits in the gaps between iron atoms. The gaps in FCC austenite are larger than those in BCC ferrite."]
+      ]
+    }
+  };
+
+  /* ---------- colours: one per phase, shared by the diagram, micrograph and legend */
+  const PH = { L: "#8fbce0", "α": "#e4c88f", "β": "#86c3ad", "γ": "#eaa978", "Fe₃C": "#7c828d" };
+  const MIC = { L: "#c7dcec", "α": "#efe3c9", "β": "#a6cdbf", "γ": "#f1d6bd", "Fe₃C": "#454a52", ferrite: "#f4ecdc", gb: "#5d5446" };
+  const phasesOf = k => k.split("+");
+
+  /* ---------- state */
+  let sysKey = "pbsn", sys = SYS.pbsn, C = 40, T = 150, pinned = true, cool = null, events = [], hoverRegion = null;
+  const cv = $("#pdCv"), micro = $("#pdMicro"), atoms = $("#pdAtoms");
+  let geo = null, fillCache = null, fillKey = "";
+
+  function lever(r) {
+    if (!r.c1 && r.c1 !== 0) return null;
+    const w2 = clamp((C - r.c1) / (r.c2 - r.c1), 0, 1);
+    return { w1: 1 - w2, w2 };
+  }
+
+  /* ---------- diagram */
+  function drawDiagram() {
+    const { ctx, w, h } = fit(cv, 0.62, 520, 300);
+    const L = 58, R = 18, Tp = 16, B = 46;
+    const X = c => L + (c - sys.cMin) / (sys.cMax - sys.cMin) * (w - L - R);
+    const Y = t => Tp + (sys.tMax - t) / (sys.tMax - sys.tMin) * (h - Tp - B);
+    const Ci = px => sys.cMin + (px - L) / (w - L - R) * (sys.cMax - sys.cMin);
+    const Ti = py => sys.tMax - (py - Tp) / (h - Tp - B) * (sys.tMax - sys.tMin);
+    geo = { L, R, Tp, B, X, Y, Ci, Ti, w, h };
+    const ink = tok("--ink"), muted = tok("--muted"), rule = tok("--rule"), acc = tok("--accent"), mono = FONT.mono();
+    // region fill, rasterised from classify() so it always matches the logic
+    const dark = getComputedStyle(document.documentElement).colorScheme === "dark" || tok("--paper").toLowerCase() === "#0e1318";
+    const key = [sysKey, w, h, dark].join("|");
+    if (key !== fillKey) {
+      fillKey = key;
+      const nx = Math.round((w - L - R) / 3), ny = Math.round((h - Tp - B) / 3);
+      fillCache = document.createElement("canvas"); fillCache.width = nx; fillCache.height = ny;
+      const g = fillCache.getContext("2d"), img = g.createImageData(nx, ny);
+      for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+        const c = sys.cMin + (i + 0.5) / nx * (sys.cMax - sys.cMin), t = sys.tMax - (j + 0.5) / ny * (sys.tMax - sys.tMin);
+        const ps = phasesOf(sys.classify(c, t).k).map(p => hexRgb(PH[p] || "#999999"));
+        const col = ps[0].map((v, q) => ps.reduce((s, p) => s + p[q], 0) / ps.length);
+        const o = (j * nx + i) * 4; img.data[o] = col[0]; img.data[o + 1] = col[1]; img.data[o + 2] = col[2];
+        img.data[o + 3] = Math.round(255 * (ps.length > 1 ? 0.30 : 0.45) * (dark ? 0.8 : 1));
+      }
+      g.putImageData(img, 0, 0);
+    }
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(fillCache, L, Tp, w - L - R, h - Tp - B);
+    ctx.imageSmoothingEnabled = true;
+    // grid and axes
+    ctx.strokeStyle = rgba(rule.length === 7 ? rule : "#d3dae2", 0.9); ctx.lineWidth = 1;
+    const tStep = sys.tMax - sys.tMin > 500 ? 100 : 50, cStep = sys.cMax > 10 ? 10 : 0.2;
+    ctx.font = "12px " + mono; ctx.fillStyle = muted;
+    for (let t = Math.ceil(sys.tMin / tStep) * tStep; t <= sys.tMax + 1e-6; t += tStep) {
+      ctx.beginPath(); ctx.moveTo(L, Y(t)); ctx.lineTo(w - R, Y(t)); ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.textAlign = "right"; ctx.fillText(t, L - 6, Y(t) + 4);
+    }
+    for (let c = sys.cMin; c <= sys.cMax + 1e-6; c += cStep) {
+      ctx.beginPath(); ctx.moveTo(X(c), Tp); ctx.lineTo(X(c), h - B); ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
+      const major = sys.cMax > 10 ? Math.round(c) % 20 === 0 : Math.round(c * 10) % 4 === 0;
+      if (major) { ctx.textAlign = "center"; ctx.fillText(sys.cMax > 10 ? Math.round(c) : c.toFixed(1), X(c), h - B + 16); }
+    }
+    ctx.strokeStyle = ink; ctx.strokeRect(L, Tp, w - L - R, h - Tp - B);
+    ctx.fillStyle = ink; ctx.textAlign = "center"; ctx.fillText(sys.cLab, L + (w - L - R) / 2, h - 10);
+    ctx.save(); ctx.translate(14, Tp + (h - Tp - B) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Temperature (°C)", 0, 0); ctx.restore();
+    ctx.textAlign = "left"; ctx.fillStyle = muted; ctx.fillText(sys.A, L + 4, h - B - 6); ctx.textAlign = "right"; ctx.fillText(sysKey === "fec" ? "→ more carbon" : sys.B, w - R - 4, h - B - 6);
+    // phase boundaries
+    ctx.save(); ctx.beginPath(); ctx.rect(L, Tp, w - L - R, h - Tp - B); ctx.clip();
+    sys.lines.forEach(ln => {
+      ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.setLineDash(ln.dash ? [5, 4] : []);
+      ctx.beginPath(); ln.pts.forEach(([c, t], i) => i ? ctx.lineTo(X(c), Y(t)) : ctx.moveTo(X(c), Y(t))); ctx.stroke();
+    });
+    ctx.setLineDash([]); ctx.restore();
+    ctx.font = "italic 12px " + FONT.body(); ctx.fillStyle = muted; ctx.textAlign = "left";
+    sys.lines.forEach(ln => { if (ln.name && w > 520) ctx.fillText(ln.name, X(ln.at[0]) + 4, Y(ln.at[1])); });
+    ctx.font = "600 11px " + mono; ctx.fillStyle = ink;
+    sys.marks.forEach(([c, t, s, below]) => { ctx.beginPath(); ctx.arc(X(c), Y(t), 3, 0, Math.PI * 2); ctx.fill(); ctx.textAlign = c > (sys.cMax * 0.9) ? "right" : "left"; ctx.fillText(s, X(c) + (c > sys.cMax * 0.9 ? -6 : 6), Y(t) + (below ? 14 : -6)); });
+    ctx.font = "700 " + (w > 520 ? 15 : 12) + "px " + FONT.body(); ctx.textAlign = "center";
+    sys.labels.forEach(([s, c, t]) => { ctx.fillStyle = ink; ctx.globalAlpha = 0.75; ctx.fillText(s, X(c), Y(t)); ctx.globalAlpha = 1; });
+    // the chosen point, tie line and lever arms
+    const r = sys.classify(C, T), px = X(C), py = Y(T);
+    ctx.strokeStyle = rgba(acc, 0.55); ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(px, Tp); ctx.lineTo(px, h - B); ctx.stroke(); ctx.setLineDash([]);
+    if (r.c1 !== undefined && r.c1 !== null) {
+      const x1 = X(Math.max(sys.cMin, r.c1)), x2 = X(Math.min(sys.cMax, r.c2));
+      ctx.strokeStyle = acc; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x1, py); ctx.lineTo(x2, py); ctx.stroke();
+      [[x1, r.p1, r.c1], [x2, r.p2, r.c2]].forEach(([xx, p, c], i) => {
+        ball(ctx, xx, py, 5.5, PH[p] || "#999999", { ring: ink, ringW: 1.2 });
+        if (r.c2 > sys.cMax && i === 1) return;
+        tag(ctx, (p === "L" ? "liquid" : p) + " " + fmtC(c), xx, py + (i ? 16 : -16), i ? "right" : "left", acc);
+      });
+      if (r.c2 > sys.cMax) tag(ctx, "Fe₃C at 6.70% C →", w - R - 4, py + 16, "right", acc);
+    }
+    ball(ctx, px, py, 7, acc, { ring: "#ffffff", ringW: 2 });
+    $("#pdHint").textContent = pinned ? "pinned · drag to move · arrow keys nudge" : "move over the diagram · click to pin a point";
+  }
+  function fmtC(c) { return sysKey === "fec" ? c.toFixed(c < 0.1 ? 3 : 2) : c.toFixed(1); }
+
+  /* ---------- microstructure: procedural micrograph (grains, dendrites, lamellae, networks) */
+  const MR = 230;
+  let field = null;
+  function rng(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+  function buildField() {
+    const rnd = rng(7);
+    const seeds = [];
+    const g = 4; for (let j = 0; j < g; j++) for (let i = 0; i < g; i++) seeds.push({ x: (i + 0.2 + 0.6 * rnd()) / g * MR, y: (j + 0.2 + 0.6 * rnd()) / g * MR, ph: rnd() * Math.PI, tone: rnd() });
+    const cols = []; for (let k = 0; k < 70; k++) cols.push({ x: rnd() * MR, y: rnd() * MR, th: rnd() * Math.PI });
+    const N = MR * MR, id = new Int16Array(N), bd = new Float32Array(N), de = new Float32Array(N), col = new Int16Array(N), nz = new Float32Array(N), tw = new Uint8Array(N);
+    const twin = seeds.map(() => ({ a: rnd() * Math.PI, o: rnd() * 40, on: rnd() < 0.6 }));
+    for (let y = 0; y < MR; y++) for (let x = 0; x < MR; x++) {
+      let d1 = 1e9, d2 = 1e9, k1 = 0;
+      for (let k = 0; k < seeds.length; k++) {
+        for (const ox of [-MR, 0, MR]) for (const oy of [-MR, 0, MR]) {
+          const dx = x - seeds[k].x - ox, dy = y - seeds[k].y - oy, d = Math.hypot(dx, dy);
+          if (d < d1) { d2 = d1; d1 = d; k1 = k; } else if (d < d2) d2 = d;
+        }
+      }
+      const o = y * MR + x, s = seeds[k1];
+      id[o] = k1; bd[o] = (d2 - d1) / 2;
+      // nearest periodic image of the seed, for the dendrite angle
+      let best = 1e9, ang = 0;
+      for (const ox of [-MR, 0, MR]) for (const oy of [-MR, 0, MR]) { const dx = x - s.x - ox, dy = y - s.y - oy, d = Math.hypot(dx, dy); if (d < best) { best = d; ang = Math.atan2(dy, dx); } }
+      de[o] = best / (1 + 0.30 * Math.cos(4 * (ang - s.ph)) + 0.08 * Math.cos(12 * (ang - s.ph)));
+      let c1 = 1e9, kc = 0; for (let k = 0; k < cols.length; k++) { const dx = x - cols[k].x, dy = y - cols[k].y, d = dx * dx + dy * dy; if (d < c1) { c1 = d; kc = k; } }
+      col[o] = kc;
+      nz[o] = 0.5 + 0.25 * Math.sin(x * 0.21 + Math.sin(y * 0.13) * 2) * Math.cos(y * 0.17 + x * 0.05) + 0.25 * (rnd() - 0.5);
+      const t = twin[k1]; if (t.on) { const p = (x * Math.cos(t.a) + y * Math.sin(t.a) + t.o) / 26; tw[o] = (p - Math.floor(p)) < 0.22 ? 1 : 0; }
+    }
+    const sortedDe = Float32Array.from(de).sort(), sortedBd = Float32Array.from(bd).sort();
+    const dots = []; for (let k = 0; k < 900; k++) dots.push({ x: rnd() * MR, y: rnd() * MR, r: 0.6 + rnd() * 0.9, u: rnd() });
+    field = { seeds, cols, id, bd, de, col, nz, tw, sortedDe, sortedBd, dots };
+  }
+  const quant = (sorted, f) => sorted[Math.min(sorted.length - 1, Math.max(0, Math.floor(f * sorted.length)))];
+
+  /* what the micrograph should show, assuming slow (equilibrium) cooling from the liquid */
+  function microSpec(r) {
+    const k = r.k, lv = lever(r);
+    if (sysKey === "pbsn") {
+      if (k === "L") return { kind: "liquid" };
+      if (k === "α" || k === "β") return { kind: "grains", ph: k };
+      if (k === "α+L") return { kind: "dendrites", ph: "α", f: lv.w1 };
+      if (k === "β+L") return { kind: "dendrites", ph: "β", f: lv.w2 };
+      // below 183 °C
+      if (C < 18.3) return { kind: "precip", host: "α", ppt: "β", f: lv.w2 };
+      if (C > 97.8) return { kind: "precip", host: "β", ppt: "α", f: lv.w1 };
+      const fB = (61.9 - 18.3) / (97.8 - 18.3);
+      if (Math.abs(C - 61.9) < 0.35) return { kind: "eutectic", f: 0, prim: "α", A: "α", B: "β", fB, period: 6 };
+      if (C < 61.9) return { kind: "eutectic", prim: "α", f: (61.9 - C) / (61.9 - 18.3), A: "α", B: "β", fB, period: 6 };
+      return { kind: "eutectic", prim: "β", f: (C - 61.9) / (97.8 - 61.9), A: "α", B: "β", fB, period: 6 };
+    }
+    if (sysKey === "cuni") {
+      if (k === "L") return { kind: "liquid" };
+      if (k === "α") return { kind: "grains", ph: "α" };
+      return { kind: "dendrites", ph: "α", f: lv.w2 };
+    }
+    // steel
+    if (k === "γ") return { kind: "grains", ph: "γ", twins: true };
+    if (k === "L+γ") return { kind: "dendrites", ph: "γ", f: lv.w1 };
+    if (k === "α") return { kind: "grains", ph: "ferrite" };
+    if (k === "α+γ") return { kind: "network", host: "γ", net: "ferrite", f: lv.w1 };
+    if (k === "γ+Fe₃C") return { kind: "network", host: "γ", net: "Fe₃C", f: lv.w2 };
+    // below 727 °C
+    const fCem = (0.76 - 0.022) / (6.70 - 0.022);
+    if (C <= 0.022) return { kind: "grains", ph: "ferrite" };
+    if (Math.abs(C - 0.76) < 0.012) return { kind: "pearlite", net: null, f: 0, fB: fCem };
+    if (C < 0.76) return { kind: "pearlite", net: "ferrite", f: (0.76 - C) / (0.76 - 0.022), fB: fCem };
+    return { kind: "pearlite", net: "Fe₃C", f: (C - 0.76) / (6.70 - 0.76), fB: fCem };
+  }
+
+  function drawMicro(r) {
+    if (!field) buildField();
+    const { ctx, w, h } = fit(micro, 1, 420, 220);
+    const spec = microSpec(r), F = field;
+    const img = new ImageData(MR, MR), d = img.data;
+    const rgbOf = {}; Object.keys(MIC).forEach(k2 => { rgbOf[k2] = hexRgb(MIC[k2]); });
+    const phRGB = p => rgbOf[p === "α" && sysKey === "fec" ? "ferrite" : p] || rgbOf[p];
+    const thrDe = spec.f !== undefined ? quant(F.sortedDe, spec.f) : 0;
+    const thrBd = spec.kind === "network" || (spec.kind === "pearlite" && spec.net) ? quant(F.sortedBd, spec.f) : 0;
+    for (let y = 0; y < MR; y++) for (let x = 0; x < MR; x++) {
+      const o = y * MR + x, gid = F.id[o], tone = F.seeds[gid].tone, nz = F.nz[o];
+      let c, edge = false;
+      const lam = (th, period, fB) => { const p = (x * Math.cos(th) + y * Math.sin(th) + 2.2 * Math.sin(y * 0.09 + x * 0.04)) / period; return (p - Math.floor(p)) < fB; };
+      switch (spec.kind) {
+        case "liquid": c = rgbOf.L; break;
+        case "grains": c = phRGB(spec.ph); edge = F.bd[o] < 0.8; if (spec.twins && F.tw[o]) c = c.map(v => v * 0.93); c = c.map(v => v * (0.93 + 0.1 * tone)); break;
+        case "dendrites": if (F.de[o] < thrDe) { c = phRGB(spec.ph).map(v => v * (0.93 + 0.1 * tone)); edge = F.bd[o] < 0.8 && spec.f > 0.97; } else c = rgbOf.L; break;
+        case "precip": c = phRGB(spec.host).map(v => v * (0.93 + 0.1 * tone)); edge = F.bd[o] < 0.8; break;
+        case "eutectic":
+          if (F.de[o] < thrDe && spec.f > 0) { c = phRGB(spec.prim).map(v => v * (0.93 + 0.1 * tone)); }
+          else c = lam(F.cols[F.col[o]].th, spec.period, spec.fB) ? rgbOf[spec.B] : rgbOf[spec.A];
+          break;
+        case "network":
+          c = F.bd[o] < thrBd ? phRGB(spec.net) : phRGB(spec.host).map(v => v * (0.93 + 0.1 * tone));
+          if (spec.host === "γ" && F.tw[o] && F.bd[o] >= thrBd) c = c.map(v => v * 0.93);
+          edge = F.bd[o] < 0.6; break;
+        case "pearlite":
+          if (spec.net && F.bd[o] < thrBd) c = phRGB(spec.net);
+          else c = lam(F.cols[F.col[o]].th, 5.2, Math.max(spec.fB, 0.3)) ? rgbOf["Fe₃C"] : rgbOf.ferrite;
+          edge = F.bd[o] < 0.5 && !spec.net; break;
+      }
+      const k3 = 0.94 + 0.12 * nz;
+      d[o * 4] = clamp(c[0] * k3 * (edge ? 0.45 : 1), 0, 255); d[o * 4 + 1] = clamp(c[1] * k3 * (edge ? 0.45 : 1), 0, 255); d[o * 4 + 2] = clamp(c[2] * k3 * (edge ? 0.45 : 1), 0, 255); d[o * 4 + 3] = 255;
+    }
+    // second-phase particles drawn on top
+    if (spec.kind === "precip") {
+      const n = Math.round(clamp(spec.f, 0, 0.25) * 2600);
+      const pc = phRGB(spec.ppt).map(v => v * 0.75);
+      for (let i = 0; i < Math.min(n, F.dots.length); i++) {
+        const p = F.dots[i]; const rr = p.r + 0.4;
+        for (let yy = -2; yy <= 2; yy++) for (let xx = -2; xx <= 2; xx++) {
+          if (xx * xx + yy * yy > rr * rr) continue;
+          const X2 = Math.floor(p.x + xx), Y2 = Math.floor(p.y + yy); if (X2 < 0 || Y2 < 0 || X2 >= MR || Y2 >= MR) continue;
+          const o = (Y2 * MR + X2) * 4; d[o] = pc[0]; d[o + 1] = pc[1]; d[o + 2] = pc[2];
+        }
+      }
+    }
+    const off = document.createElement("canvas"); off.width = MR; off.height = MR; off.getContext("2d").putImageData(img, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
+    const s = Math.min(w, h); ctx.drawImage(off, (w - s) / 2, (h - s) / 2, s, s);
+    // legend chips for what is visible
+    const names = { L: "liquid", "α": sysKey === "fec" ? "ferrite (α)" : "α", "β": "β", "γ": "austenite (γ)", "Fe₃C": "cementite (Fe₃C)", ferrite: "ferrite (α)" };
+    const vis = { liquid: ["L"], grains: [spec.ph], dendrites: [spec.ph, "L"], precip: [spec.host, spec.ppt], eutectic: spec.f > 0 ? ["primary " + spec.prim, "eutectic α + β"] : ["eutectic α + β"], network: [spec.host, spec.net], pearlite: spec.net ? [spec.net, "pearlite (α + Fe₃C)"] : ["pearlite (α + Fe₃C)"] }[spec.kind];
+    let yy = 8;
+    vis.forEach(v => { const key2 = v.replace("primary ", ""); const label = v.startsWith("primary") ? "primary " + (names[key2] || key2) : (names[v] || v); tag(ctx, label, 8 + (w - s) / 2, yy + 10, "left", tok("--ink")); yy += 26; });
+  }
+
+  /* ---------- atoms: one plane of the crystal(s) at the tie-line compositions */
+  let liquidPts = null;
+  function buildLiquid() {
+    const rnd = rng(11), pts = [];
+    let tries = 0;
+    while (pts.length < 150 && tries < 20000) { tries++; const p = { x: rnd(), y: rnd(), u: rnd(), ph: rnd() * 6.28 }; if (pts.every(q => Math.hypot(q.x - p.x, q.y - p.y) > 0.072)) pts.push(p); }
+    liquidPts = pts;
+  }
+  const siteRnd = (() => { const r = rng(23); return Array.from({ length: 4000 }, () => r()); })();
+  function atomColor(el) { return { Cu: "#c47a45", Ni: "#9aa6ad", Pb: "#5f6878", Sn: "#d2d8de", Fe: "#9aa3ad", C: "#24272c" }[el]; }
+  function drawAtoms(r, t) {
+    if (!liquidPts) buildLiquid();
+    const { ctx, w, h } = fit(atoms, 1, 420, 220);
+    ctx.clearRect(0, 0, w, h);
+    const lv = lever(r), ph = phasesOf(r.k);
+    let parts;
+    if (ph.length === 1) parts = [{ p: ph[0], c: C, f: 1 }];
+    else parts = [{ p: r.p1, c: r.c1, f: lv.w1 }, { p: r.p2, c: r.c2, f: lv.w2 }];
+    // widths follow the mass fractions, with a minimum so a small phase stays visible
+    const minW = 0.16; let f0 = parts.length > 1 ? clamp(parts[0].f, minW, 1 - minW) : 1;
+    const s = Math.min(w, h) / 12.5;
+    const regions = parts.length > 1 ? [[0, w * f0], [w * f0, w]] : [[0, w]];
+    const big = Math.max(sys.rA, sys.rB);
+    parts.forEach((pt, i) => {
+      const [x0, x1] = regions[i];
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, 0, x1 - x0, h); ctx.clip();
+      drawPhaseAtoms(ctx, pt, x0, x1, w, h, s, big, t, i);
+      ctx.restore();
+    });
+    if (parts.length > 1) { ctx.strokeStyle = tok("--accent"); ctx.lineWidth = 2; ctx.setLineDash([5, 4]); ctx.beginPath(); ctx.moveTo(w * f0, 0); ctx.lineTo(w * f0, h); ctx.stroke(); ctx.setLineDash([]); }
+    // captions per phase
+    parts.forEach((pt, i) => {
+      const t1 = phaseName(pt.p), t2 = latticeName(pt.p), t3 = pt.p === "Fe₃C" ? "6.70 wt% C" : fmtC(pt.c) + " " + sys.unit;
+      if (i === 0) { tag(ctx, t1, 8, 16, "left", tok("--ink")); tag(ctx, t2, 8, 40, "left", tok("--muted")); tag(ctx, t3, 8, 64, "left", tok("--accent")); }
+      else { tag(ctx, t3, w - 8, h - 86, "right", tok("--accent")); tag(ctx, t2, w - 8, h - 62, "right", tok("--muted")); tag(ctx, t1, w - 8, h - 38, "right", tok("--ink")); }
+    });
+    // species key
+    const els = sysKey === "fec" ? ["Fe", "C"] : [sys.A, sys.B];
+    let lx = 8; ctx.font = "600 12px " + FONT.mono(); ctx.textBaseline = "middle";
+    els.forEach(el => { ball(ctx, lx + 7, h - 14, 7, atomColor(el)); ctx.fillStyle = tok("--ink"); ctx.textAlign = "left"; ctx.fillText(el, lx + 18, h - 13); lx += 52; });
+    ctx.textBaseline = "alphabetic";
+  }
+  function phaseName(p) {
+    return { L: "liquid", "α": sysKey === "fec" ? "ferrite (α)" : "α solid solution", "β": "β solid solution", "γ": "austenite (γ)", "Fe₃C": "cementite (Fe₃C)" }[p];
+  }
+  function latticeName(p) {
+    if (p === "L") return "no lattice: random, moving";
+    if (sysKey === "cuni") return "FCC, (100) plane";
+    if (sysKey === "pbsn") return p === "α" ? "FCC, lead's lattice" : "tetragonal, tin's lattice";
+    return { "α": "BCC, (100) plane", "γ": "FCC, (100) plane", "Fe₃C": "orthorhombic (schematic)" }[p];
+  }
+  function drawPhaseAtoms(ctx, pt, x0, x1, w, h, s, big, t, idx) {
+    const host = sys.A, sol = sys.B;
+    const xB = pt.p === "Fe₃C" ? 0.25 : wtToAt(pt.c, sys.MA, sys.MB);
+    const rad = el => (el === "C" ? 0.071 : (el === sys.A ? sys.rA : sys.rB)) / big * s * 0.48;
+    let n = 0;
+    if (pt.p === "L") {
+      liquidPts.forEach((q, i) => {
+        const jx = reduceMotion ? 0 : Math.sin(t * 2.3 + q.ph) * s * 0.12, jy = reduceMotion ? 0 : Math.cos(t * 1.9 + q.ph * 1.3) * s * 0.12;
+        const X0 = q.x * w + jx, Y0 = q.y * (h - 30) + jy;
+        if (X0 < x0 - s || X0 > x1 + s) return;
+        let el;
+        if (sysKey === "fec") { el = q.u < xB ? "C" : "Fe"; } else el = q.u < xB ? sol : host;
+        ball(ctx, X0, Y0, rad(el) * (el === "C" ? 1 : 1.02), atomColor(el), el === "C" ? { ring: "#ffffff", ringW: 1.5 } : undefined);
+      });
+      return;
+    }
+    // lattice geometry per phase (2D cross-sections)
+    let ax = s, ay = s, centred = false, interstitial = false;
+    if (sysKey === "pbsn" && pt.p === "β") { ax = s * 1.12; ay = s * 0.86; }
+    if (sysKey === "fec") {
+      if (pt.p === "α") { ax = ay = s * 1.06; centred = true; }
+      if (pt.p === "γ") { interstitial = true; }
+    }
+    const cols = Math.ceil(w / ax) + 1, rows = Math.ceil((h - 26) / ay) + 1, carbon = [];
+    for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) {
+      const X0 = (i + 0.5) * ax, Y0 = (j + 0.5) * ay;
+      if (X0 < x0 - ax || X0 > x1 + ax || Y0 > h - 26) continue;
+      const u = siteRnd[(j * 61 + i * 7 + idx * 997) % siteRnd.length];
+      if (sysKey === "fec") {
+        if (pt.p === "Fe₃C") { const isC = (i + 2 * j) % 4 === 0; if (isC) carbon.push([X0, Y0]); else ball(ctx, X0, Y0, rad("Fe") * 0.95, atomColor("Fe")); continue; }
+        ball(ctx, X0, Y0, rad("Fe"), atomColor("Fe"));
+        if (centred) { ctx.globalAlpha = 0.35; ball(ctx, X0 + ax / 2, Y0 + ay / 2, rad("Fe") * 0.8, atomColor("Fe")); ctx.globalAlpha = 1; }
+        // carbon in octahedral gaps: one gap per iron atom; occupancy = x_C / (1 - x_C)
+        const occ = xB / (1 - xB);
+        if (interstitial && u < occ) carbon.push([X0 + ax / 2, Y0 + ay / 2]);   // FCC octahedral holes: centres of the (100) square net
+        if (centred && u < occ) carbon.push([X0 + ax / 2, Y0]);
+        n++; continue;
+      }
+      const el = u < xB ? sol : host;
+      ball(ctx, X0, Y0, rad(el), atomColor(el));
+      n++;
+    }
+    carbon.forEach(([x, y]) => ball(ctx, x, y, rad("C"), atomColor("C"), { ring: "#ffffff", ringW: 1.5 }));
+  }
+
+  /* ---------- side panel text */
+  function whyText(r) {
+    const k = r.k;
+    if (sysKey === "cuni") {
+      if (k === "L") return "<b>Liquid.</b> Copper and nickel atoms are mixed at random and free to move. A casting is poured from here, a little above the liquidus.";
+      if (k === "α+L") return "<b>Solid crystals growing in liquid.</b> The α crystals branch out as dendrites. The first solid is richer in nickel than the alloy (read the right end of the tie line), so cooling too fast leaves uneven, <i>cored</i> grains. Castings are often annealed to even them out.";
+      return "<b>One solid phase.</b> Copper and nickel share a single FCC lattice in any proportion: both are FCC with nearly equal atom sizes (0.128 and 0.125 nm). The dissolved nickel atoms make it harder for planes of atoms to slip, so the alloy is stronger: annealed copper yields at 69 MPa, Cu–30% Ni at 125 MPa (Callister Table 11.6). That alloy is chosen for saltwater piping and heat exchangers.";
+    }
+    if (sysKey === "pbsn") {
+      if (k === "L") return "<b>Liquid solder.</b> To solder, you heat the alloy above its liquidus so it flows and wets the parts, then let it freeze.";
+      if (k === "α+L") return "<b>The pasty range.</b> Solid lead-rich α crystals sit in liquid, so the joint is neither runny nor solid. A plumber can shape (wipe) a joint in this state. On a circuit board, a part that moves now can leave a weak, cracked joint.";
+      if (k === "β+L") return "<b>The pasty range.</b> Solid tin-rich β crystals sit in liquid. Tin-rich lead-free solders are designed to keep this range short.";
+      if (k === "α") return "<b>α: tin dissolved in lead's FCC lattice.</b> Lead holds at most 18.3 wt% Sn, at 183 °C, and less as it cools.";
+      if (k === "β") return "<b>β: lead dissolved in tin's tetragonal lattice.</b> Tin holds at most 2.2 wt% Pb.";
+      if (C < 18.3) return "<b>β particles inside α grains.</b> Lead can hold less tin as it cools (the solvus line), so the extra tin comes out as small β particles.";
+      if (C > 97.8) return "<b>α particles inside β grains.</b> The extra lead comes out of the tin as small α particles.";
+      if (Math.abs(C - 61.9) < 0.35) return "<b>100% eutectic.</b> The whole alloy froze at one temperature, 183 °C, as fine alternating layers of α and β. 183 °C is the lowest melting point of any lead–tin alloy, which is why 63Sn–37Pb was the standard electronics solder.";
+      return "<b>Primary " + (C < 61.9 ? "α" : "β") + " plus eutectic.</b> The large crystals grew in the pasty range. The liquid left at 183 °C had the eutectic composition (61.9 wt% Sn) and froze all at once into fine layers of α and β.";
+    }
+    if (k === "γ") return "<b>Austenite.</b> FCC iron with carbon squeezed into the gaps between iron atoms (an interstitial solid solution). FCC's gaps are larger than BCC's, so austenite holds up to 2.14 wt% C. Steel is forged and rolled here, and heat treatments start here.";
+    if (k === "L+γ") return "<b>Austenite crystals growing in liquid steel.</b>";
+    if (k === "α+γ") return "<b>Ferrite forming.</b> Below the A₃ line, low-carbon ferrite grows along the austenite grain boundaries. The austenite left behind gets richer in carbon until it reaches 0.76 wt% at 727 °C.";
+    if (k === "γ+Fe₃C") return "<b>Cementite forming.</b> Below the A_cm line, hard, brittle cementite (Fe₃C) forms along the austenite grain boundaries.";
+    if (k === "α" ) return "<b>Ferrite.</b> BCC iron. Its gaps are small, so it holds at most 0.022 wt% C (about one carbon atom per thousand iron atoms). Ferrite is soft and ductile.";
+    if (Math.abs(C - 0.76) < 0.012) return "<b>100% pearlite.</b> At 727 °C all the austenite turned at once into pearlite: alternating plates of ferrite and cementite (the eutectoid reaction).";
+    if (C < 0.76) {
+      const cls = C < 0.25 ? "Low-carbon steels (below about 0.25% C) are soft, ductile, weldable and the cheapest steels: car bodies, I-beams, pipelines, cans." : "Medium-carbon steels (0.25–0.6% C) are usually quenched and tempered for strength: railway wheels and track, gears, crankshafts.";
+      return "<b>Ferrite plus pearlite.</b> The light grains are ferrite that formed above 727 °C; the dark layered regions are pearlite. More carbon means more pearlite: stronger and harder, but less ductile. " + cls + " (Callister §11.2)";
+    }
+    return "<b>Pearlite with a cementite network.</b> Cementite formed along the old austenite grain boundaries above 727 °C. High-carbon steels (0.6–1.4% C) are the hardest and strongest plain-carbon steels but the least ductile; they are used hardened for knives, springs and high-strength wire. (Callister §11.2)";
+  }
+
+  /* ---------- what happens on slow cooling: scan down and record each change of phase field */
+  const EVT = {
+    "L>α+L": "liquidus: first solid α crystals form", "α+L>α": "solidus: the last liquid freezes",
+    "L>β+L": "liquidus: first solid β crystals form", "β+L>β": "solidus: the last liquid freezes",
+    "α+L>α+β": "eutectic: the remaining liquid freezes into layers of α + β", "β+L>α+β": "eutectic: the remaining liquid freezes into layers of α + β",
+    "L>α+β": "eutectic: all the liquid freezes at once into layers of α + β",
+    "α>α+β": "solvus: β particles start to come out of α", "β>α+β": "solvus: α particles start to come out of β",
+    "γ>α+γ": "A₃: ferrite starts to form on austenite grain boundaries", "α+γ>α+Fe₃C": "eutectoid: the remaining austenite becomes pearlite",
+    "γ>γ+Fe₃C": "A_cm: cementite starts to form on grain boundaries", "γ+Fe₃C>α+Fe₃C": "eutectoid: the remaining austenite becomes pearlite",
+    "γ>α+Fe₃C": "eutectoid: all the austenite becomes pearlite at once", "L+γ>γ": "solidus: the last liquid freezes",
+    "α+γ>α": "the last austenite becomes ferrite", "α>α+Fe₃C": "solvus: a little cementite comes out of ferrite",
+    "L>α": "freezes at a single temperature (a pure metal)", "L>β": "freezes at a single temperature (a pure metal)"
+  };
+  function computeEvents() {
+    events = [];
+    const n = 1600; let prev = sys.classify(C, sys.tMax).k;
+    let liq = null, sol = null;
+    for (let i = 1; i <= n; i++) {
+      const t = sys.tMax - (sys.tMax - sys.tMin) * i / n, k = sys.classify(C, t).k;
+      if (k !== prev) {
+        const tt = t + (sys.tMax - sys.tMin) / n / 2;
+        const label = EVT[prev + ">" + k] || (prev + " → " + k);
+        events.push({ T: tt, text: label });
+        if (prev === "L") liq = tt;
+        if (prev.indexOf("L") >= 0 && k.indexOf("L") < 0) sol = tt;
+        prev = k;
+      }
+    }
+    if (sysKey !== "fec" && liq !== null && sol !== null) events.range = [sol, liq];
+    renderLog();
+  }
+  function renderLog() {
+    const ol = $("#pdLog"); ol.innerHTML = "";
+    if (!events.length) { const li = document.createElement("li"); li.textContent = "No change of phase in this temperature range."; ol.appendChild(li); return; }
+    events.forEach(e => {
+      const li = document.createElement("li");
+      li.textContent = Math.round(e.T) + " °C · " + e.text;
+      if (cool && cool.T <= e.T) li.className = "on";
+      ol.appendChild(li);
+    });
+  }
+
+  /* ---------- readouts */
+  function readout(r) {
+    const lv = lever(r), names = { L: "Liquid (L)", "α": sysKey === "fec" ? "Ferrite (α)" : "α", "β": "β", "γ": "Austenite (γ)", "Fe₃C": "Cementite (Fe₃C)" };
+    const regionName = {
+      L: "Liquid", "α": sysKey === "fec" ? "Ferrite (α), one phase" : "α, one solid phase", "β": "β, one solid phase", "γ": "Austenite (γ), one phase",
+      "α+L": "α + liquid (two phases)", "β+L": "β + liquid (two phases)", "α+β": "α + β (two solid phases)", "α+γ": "Ferrite + austenite",
+      "γ+Fe₃C": "Austenite + cementite", "α+Fe₃C": "Ferrite + cementite", "L+γ": "Austenite + liquid"
+    }[r.k] || r.k;
+    $("#pdRegion").textContent = regionName;
+    const dl = $("#pdRead"); dl.innerHTML = "";
+    const row = (a, b) => { const dt = document.createElement("dt"); dt.textContent = a; const dd = document.createElement("dd"); dd.textContent = b; dl.append(dt, dd); };
+    row("Point", fmtC(C) + " " + sys.unit + ", " + Math.round(T) + " °C");
+    if (lv) {
+      row(names[r.p1], "C = " + (r.p1 === "Fe₃C" ? "6.70" : fmtC(r.c1)) + " · W = " + lv.w1.toFixed(2));
+      row(names[r.p2], "C = " + (r.p2 === "Fe₃C" ? "6.70" : fmtC(r.c2)) + " · W = " + lv.w2.toFixed(2));
+      const a = r.c1, b = r.c2, f = v => (r.p2 === "Fe₃C" && v === b) ? "6.70" : fmtC(v);
+      row("Lever rule", "W_" + r.p1 + " = (" + f(b) + " − " + fmtC(C) + ") / (" + f(b) + " − " + f(a) + ")");
+    } else row("Phase", (names[r.k] || r.k) + " · composition = the alloy's, " + fmtC(C) + " " + sys.unit);
+    if (sysKey === "pbsn" && r.k === "α+β" && C >= 18.3 && C <= 97.8) {
+      const pr = C < 61.9 ? (61.9 - C) / (61.9 - 18.3) : (C - 61.9) / (97.8 - 61.9);
+      row("Microconstituents", "primary " + (C < 61.9 ? "α" : "β") + " " + Math.round(pr * 100) + "% · eutectic " + Math.round((1 - pr) * 100) + "%");
+    }
+    if (sysKey === "fec" && r.k === "α+Fe₃C" && C > 0.022) {
+      const wp = C <= 0.76 ? (C - 0.022) / (0.76 - 0.022) : (6.70 - C) / (6.70 - 0.76);
+      row("Pearlite", Math.round(wp * 100) + "% · proeutectoid " + (C < 0.76 ? "ferrite" : "cementite") + " " + Math.round((1 - wp) * 100) + "%");
+    }
+    if (events.range) {
+      const [lo, hi] = events.range;
+      row("Melting range", hi - lo < 2 ? "≈ " + Math.round(lo) + " °C (melts at essentially one temperature)" : Math.round(lo) + " → " + Math.round(hi) + " °C (partly liquid over " + Math.round(hi - lo) + " °C)");
+    }
+    if (sysKey === "fec") { const a3 = events.find(e => /A₃|A_cm|eutectoid: all/.test(e.text)); if (a3) row("Critical temperature", Math.round(a3.T) + " °C (heat above this to make it all austenite)"); }
+    $("#pdWhy").innerHTML = whyText(r);
+  }
+
+  /* ---------- wiring */
+  let atomT = 0, lastR = null;
+  function update(full) {
+    C = clamp(C, sys.cMin, sys.cMax); T = clamp(T, sys.tMin, sys.tMax);
+    const r = sys.classify(C, T);
+    if (full) computeEvents();
+    drawDiagram(); drawMicro(r); drawAtoms(r, atomT); readout(r);
+    if (document.activeElement !== $("#pdC")) $("#pdC").value = sysKey === "fec" ? C.toFixed(3) : C.toFixed(1);
+    if (document.activeElement !== $("#pdT")) $("#pdT").value = Math.round(T);
+    lastR = r;
+    window.__phase = { sys: sysKey, C, T, r, events, range: events.range };
+  }
+  function setSystem(k) {
+    sysKey = k; sys = SYS[k]; cool = null; fillKey = "";
+    setPressed($("#pdSys"), k);
+    $("#pdTitle").textContent = sys.title;
+    $("#pdCLab").textContent = sys.cLab;
+    $("#pdC").step = sys.step; $("#pdC").min = sys.cMin; $("#pdC").max = sys.cMax; $("#pdT").min = sys.tMin; $("#pdT").max = sys.tMax;
+    const box = $("#pdAlloys"); box.innerHTML = "";
+    sys.alloys.forEach(([c, s]) => { const b = document.createElement("button"); b.className = "chip"; b.textContent = s; b.addEventListener("click", () => { cool = null; C = c; pinned = true; $("#pdFollow").hidden = false; update(true); }); box.appendChild(b); });
+    $("#pdSrc").textContent = sys.src;
+    const ol = $("#pdTry"); ol.innerHTML = "";
+    sys.tries.forEach(([q, a]) => { const li = document.createElement("li"); li.textContent = q; const sp = document.createElement("span"); sp.className = "ans"; sp.textContent = a; li.appendChild(sp); ol.appendChild(li); });
+    [C, T] = sys.def; pinned = true; $("#pdFollow").hidden = false;
+    update(true);
+  }
+  pressGroup($("#pdSys"), setSystem);
+  function fromEvent(e) { const r = cv.getBoundingClientRect(); return [geo.Ci(e.clientX - r.left), geo.Ti(e.clientY - r.top)]; }
+  let dragging = false;
+  cv.addEventListener("pointerdown", e => { if (!geo) return; cool = null; dragging = true; cv.setPointerCapture(e.pointerId); const [c, t] = fromEvent(e); const cOld = C; C = c; T = t; pinned = true; $("#pdFollow").hidden = false; update(Math.abs(cOld - C) > 1e-9); });
+  cv.addEventListener("pointermove", e => {
+    if (!geo || cool) return;
+    if (dragging || (!pinned && e.pointerType === "mouse")) { const [c, t] = fromEvent(e); const cOld = C; C = c; T = t; update(Math.abs(cOld - clamp(C, sys.cMin, sys.cMax)) > (sys.cMax - sys.cMin) / 400); }
+  });
+  const endDrag = () => { if (dragging) { dragging = false; computeEvents(); readout(sys.classify(C, T)); } };
+  cv.addEventListener("pointerup", endDrag); cv.addEventListener("pointercancel", endDrag);
+  cv.addEventListener("keydown", e => {
+    const dc = (sys.cMax - sys.cMin) / 200, dt = (sys.tMax - sys.tMin) / 200;
+    const m = { ArrowLeft: [-dc, 0], ArrowRight: [dc, 0], ArrowUp: [0, dt], ArrowDown: [0, -dt] }[e.key];
+    if (!m) return; e.preventDefault(); cool = null; pinned = true; $("#pdFollow").hidden = false; C += m[0]; T += m[1]; update(m[0] !== 0);
+  });
+  $("#pdFollow").addEventListener("click", () => { pinned = false; $("#pdFollow").hidden = true; drawDiagram(); });
+  $("#pdC").addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isNaN(v)) { cool = null; C = v; pinned = true; update(true); } });
+  $("#pdT").addEventListener("change", e => { const v = parseFloat(e.target.value); if (!isNaN(v)) { cool = null; T = v; pinned = true; update(false); } });
+  $("#pdCool").addEventListener("click", () => {
+    if (cool) { cool = null; $("#pdCool").textContent = "Cool slowly from the top"; return; }
+    pinned = true; $("#pdFollow").hidden = false; T = sys.tMax; computeEvents();
+    cool = { T: sys.tMax, hold: 0, next: 0 };
+    $("#pdCool").textContent = "Stop";
+    if (reduceMotion) { T = sys.tMin; cool = null; $("#pdCool").textContent = "Cool slowly from the top"; }
+    update(false); renderLog();
+  });
+  tabs.phase = {
+    shown: () => update(true),
+    resize: () => { fillKey = ""; update(false); },
+    theme: () => { fillKey = ""; update(false); },
+    tick: dt => {
+      atomT += dt;
+      if (cool) {
+        if (cool.hold > 0) { cool.hold -= dt; }
+        else {
+          const rate = (sys.tMax - sys.tMin) / 16;           // the whole range in about 16 s, pausing at each event
+          const nt = cool.T - rate * dt;
+          const ev = events[cool.next];
+          if (ev && nt <= ev.T) { cool.T = ev.T - 0.01; cool.next++; cool.hold = 1.4; }
+          else cool.T = nt;
+          T = cool.T;
+          if (T <= sys.tMin) { T = sys.tMin; cool = null; $("#pdCool").textContent = "Cool slowly from the top"; }
+          update(false); renderLog();
+        }
+        return;
+      }
+      if (lastR && lastR.k.indexOf("L") >= 0 && !reduceMotion) drawAtoms(lastR, atomT);
+    }
+  };
+  setSystem("pbsn");
 })();
 
 /* ---------------------------------------------------------------- driver */
