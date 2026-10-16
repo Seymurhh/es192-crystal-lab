@@ -1,0 +1,1669 @@
+<title>ES 192 Crystal Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a lab bench. One stage (the live model) beside a narrow instrument column; stacks on phones. */
+:root {
+  --paper: #f3f5f8;
+  --panel: #ffffff;
+  --ink: #17212c;
+  --muted: #586473;
+  --rule: #d3dae2;
+  --stage: #e4e9ef;
+  --stage2: #f6f8fb;
+  --accent: #a51c30;      /* Harvard crimson: layer A, selected items */
+  --teal: #1d7486;        /* layer B, second species */
+  --amber: #b97d0c;       /* layer C, defects */
+  --atom: #8a96a8;        /* a plain metal atom */
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #0e1318; --panel: #151c24; --ink: #e5eaf0; --muted: #9ba7b5; --rule: #29323d;
+    --stage: #090d12; --stage2: #141b23; --accent: #e25a6f; --teal: #4fb4c6; --amber: #e2a93b; --atom: #95a2b4;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #0e1318; --panel: #151c24; --ink: #e5eaf0; --muted: #9ba7b5; --rule: #29323d;
+  --stage: #090d12; --stage2: #141b23; --accent: #e25a6f; --teal: #4fb4c6; --amber: #e2a93b; --atom: #95a2b4;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 16px; line-height: 1.5; }
+.wrap { max-width: 1280px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 40px; }
+header.top { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 24px; padding-block: 4px 14px; border-bottom: 1px solid var(--rule); }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(28px, 4vw, 40px); letter-spacing: -0.01em; margin: 2px 0 0; line-height: 1.1; }
+h1 span { color: var(--accent); }
+.lede { color: var(--muted); max-width: 60ch; margin: 0; font-size: 15px; }
+.navrow { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px; margin-block: 16px 18px; }
+nav.tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+nav.tabs button { font: 600 15px/1.2 var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 999px; padding: 8px 14px; cursor: pointer; display: inline-flex; gap: 8px; align-items: center; }
+nav.tabs button .wk { font: 600 11px var(--mono); color: var(--muted); }
+nav.tabs button[aria-selected="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+nav.tabs button[aria-selected="true"] .wk { color: var(--paper); opacity: .75; }
+button:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.panel { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 880px) { .panel { grid-template-columns: minmax(0, 1fr); } }
+.stage { background: radial-gradient(120% 90% at 30% 20%, var(--stage2), var(--stage)); border: 1px solid var(--rule); border-radius: 10px; position: relative; overflow: hidden; min-width: 0; }
+.stage.three { height: min(68vh, 580px); min-height: 360px; touch-action: none; cursor: grab; }
+.stage.three:active { cursor: grabbing; }
+.stage canvas { display: block; width: 100%; }
+.stage.cross canvas { cursor: crosshair; touch-action: none; }
+.stage .hint { position: absolute; left: 8px; bottom: 8px; font: 12px var(--mono); color: var(--muted); background: var(--panel); border: 1px solid var(--rule); border-radius: 4px; padding: 2px 7px; pointer-events: none; }
+.stage .tip { position: absolute; right: 8px; top: 8px; max-width: min(320px, 80%); font: 14px/1.4 var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 6px; padding: 8px 10px; box-shadow: 0 4px 16px rgba(0,0,0,.12); }
+.side { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 22px; margin: 0; text-wrap: balance; line-height: 1.2; }
+h3 { font: 700 12px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; }
+p { margin: 0; }
+.side p { max-width: 62ch; }
+.group { display: flex; flex-direction: column; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 600 14px/1.2 var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 7px 11px; cursor: pointer; }
+.chip:hover:not(:disabled) { border-color: var(--muted); }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.chip:disabled { opacity: .35; cursor: not-allowed; }
+.chip.go { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; vertical-align: 0; }
+select.chip { padding-right: 8px; }
+.range { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+.range label { font-weight: 600; font-size: 14px; }
+.range output { font: 600 13px var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+.range input { grid-column: 1 / -1; width: 100%; accent-color: var(--accent); }
+.readout { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; display: grid; gap: 8px; }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; font-size: 15px; margin: 0; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-family: var(--mono); font-size: 14px; font-variant-numeric: tabular-nums; min-width: 0; overflow-wrap: anywhere; }
+.status { font-weight: 600; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.legend i.rainbow { background: conic-gradient(#d9534f, #e2a93b, #7fb04a, #3fa7b5, #5a6fd6, #b45bc4, #d9534f); }
+details { border-top: 1px solid var(--rule); padding-top: 10px; }
+summary { cursor: pointer; font-weight: 700; }
+details ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 8px; }
+details li span.ans { display: block; color: var(--muted); font-size: 14px; margin-top: 2px; }
+.seq { display: flex; flex-wrap: wrap; gap: 4px; min-height: 30px; align-items: center; }
+.seq b { font: 700 15px var(--mono); width: 26px; height: 26px; display: grid; place-items: center; border-radius: 5px; color: #fff; }
+.under { display: grid; gap: 8px; margin-top: 18px; }
+.cap { font-size: 13px; color: var(--muted); }
+footer { margin-top: 28px; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--muted); }
+/* Present mode: big stage for the projector */
+body.present header.top, body.present footer, body.present details, body.present .cap, body.present .lede { display: none; }
+body.present .wrap { max-width: none; padding-block: 10px 16px; }
+body.present .navrow { margin-block: 0 10px; }
+body.present .panel { grid-template-columns: minmax(0, 2.4fr) minmax(280px, 1fr); }
+body.present .stage.three { height: calc(100vh - 90px); }
+body.present .side p { font-size: 15px; }
+@media (max-width: 880px) { body.present .panel { grid-template-columns: minmax(0, 1fr); } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">ES 192 · Materials Fundamentals · <span style="white-space:nowrap">Weeks 9–10</span></div>
+      <h1>Crystal <span>Lab</span></h1>
+    </div>
+    <p class="lede">Five live models: how atoms bond, how they pack into crystals, and how defects let metals bend. Drag to rotate the 3D models; scroll or pinch to zoom; click an atom to inspect it.</p>
+  </header>
+
+  <div class="navrow">
+    <nav class="tabs" role="tablist" aria-label="Demos">
+      <button role="tab" id="t-bonds" data-tab="bonds" aria-selected="true">Bonds <span class="wk">9A</span></button>
+      <button role="tab" id="t-cells" data-tab="cells" aria-selected="false">Unit cells <span class="wk">9A</span></button>
+      <button role="tab" id="t-stack" data-tab="stack" aria-selected="false">Stack the layers <span class="wk">9A</span></button>
+      <button role="tab" id="t-raft" data-tab="raft" aria-selected="false">Atom raft <span class="wk">9A · 10A</span></button>
+      <button role="tab" id="t-disl" data-tab="disl" aria-selected="false">Dislocations <span class="wk">10A</span></button>
+    </nav>
+    <button class="chip" id="presentBtn" aria-pressed="false" title="Larger models for the projector">Present mode</button>
+  </div>
+
+  <!-- ============ BONDS ============ -->
+  <section class="tabpanel" id="p-bonds" role="tabpanel" aria-labelledby="t-bonds">
+    <div class="panel">
+      <div class="group" style="gap:14px; min-width:0">
+        <div class="stage"><canvas id="bondPair" aria-label="Two atoms and the bond between them"></canvas></div>
+        <div class="stage"><canvas id="bondPlot" aria-label="Energy and force against atom separation"></canvas></div>
+      </div>
+      <div class="side">
+        <div>
+          <h2 id="bondTitle">Ionic bond</h2>
+          <p id="bondDesc" style="margin-top:6px"></p>
+        </div>
+        <div class="group">
+          <h3>Pick a substance</h3>
+          <div class="chips" id="bondChips"></div>
+        </div>
+        <div class="range">
+          <label for="bondR">Pull the atoms apart</label><output id="bondROut">r = 1.00 r₀</output>
+          <input type="range" id="bondR" min="0.86" max="2.6" step="0.01" value="1">
+        </div>
+        <div class="chips">
+          <button class="chip go" id="bondForm">Form the bond</button>
+          <button class="chip" id="bondBreak">Pull until it breaks</button>
+          <button class="chip" id="bondParts" aria-pressed="true">Show attraction and repulsion</button>
+        </div>
+        <div class="readout">
+          <dl class="kv">
+            <dt>Bond energy</dt><dd id="bondE">–</dd>
+            <dt>Melts at</dt><dd id="bondTm">–</dd>
+            <dt>Right now</dt><dd id="bondState" class="status" style="font-family:var(--body)">–</dd>
+          </dl>
+        </div>
+        <p class="cap">r₀ is the spacing where the atoms sit when nothing pushes or pulls on them. Bond energy is the energy needed to break one mole (6 × 10²³) of these bonds, in kJ/mol. A deeper energy well means a stronger bond. The steeper the sides of the well, the stiffer the material.</p>
+        <details>
+          <summary>Try this in class</summary>
+          <ol>
+            <li>Compare W and Hg. Both are metals. Why does one melt at 3414 °C and the other is liquid at room temperature?
+              <span class="ans">W's well is about 14 times deeper (850 vs 62 kJ/mol). It takes much more heat to shake the atoms out of a deep well.</span></li>
+            <li>Inside a Cl₂ molecule the bond is 121 kJ/mol, but Cl₂ melts at −101 °C. Why so low?
+              <span class="ans">Melting only has to break the weak van der Waals bonds <em>between</em> molecules (31 kJ/mol). The strong bond inside each molecule stays intact.</span></li>
+            <li>Pull the atoms past the top of the force curve. What happens to the force you need?
+              <span class="ans">It drops. Past the peak the bond gives way, so the peak force is the bond's strength.</span></li>
+          </ol>
+        </details>
+      </div>
+    </div>
+    <div class="under">
+      <div class="stage"><canvas id="bondScatter" aria-label="Bond energy against melting temperature for 20 substances"></canvas><div class="tip" id="scatterTip" hidden></div></div>
+      <p class="cap">Bond energy against melting temperature. Data: Callister &amp; Rethwisch, <em>Materials Science and Engineering</em>, 10th ed., Table 2.3. Ar and Kr were measured below atmospheric pressure. Click a point to load that substance.</p>
+    </div>
+  </section>
+
+  <!-- ============ UNIT CELLS ============ -->
+  <section class="tabpanel" id="p-cells" role="tabpanel" aria-labelledby="t-cells" hidden>
+    <div class="panel">
+      <div class="stage three" id="cellStage"><div class="tip" id="cellTip" hidden></div><span class="hint">drag to rotate · scroll to zoom · click an atom</span></div>
+      <div class="side">
+        <div>
+          <h2 id="cellTitle">Face-centred cubic (FCC)</h2>
+          <p id="cellWhy" style="margin-top:6px"></p>
+        </div>
+        <div class="group">
+          <h3>Structure</h3>
+          <div class="chips" id="cellType">
+            <button class="chip" data-v="sc">Simple cubic</button>
+            <button class="chip" data-v="bcc">BCC</button>
+            <button class="chip" data-v="fcc" aria-pressed="true">FCC</button>
+            <button class="chip" data-v="hcp">HCP</button>
+            <button class="chip" data-v="nacl">NaCl (ionic)</button>
+            <button class="chip" data-v="dia">Diamond (covalent)</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Show</h3>
+          <div class="chips" id="cellMode">
+            <button class="chip" data-v="ball">Atom centres</button>
+            <button class="chip" data-v="hard" aria-pressed="true">Touching spheres</button>
+            <button class="chip" data-v="cut">Only what's inside the cell</button>
+            <button class="chip" data-v="nbr">One atom's neighbours</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Options</h3>
+          <div class="chips">
+            <button class="chip" id="cellReps" aria-pressed="false">2 × 2 × 2 block</button>
+            <button class="chip" id="cellPlane" aria-pressed="false">Show densest plane</button>
+            <button class="chip" id="cellSpin" aria-pressed="false">Spin</button>
+          </div>
+        </div>
+        <div class="group" id="metalRow">
+          <h3><label for="cellMetal">Real material</label></h3>
+          <select class="chip" id="cellMetal"></select>
+        </div>
+        <div class="readout">
+          <dl class="kv" id="cellStats"></dl>
+        </div>
+        <div class="range">
+          <label for="ironT">Heat a piece of iron</label><output id="ironOut">20 °C · BCC</output>
+          <input type="range" id="ironT" min="20" max="1600" step="1" value="20">
+        </div>
+        <p class="cap" id="ironNote">Move the slider to switch the model to iron at that temperature. Same atoms, different crystal: this is called polymorphism.</p>
+        <p class="cap">Atomic radii: Callister 10e, Table 3.1. Atomic weights: Fig. 2.8. Measured densities are standard reference values; the computed density uses ρ = nA / (V<sub>C</sub> N<sub>A</sub>), Callister Eq. 3.8.</p>
+        <details>
+          <summary>Try this in class</summary>
+          <ol>
+            <li>Choose “Only what's inside the cell” for FCC and click a corner atom, then a face atom. How many whole atoms fit in one cell?
+              <span class="ans">8 corners × ⅛ + 6 faces × ½ = 4 atoms.</span></li>
+            <li>Choose “One atom's neighbours” for FCC, BCC and HCP. Count the neighbours.
+              <span class="ans">FCC 12, BCC 8, HCP 12. More touching neighbours means tighter packing.</span></li>
+            <li>Pick copper. Compare the density computed from the cell with the measured value.
+              <span class="ans">8.93 vs 8.94 g/cm³. A unit cell a third of a nanometre across predicts the density of a block you can hold.</span></li>
+            <li>Heat iron past 912 °C. Which structure packs more tightly?
+              <span class="ans">FCC (74% of space filled vs 68% for BCC), so iron shrinks slightly when it switches.</span></li>
+          </ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ STACKING ============ -->
+  <section class="tabpanel" id="p-stack" role="tabpanel" aria-labelledby="t-stack" hidden>
+    <div class="panel">
+      <div class="stage three" id="stackStage"><span class="hint">drag to rotate · scroll to zoom</span></div>
+      <div class="side">
+        <div>
+          <h2>Stack close-packed layers</h2>
+          <p style="margin-top:6px">Every close-packed layer looks the same: each atom touches six others. A new layer settles into the dips of the one below. There are two sets of dips to choose from, and that choice decides the crystal. Layer positions are called A, B and C. The coloured dots on the top layer show where the next layer can sit.</p>
+        </div>
+        <div class="group">
+          <h3>Drop the next layer into</h3>
+          <div class="chips" id="stackAdd">
+            <button class="chip" data-v="A"><span class="sw" style="background:var(--accent)"></span>A positions</button>
+            <button class="chip" data-v="B"><span class="sw" style="background:var(--teal)"></span>B dips</button>
+            <button class="chip" data-v="C"><span class="sw" style="background:var(--amber)"></span>C dips</button>
+          </div>
+          <div class="chips">
+            <button class="chip" id="stackUndo">Remove top layer</button>
+            <button class="chip" id="stackClear">Start over</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Stacking so far</h3>
+          <div class="seq" id="stackSeq"></div>
+          <p class="status" id="stackVerdict"></p>
+        </div>
+        <div class="group">
+          <h3>Examples and views</h3>
+          <div class="chips">
+            <button class="chip" data-preset="ABABAB">ABAB… (HCP)</button>
+            <button class="chip" data-preset="ABCABC">ABCABC… (FCC)</button>
+            <button class="chip" data-preset="ABCABABC">Stacking fault</button>
+          </div>
+          <div class="chips">
+            <button class="chip" id="stackSide">Side view</button>
+            <button class="chip" id="stackTop">Top view</button>
+            <button class="chip" id="stackGlass" aria-pressed="false">See-through</button>
+            <button class="chip" id="stackSpin" aria-pressed="false">Spin</button>
+          </div>
+        </div>
+        <details>
+          <summary>Try this in class</summary>
+          <ol>
+            <li>Build A, B, then put the third layer back over A. Keep going. What do you get?
+              <span class="ans">ABAB… is hexagonal close-packed (HCP): Mg, Ti, Zn.</span></li>
+            <li>Now put the third layer in the C dips instead. What do you get?
+              <span class="ans">ABCABC… is face-centred cubic (FCC): Al, Cu, Ni. The FCC cube's densest plane is exactly this layer.</span></li>
+            <li>Look at the stacking-fault example from the side. Can you see where it went wrong?
+              <span class="ans">ABCAB|ABC: one layer sits where HCP would put it. That mistake in the stacking is a planar defect called a stacking fault.</span></li>
+          </ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ RAFT ============ -->
+  <section class="tabpanel" id="p-raft" role="tabpanel" aria-labelledby="t-raft" hidden>
+    <div class="panel">
+      <div class="stage cross"><canvas id="raftCv" aria-label="A live two-dimensional raft of atoms"></canvas><span class="hint" id="raftHint">click an atom: remove it</span></div>
+      <div class="side">
+        <div>
+          <h2>A live raft of atoms</h2>
+          <p style="margin-top:6px">A flat layer of about 1,800 atoms that attract and repel like real ones (a Lennard-Jones model, the same physics as the soap-bubble raft). Heat it and it melts. Cool it and it crystallises. How you cool it decides what you get.</p>
+        </div>
+        <div class="group">
+          <h3>Colour atoms by</h3>
+          <div class="chips" id="raftColor">
+            <button class="chip" data-v="nbr" aria-pressed="true">Number of neighbours</button>
+            <button class="chip" data-v="grain">Grain orientation</button>
+          </div>
+          <div class="legend" id="raftLegend"></div>
+        </div>
+        <div class="group">
+          <h3>Temperature</h3>
+          <div class="chips">
+            <button class="chip" id="raftMelt">Melt</button>
+            <button class="chip" id="raftSlow">Cool slowly</button>
+            <button class="chip" id="raftQuench">Quench</button>
+            <button class="chip" id="raftReset">Perfect crystal</button>
+            <button class="chip" id="raftPause" aria-pressed="false">Pause</button>
+          </div>
+          <div class="range">
+            <label for="raftT">Set temperature (reduced units)</label><output id="raftTOut">0.05</output>
+            <input type="range" id="raftT" min="0.02" max="1.6" step="0.01" value="0.05">
+          </div>
+        </div>
+        <div class="group">
+          <h3>Atom sizes</h3>
+          <div class="chips" id="raftMix">
+            <button class="chip" data-v="one" aria-pressed="true">All one size</button>
+            <button class="chip" data-v="two">Two sizes, 50/50</button>
+          </div>
+        </div>
+        <div class="group">
+          <h3>Click tool</h3>
+          <div class="chips" id="raftTool">
+            <button class="chip" data-v="remove" aria-pressed="true">Remove atom</button>
+            <button class="chip" data-v="big">Swap in a big atom</button>
+            <button class="chip" data-v="small">Swap in a small atom</button>
+            <button class="chip" data-v="poke">Poke (drag)</button>
+          </div>
+        </div>
+        <div class="readout">
+          <dl class="kv">
+            <dt>Temperature</dt><dd id="raftTnow">–</dd>
+            <dt>In crystal sites</dt><dd id="raftOrder">–</dd>
+            <dt>Atoms</dt><dd id="raftN">–</dd>
+          </dl>
+        </div>
+        <details>
+          <summary>Try this in class</summary>
+          <ol>
+            <li>Click a few atoms to remove them. What colour ring appears around each hole?
+              <span class="ans">Amber: each neighbour of a vacancy has lost one of its 6 neighbours.</span></li>
+            <li>Melt, then cool slowly. Melt again, then quench. Switch the colour to grain orientation. Which has more, smaller grains?
+              <span class="ans">The quench. Many crystals start growing at once and meet, so the grains are small. Slow cooling gives fewer, larger grains.</span></li>
+            <li>Switch to two sizes, melt, then quench. Does it crystallise?
+              <span class="ans">Mostly not. The mixed sizes cannot find a repeating pattern before they freeze, so you get a glass (an amorphous solid).</span></li>
+            <li>Find an amber atom touching a teal one inside a grain. What is it?
+              <span class="ans">A 5–7 pair marks a dislocation in this kind of layer: the end of an extra row of atoms.</span></li>
+          </ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DISLOCATIONS ============ -->
+  <section class="tabpanel" id="p-disl" role="tabpanel" aria-labelledby="t-disl" hidden>
+    <div class="panel">
+      <div class="stage"><canvas id="dislCv" aria-label="An edge dislocation gliding through a crystal"></canvas></div>
+      <div class="side">
+        <div>
+          <h2>Why metals bend at a fraction of their ideal strength</h2>
+          <p style="margin-top:6px">Sliding the top half of a crystal over the bottom half all at once means breaking every bond across the slip plane at the same time. A <strong>dislocation</strong>, the edge of an extra half-plane of atoms (red), lets the slip happen one bond at a time, like pushing a wrinkle across a rug.</p>
+        </div>
+        <div class="group">
+          <h3>How the top half moves</h3>
+          <div class="chips" id="dislMode">
+            <button class="chip" data-v="disl" aria-pressed="true">With a dislocation</button>
+            <button class="chip" data-v="rigid">Whole plane at once</button>
+          </div>
+        </div>
+        <div class="range">
+          <label for="dislTau">Applied shear stress</label><output id="dislTauOut">30</output>
+          <input type="range" id="dislTau" min="0" max="100" step="1" value="30">
+        </div>
+        <div class="chips">
+          <button class="chip go" id="dislGo">Push</button>
+          <button class="chip" id="dislStep">Step one atom</button>
+          <button class="chip" id="dislReset">Reset</button>
+        </div>
+        <div class="group">
+          <h3>Obstacles and tools</h3>
+          <div class="chips">
+            <button class="chip" id="dislSolute" aria-pressed="false">Big solute atom</button>
+            <button class="chip" id="dislGB" aria-pressed="false">Grain boundary</button>
+            <button class="chip" id="dislBurgers" aria-pressed="false">Burgers circuit</button>
+          </div>
+        </div>
+        <div class="readout">
+          <dl class="kv">
+            <dt>Bonds breaking now</dt><dd id="dislBroken">–</dd>
+            <dt>Stress needed here</dt><dd id="dislNeed">–</dd>
+            <dt>Status</dt><dd id="dislStatus" class="status" style="font-family:var(--body)">–</dd>
+          </dl>
+        </div>
+        <p class="cap">Stress is on a schematic 0–100 scale, where 100 is the ideal strength of a perfect crystal. Real values depend on the metal. The Burgers circuit takes the same number of atom steps right, up, left and down; if it does not close, the gap is the Burgers vector <b>b</b>.</p>
+        <details>
+          <summary>Try this in class</summary>
+          <ol>
+            <li>With a dislocation, how much stress does it take to slip the crystal? And for the whole plane at once?
+              <span class="ans">A small push moves the dislocation. The whole plane needs nearly the ideal strength, because every bond across the plane breaks at the same moment.</span></li>
+            <li>Turn on the Burgers circuit and step the dislocation into it. What happens to the circuit?
+              <span class="ans">It no longer closes. The missing step is the Burgers vector, one atom spacing along the slip direction.</span></li>
+            <li>When the dislocation leaves the crystal, look at the right-hand edge. What is left behind?
+              <span class="ans">A step one atom spacing high. Millions of these steps make the slip lines you can see on a deformed metal.</span></li>
+            <li>Add the solute atom, then the grain boundary. What does each one do?
+              <span class="ans">Both pin the dislocation, so a higher stress is needed to keep it moving. That is solid-solution and grain-size strengthening.</span></li>
+          </ol>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <footer>ES 192 Materials Selection in Mechanical Design · Harvard SEAS · Fall 2026. Models are teaching schematics: bond-curve shapes, raft temperatures and dislocation stresses show trends. Bond energies, melting points, atomic radii and densities are measured values from the sources named.</footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+"use strict";
+const $ = (s, el) => (el || document).querySelector(s);
+const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
+const tok = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduceMotion = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const ease = t => 1 - Math.pow(1 - t, 3);
+
+function hexRgb(h) {
+  h = h.replace("#", ""); if (h.length === 3) h = h.split("").map(c => c + c).join("");
+  const n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+function mix(a, b, t) {
+  const A = hexRgb(a), B = hexRgb(b);
+  return "rgb(" + A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(",") + ")";
+}
+function rgba(h, a) { const c = hexRgb(h); return "rgba(" + c.join(",") + "," + a + ")"; }
+/* A shaded sphere for 2D canvases: lit from the upper left. */
+function ball(ctx, x, y, r, col, opts) {
+  opts = opts || {};
+  const g = ctx.createRadialGradient(x - r * 0.38, y - r * 0.42, r * 0.08, x, y, r);
+  g.addColorStop(0, mix(col, "#ffffff", 0.55));
+  g.addColorStop(0.45, col);
+  g.addColorStop(1, mix(col, "#000000", 0.45));
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+  if (opts.ring) { ctx.strokeStyle = opts.ring; ctx.lineWidth = opts.ringW || 2; ctx.stroke(); }
+}
+/* A text label on its own small panel, so it stays readable over atoms. */
+function tag(ctx, text, x, y, align, color) {
+  ctx.font = "600 12px " + tok("--mono");
+  const w = ctx.measureText(text).width + 12, h = 20;
+  const x0 = align === "right" ? x - w : align === "center" ? x - w / 2 : x;
+  ctx.fillStyle = tok("--panel"); ctx.strokeStyle = color; ctx.lineWidth = 1;
+  ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x0, y - h / 2, w, h, 4); else ctx.rect(x0, y - h / 2, w, h); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = color; ctx.textAlign = "left"; ctx.textBaseline = "middle"; ctx.fillText(text, x0 + 6, y + 1); ctx.textBaseline = "alphabetic";
+}
+function fit(cv, aspect, maxH, minH) {
+  const w = Math.max(220, cv.parentElement.clientWidth);
+  let h = Math.round(w * aspect);
+  if (maxH) h = Math.min(h, maxH);
+  if (minH) h = Math.max(h, minH);
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) {
+    cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
+    cv.style.height = h + "px";
+  }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx, w, h };
+}
+function pressGroup(container, onPick) {
+  $$("[data-v]", container).forEach(b => b.addEventListener("click", () => {
+    $$("[data-v]", container).forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+    onPick(b.dataset.v);
+  }));
+}
+function setPressed(container, v) { $$("[data-v]", container).forEach(x => x.setAttribute("aria-pressed", x.dataset.v === v ? "true" : "false")); }
+function toggle(btn, fn) {
+  btn.addEventListener("click", () => {
+    const on = btn.getAttribute("aria-pressed") !== "true";
+    btn.setAttribute("aria-pressed", on ? "true" : "false");
+    fn(on);
+  });
+}
+const FONT = { mono: () => tok("--mono"), body: () => tok("--body") };
+
+/* ------------------------------------------------------------------ tabs */
+const tabs = {};
+let active = "bonds";
+function show(name) {
+  if (!document.getElementById("p-" + name)) name = "bonds";
+  active = name;
+  $$("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === name ? "true" : "false"));
+  $$(".tabpanel").forEach(p => { p.hidden = p.id !== "p-" + name; });
+  try { history.replaceState(null, "", "#" + name); } catch (e) {}
+  if (tabs[name] && tabs[name].shown) tabs[name].shown();
+}
+$$("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.tab)));
+toggle($("#presentBtn"), on => {
+  document.body.classList.toggle("present", on);
+  try {
+    if (on && document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(() => {});
+    if (!on && document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  } catch (e) {}
+  setTimeout(() => { const t = tabs[active]; if (t && t.resize) t.resize(); }, 150);
+});
+document.addEventListener("fullscreenchange", () => {
+  if (!document.fullscreenElement && document.body.classList.contains("present")) {
+    document.body.classList.remove("present"); $("#presentBtn").setAttribute("aria-pressed", "false");
+    setTimeout(() => { const t = tabs[active]; if (t && t.resize) t.resize(); }, 150);
+  }
+});
+
+/* ---------------------------------------------------------------- 3D viewer */
+const has3D = typeof THREE !== "undefined";
+function makeViewer(host) {
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.localClippingEnabled = true;
+  host.prepend(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 200);
+  scene.add(camera);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x3a4252, 0.85));
+  const key = new THREE.DirectionalLight(0xffffff, 0.95); key.position.set(-3, 5, 6); camera.add(key);
+  const rim = new THREE.DirectionalLight(0xbfd4ff, 0.35); rim.position.set(5, -2, -4); camera.add(rim);
+  const root = new THREE.Group(); scene.add(root);
+  const v = { renderer, scene, camera, root, rotX: 0.45, rotY: 0.65, dist: 9, spin: false, planes: [], dirty: true, onClick: null, onFrame: null };
+  const el = renderer.domElement;
+  const pts = new Map(); let drag = null, pinch0 = null, down = null;
+  el.addEventListener("pointerdown", e => {
+    pts.set(e.pointerId, e); el.setPointerCapture(e.pointerId);
+    drag = { x: e.clientX, y: e.clientY }; down = { x: e.clientX, y: e.clientY, moved: 0 };
+  });
+  el.addEventListener("pointermove", e => {
+    if (pts.has(e.pointerId)) pts.set(e.pointerId, e);
+    if (pts.size === 2) {
+      const [a, b] = Array.from(pts.values()); const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      if (pinch0) { v.dist = clamp(v.dist * pinch0 / d, 3, 40); v.dirty = true; }
+      pinch0 = d; drag = null; if (down) down.moved = 99; return;
+    }
+    if (!drag) return;
+    const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    v.rotY += dx * 0.01; v.rotX = clamp(v.rotX + dy * 0.01, -1.57, 1.57);
+    if (down) down.moved += Math.abs(dx) + Math.abs(dy);
+    drag = { x: e.clientX, y: e.clientY }; v.dirty = true;
+  });
+  const up = e => {
+    pts.delete(e.pointerId); if (pts.size < 2) pinch0 = null;
+    if (down && down.moved < 6 && v.onClick && pts.size === 0) {
+      const r = el.getBoundingClientRect();
+      v.onClick(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1));
+    }
+    drag = null; down = null;
+  };
+  el.addEventListener("pointerup", up); el.addEventListener("pointercancel", e => { pts.delete(e.pointerId); drag = null; down = null; });
+  el.addEventListener("wheel", e => { e.preventDefault(); v.dist = clamp(v.dist * (1 + e.deltaY * 0.001), 3, 40); v.dirty = true; }, { passive: false });
+  function size() {
+    const w = host.clientWidth, h = host.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h);
+    camera.aspect = w / h; camera.updateProjectionMatrix(); v.dirty = true;
+  }
+  new ResizeObserver(size).observe(host);
+  v.size = size;
+  v.render = () => {
+    if (v.spin && !drag && !reduceMotion) { v.rotY += 0.004; v.dirty = true; }
+    if (v.onFrame && v.onFrame()) v.dirty = true;
+    if (!v.dirty) return;
+    root.rotation.set(v.rotX, v.rotY, 0, "XYZ");
+    camera.position.set(0, 0, v.dist); camera.lookAt(0, 0, 0);
+    root.updateMatrixWorld(true);
+    v.planes.forEach(p => p.world.copy(p.local).applyMatrix4(root.matrixWorld));
+    renderer.render(scene, camera);
+    v.dirty = false;
+  };
+  v.clear = () => {
+    while (root.children.length) {
+      const c = root.children.pop();
+      c.traverse(o => { if (o.geometry && o.geometry !== sphereGeo) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
+    v.planes = []; v.dirty = true;
+  };
+  v.pick = (ndc, objects) => {
+    root.updateMatrixWorld(true);
+    const rc = new THREE.Raycaster(); rc.setFromCamera(ndc, camera);
+    const hits = rc.intersectObjects(objects, false);
+    return hits.length ? hits[0].object : null;
+  };
+  return v;
+}
+const sphereGeo = has3D ? new THREE.SphereGeometry(1, 48, 32) : null;
+function mat(color, opts) {
+  return new THREE.MeshStandardMaterial(Object.assign({ color: new THREE.Color(color), roughness: 0.32, metalness: 0.18 }, opts || {}));
+}
+function clipPlanesFrom(v, defs) {
+  return defs.map(d => { const local = new THREE.Plane(new THREE.Vector3(d[0], d[1], d[2]), d[3]); const p = { local, world: local.clone() }; v.planes.push(p); return p.world; });
+}
+
+/* ================================================================== BONDS */
+(function bonds() {
+  const DATA = [
+    { n: "NaCl", t: "ionic", E: 640, Tm: 801, a: ["Na", "Cl"], q: ["⁺", "⁻"] },
+    { n: "LiF", t: "ionic", E: 850, Tm: 848, a: ["Li", "F"], q: ["⁺", "⁻"] },
+    { n: "MgO", t: "ionic", E: 1000, Tm: 2800, a: ["Mg", "O"], q: ["²⁺", "²⁻"], k: 2 },
+    { n: "CaF₂", t: "ionic", E: 1548, Tm: 1418, a: ["Ca", "F"], q: ["²⁺", "⁻"], k: 2 },
+    { n: "Cl₂ (in molecule)", s: "Cl₂", t: "covalent", E: 121, Tm: -102, a: ["Cl", "Cl"] },
+    { n: "Si", t: "covalent", E: 450, Tm: 1410, a: ["Si", "Si"] },
+    { n: "InSb", t: "covalent", E: 523, Tm: 942, a: ["In", "Sb"] },
+    { n: "C (diamond)", s: "C", t: "covalent", E: 713, Tm: 3550, gt: true, a: ["C", "C"] },
+    { n: "SiC", t: "covalent", E: 1230, Tm: 2830, a: ["Si", "C"] },
+    { n: "Hg", t: "metallic", E: 62, Tm: -39, a: ["Hg", "Hg"] },
+    { n: "Al", t: "metallic", E: 330, Tm: 660, a: ["Al", "Al"] },
+    { n: "Ag", t: "metallic", E: 285, Tm: 962, a: ["Ag", "Ag"] },
+    { n: "W", t: "metallic", E: 850, Tm: 3414, a: ["W", "W"] },
+    { n: "Ar", t: "vdw", E: 7.7, Tm: -189, a: ["Ar", "Ar"] },
+    { n: "Kr", t: "vdw", E: 11.7, Tm: -158, a: ["Kr", "Kr"] },
+    { n: "CH₄", t: "vdw", E: 18, Tm: -182, a: ["CH₄", "CH₄"] },
+    { n: "Cl₂ (between)", s: "Cl₂", t: "vdw", E: 31, Tm: -101, a: ["Cl₂", "Cl₂"] },
+    { n: "HF", t: "hyd", E: 29, Tm: -83, a: ["F", "F"], nh: 1 },
+    { n: "NH₃", t: "hyd", E: 35, Tm: -78, a: ["N", "N"], nh: 3 },
+    { n: "H₂O", t: "hyd", E: 51, Tm: 0, a: ["O", "O"], nh: 2 }
+  ];
+  const TYPES = {
+    ionic: { name: "Ionic bond", col: "--accent", d: "One atom gives up electrons and another takes them. The resulting + and − ions attract each other equally in every direction. The bond is strong but not directional. Ionic crystals such as table salt are hard, brittle and split along flat planes." },
+    covalent: { name: "Covalent bond", col: "--teal", d: "Neighbouring atoms share pairs of electrons. Each shared pair points in a fixed direction, so the atoms lock into a rigid network. Covalent solids such as diamond and silicon carbide are very hard, melt at high temperatures and are brittle." },
+    metallic: { name: "Metallic bond", col: "--atom", d: "Each atom releases its outer electrons into a shared “sea” that belongs to the whole crystal. Positive ion cores sit in that sea. The bond does not point in any direction, so rows of atoms can slide past each other without breaking apart. That is why metals bend instead of snapping." },
+    vdw: { name: "Van der Waals bond", col: "--amber", d: "No electrons are given or shared. The electron cloud of an atom is never perfectly even, so for an instant one side is slightly − and the other slightly +. That imbalance attracts the neighbour weakly. These bonds hold polymer chains to each other, which is why many polymers soften at modest temperatures." },
+    hyd: { name: "Hydrogen bond", col: "--amber", d: "A hydrogen atom bonded to O, N or F is left slightly positive. It attracts the negative end of a neighbouring molecule. Hydrogen bonds are stronger than van der Waals bonds but still roughly ten times weaker than ionic, covalent or metallic bonds." }
+  };
+  const ELCOL = { Na: "--amber", Li: "--amber", Mg: "--amber", Ca: "--amber", Cl: "--teal", F: "--teal", O: "--accent", N: "--teal" };
+  const A = 3.0; // Morse width parameter: schematic shape, same for every substance
+  const U = (D, x) => D * (Math.exp(-2 * A * (x - 1)) - 2 * Math.exp(-A * (x - 1)));
+  const UR = (D, x) => D * Math.exp(-2 * A * (x - 1));
+  const UA = (D, x) => -2 * D * Math.exp(-A * (x - 1));
+  const F = (D, x) => 2 * D * A * (Math.exp(-A * (x - 1)) - Math.exp(-2 * A * (x - 1)));
+  const xPeak = 1 + Math.log(2) / A;
+  let sel = DATA[0], x = 1, parts = true, anim = null, transfer = 1;
+  const chips = $("#bondChips");
+  DATA.forEach((d, i) => {
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = d.n; b.dataset.i = i;
+    b.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+    b.addEventListener("click", () => pick(i));
+    chips.appendChild(b);
+  });
+  function pick(i) {
+    sel = DATA[i]; anim = null; transfer = 1;
+    $$("button", chips).forEach(b => b.setAttribute("aria-pressed", +b.dataset.i === i ? "true" : "false"));
+    $("#bondTitle").textContent = TYPES[sel.t].name;
+    $("#bondDesc").textContent = TYPES[sel.t].d;
+    $("#bondE").textContent = sel.E + " kJ/mol";
+    $("#bondTm").textContent = (sel.gt ? "> " : "") + sel.Tm + " °C";
+    drawAll();
+  }
+  const rIn = $("#bondR");
+  function setX(v) { x = clamp(v, 0.86, 2.6); rIn.value = x.toFixed(2); }
+  rIn.addEventListener("input", () => { anim = null; x = +rIn.value; transfer = 1; drawAll(true); });
+  $("#bondForm").addEventListener("click", () => {
+    anim = { kind: "form", t: 0 }; setX(2.6); transfer = sel.t === "ionic" ? 0 : 1;
+    if (reduceMotion) { anim = null; setX(1); transfer = 1; }
+    drawAll();
+  });
+  $("#bondBreak").addEventListener("click", () => {
+    anim = { kind: "break", t: 0, from: x }; transfer = 1;
+    if (reduceMotion) { anim = null; setX(2.6); }
+    drawAll();
+  });
+  toggle($("#bondParts"), on => { parts = on; drawAll(); });
+
+  function stateText() {
+    if (anim && anim.kind === "form" && sel.t === "ionic" && transfer < 1) return "The electron jumps from " + sel.a[0] + " to " + sel.a[1] + ". Now one is + and the other is −.";
+    if (x < 0.98) return "Squeezed: the atoms push back.";
+    if (x <= 1.02) return "At r₀: no force. This is where the atoms sit.";
+    if (x < xPeak - 0.02) return "Stretched: the bond pulls back like a spring. This is elastic behaviour.";
+    if (x <= xPeak + 0.02) return "At the peak force: this is the bond's strength.";
+    if (x < 2.2) return "Past the peak: the bond is giving way.";
+    return "Broken: the atoms no longer hold each other.";
+  }
+
+  /* --- the pair of atoms, drawn as shaded spheres */
+  const sea = Array.from({ length: 46 }, () => ({ u: Math.random() * 2 - 1, v: Math.random() * 2 - 1, du: (Math.random() - .5) * .02, dv: (Math.random() - .5) * .02 }));
+  let tph = 0;
+  function drawPair() {
+    const cv = $("#bondPair"); const { ctx, w, h } = fit(cv, 0.36, 250, 190);
+    ctx.clearRect(0, 0, w, h);
+    const ink = tok("--ink"), muted = tok("--muted"), col = tok(TYPES[sel.t].col);
+    const cy = h / 2 - 6, base = Math.min(w * 0.16, 118);
+    const sep = base * x, cx = w / 2;
+    const xa = cx - sep / 2, xb = cx + sep / 2;
+    const broken = x > 2.2;
+    const mono = FONT.mono(), body = FONT.body();
+    let ra = 30, rb = 30;
+    if (sel.t === "ionic") { ra = transfer >= 0.5 ? 21 : 30; rb = transfer >= 0.5 ? 36 : 28; }
+    const label = (X, Y, s, size) => { ctx.fillStyle = "#fff"; ctx.font = "700 " + (size || 15) + "px " + body; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 3; ctx.fillText(s, X, Y + 1); ctx.shadowBlur = 0; };
+    const cloud = (X, Y, r, c, a) => { const g = ctx.createRadialGradient(X, Y, r * 0.2, X, Y, r); g.addColorStop(0, rgba(c, a)); g.addColorStop(1, rgba(c, 0)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(X, Y, r, 0, Math.PI * 2); ctx.fill(); };
+    ctx.textBaseline = "alphabetic";
+    if (sel.t === "metallic") {
+      // a few more cores in the sea so the "shared" idea reads
+      const seaW = sep + 150, seaH = 120;
+      const g = ctx.createLinearGradient(0, cy - seaH / 2, 0, cy + seaH / 2);
+      g.addColorStop(0, rgba(tok("--teal"), 0.10)); g.addColorStop(0.5, rgba(tok("--teal"), 0.22)); g.addColorStop(1, rgba(tok("--teal"), 0.10));
+      ctx.fillStyle = g; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(cx - seaW / 2, cy - seaH / 2, seaW, seaH, 40); else ctx.rect(cx - seaW / 2, cy - seaH / 2, seaW, seaH); ctx.fill();
+      ctx.fillStyle = tok("--teal");
+      sea.forEach(e => {
+        if (!reduceMotion) { e.u += e.du; e.v += e.dv; if (Math.abs(e.u) > 1) e.du *= -1; if (Math.abs(e.v) > 1) e.dv *= -1; }
+        ctx.beginPath(); ctx.arc(cx + e.u * (seaW / 2 - 14), cy + e.v * (seaH / 2 - 10), 2.6, 0, Math.PI * 2); ctx.fill();
+      });
+      [xa - sep, xb + sep].forEach(X => { if (X > cx - seaW / 2 + 20 && X < cx + seaW / 2 - 20) { ctx.globalAlpha = 0.45; ball(ctx, X, cy, 26, tok("--atom")); ctx.globalAlpha = 1; } });
+      ball(ctx, xa, cy, ra, tok("--atom")); label(xa, cy, sel.a[0] + "⁺");
+      ball(ctx, xb, cy, rb, tok("--atom")); label(xb, cy, sel.a[1] + "⁺");
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("positive ion cores in a shared sea of electrons", cx, h - 10);
+    } else if (sel.t === "ionic") {
+      const ca = tok(ELCOL[sel.a[0]] || "--amber"), cb = tok(ELCOL[sel.a[1]] || "--teal");
+      // attraction field lines
+      if (!broken && transfer >= 0.5) {
+        ctx.strokeStyle = rgba(tok("--accent"), clamp(1.6 - (x - 1), 0.15, 0.8)); ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
+        [-14, 0, 14].forEach(dy => { ctx.beginPath(); ctx.moveTo(xa + ra * 0.9, cy + dy); ctx.quadraticCurveTo(cx, cy + dy * 1.6, xb - rb * 0.9, cy + dy); ctx.stroke(); });
+        ctx.setLineDash([]);
+      }
+      ball(ctx, xa, cy, ra, ca); label(xa, cy, sel.a[0] + (transfer >= 0.5 ? sel.q[0] : ""));
+      ball(ctx, xb, cy, rb, cb); label(xb, cy, sel.a[1] + (transfer >= 0.5 ? sel.q[1] : ""));
+      // the travelling electron(s)
+      if (transfer < 1) {
+        const k = sel.k || 1;
+        for (let i = 0; i < k; i++) {
+          const t = clamp(transfer * 1.1 - i * 0.1, 0, 1);
+          const ex = xa + (xb - xa) * t, ey = cy - 44 * Math.sin(Math.PI * t) - 8;
+          ctx.fillStyle = tok("--ink"); ctx.beginPath(); ctx.arc(ex + i * 8, ey, 4.5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "center"; if (i === 0) ctx.fillText("e⁻", ex, ey - 10);
+        }
+      }
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center";
+      if (transfer >= 0.5) { ctx.fillText("gave up " + ((sel.k || 1) > 1 ? "2 electrons" : "1 electron"), xa, cy + 56); ctx.fillText("took " + (sel.q[1] === "²⁻" ? "2 electrons" : "1 electron"), xb, cy + 56); }
+      else { ctx.fillText("neutral atoms", cx, cy + 56); }
+    } else if (sel.t === "covalent") {
+      const c1 = tok("--atom"), c2 = sel.a[0] === sel.a[1] ? tok("--atom") : tok("--teal");
+      const ov = clamp(1.25 - (x - 1) * 1.1, 0, 1);
+      cloud(xa, cy, 62, tok("--teal"), 0.22); cloud(xb, cy, 62, tok("--teal"), 0.22);
+      if (!broken) cloud(cx, cy, 30 + 20 * ov, tok("--teal"), 0.35 * ov);
+      ball(ctx, xa, cy, ra, c1); label(xa, cy, sel.a[0]);
+      ball(ctx, xb, cy, rb, c2); label(xb, cy, sel.a[1]);
+      ctx.fillStyle = ink;
+      if (!broken) {
+        [-6, 6].forEach(dx => { ctx.beginPath(); ctx.arc(cx + dx, cy - 2, 3.8, 0, Math.PI * 2); ctx.fill(); });
+        ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("shared electron pair", cx, cy - 46);
+      } else {
+        [xa + ra + 8, xb - rb - 8].forEach(X => { ctx.beginPath(); ctx.arc(X, cy, 3.8, 0, Math.PI * 2); ctx.fill(); });
+        ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("each atom keeps one electron", cx, cy - 46);
+      }
+    } else if (sel.t === "vdw") {
+      const flick = reduceMotion ? 0.5 : Math.sin(tph * 2.6);
+      [xa, xb].forEach(X => cloud(X + flick * 9, cy, 52, tok("--amber"), 0.32));
+      ball(ctx, xa, cy, ra, tok("--atom")); label(xa, cy, sel.a[0], sel.a[0].length > 2 ? 13 : 15);
+      ball(ctx, xb, cy, rb, tok("--atom")); label(xb, cy, sel.a[1], sel.a[1].length > 2 ? 13 : 15);
+      if (!broken) { ctx.strokeStyle = rgba(tok("--amber"), clamp(1.4 - (x - 1), 0.15, 0.9)); ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xa + ra + 6, cy); ctx.lineTo(xb - rb - 6, cy); ctx.stroke(); ctx.setLineDash([]); }
+      const s = flick >= 0 ? ["δ−", "δ+"] : ["δ+", "δ−"];
+      ctx.fillStyle = ink; ctx.font = "600 14px " + mono; ctx.textAlign = "center";
+      [xa, xb].forEach(X => { ctx.fillText(s[1], X + 22, cy - 40); ctx.fillText(s[0], X - 22, cy - 40); });
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("the electron cloud sloshes: a passing + / − imbalance", cx, h - 10);
+    } else {
+      // hydrogen bond: heavy atom with H atoms; one H of the left molecule points at the right molecule
+      const heavy = tok(ELCOL[sel.a[0]] || "--accent"), hcol = "#e9edf2";
+      const rH = 13, dOH = 34;
+      // H positions (radians, 0 = pointing right). H-O-H 104.5°, H-N-H about 107°.
+      const GEO = { 1: { lead: [0], acc: [0] }, 2: { lead: [0, 1.824], acc: [0.912, -0.912] }, 3: { lead: [0, 1.87, -1.87], acc: [0, 1.1, -1.1] } };
+      const drawMol = (X, dir, nh, lead) => {
+        const angs = (lead ? GEO[nh].lead : GEO[nh].acc).slice();
+        angs.forEach(a => ball(ctx, X + Math.cos(a) * dOH, cy - Math.sin(a) * dOH, rH, hcol));
+        ball(ctx, X, cy, 24, heavy); label(X, cy, sel.a[0]);
+        angs.forEach(a => { ctx.fillStyle = "#334"; ctx.font = "700 11px " + body; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText("H", X + Math.cos(a) * dOH, cy - Math.sin(a) * dOH + 1); });
+        ctx.textBaseline = "alphabetic";
+      };
+      drawMol(xa - 10, 1, sel.nh, true);
+      drawMol(xb + 10, -1, sel.nh, false);
+      if (!broken) { ctx.strokeStyle = rgba(tok("--amber"), clamp(1.4 - (x - 1), 0.15, 0.95)); ctx.setLineDash([3, 5]); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(xa - 10 + dOH + rH + 2, cy); ctx.lineTo(xb + 10 - 26, cy); ctx.stroke(); ctx.setLineDash([]); }
+      ctx.fillStyle = ink; ctx.font = "600 13px " + mono; ctx.textAlign = "center";
+      ctx.fillText("δ+", xa - 10 + dOH, cy - 22); ctx.fillText("δ−", xb + 10, cy - 34);
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("H on one molecule attracts " + sel.a[0] + " on the next", cx, h - 10);
+    }
+    ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "left"; ctx.fillText("r = " + x.toFixed(2) + " r₀", 12, 20);
+    if (broken && !(anim && anim.kind === "form")) { ctx.fillStyle = tok("--accent"); ctx.textAlign = "right"; ctx.font = "600 13px " + mono; ctx.fillText("bond broken", w - 12, 20); }
+  }
+
+  /* --- energy and force plots */
+  /* the plot's static layer (grid, every curve, labels) is cached; each frame only the moving marker is drawn */
+  let plotCache = null, plotKey = "", plotGeo = null;
+  function drawPlot() {
+    const cv = $("#bondPlot"); const fitted = fit(cv, 0.64, 450, 340); const main = fitted.ctx, w = fitted.w, h = fitted.h;
+    const key = [sel.n, parts, w, h, tok("--ink"), tok("--accent")].join("|");
+    if (key !== plotKey || !plotCache) { plotKey = key; plotGeo = staticPlot(w, h); }
+    main.clearRect(0, 0, w, h);
+    main.drawImage(plotCache, 0, 0, w, h);
+    const g = plotGeo, acc = tok("--accent");
+    g.panels.forEach(p => {
+      main.save(); main.beginPath(); main.rect(g.L, p.top, w - g.L - g.R, g.ph); main.clip();
+      main.strokeStyle = rgba(acc, 0.5); main.setLineDash([2, 4]); main.lineWidth = 1; main.beginPath(); main.moveTo(g.X(x), p.top); main.lineTo(g.X(x), p.top + g.ph); main.stroke(); main.setLineDash([]);
+      ball(main, g.X(x), clamp(p.Y(p.fn(sel.E, x)), p.top + 4, p.top + g.ph - 4), 6.5, acc);
+      main.restore();
+    });
+  }
+  function staticPlot(w, h) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    plotCache = plotCache || document.createElement("canvas");
+    plotCache.width = Math.round(w * dpr); plotCache.height = Math.round(h * dpr);
+    const ctx = plotCache.getContext("2d"); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, w, h);
+    const panels = [];
+    const ink = tok("--ink"), muted = tok("--muted"), rule = tok("--rule"), col = tok(TYPES[sel.t].col), acc = tok("--accent");
+    const mono = FONT.mono();
+    const L = 66, R = 16, gap = 30, T = 14, B = 34;
+    const ph = (h - T - B - gap) / 2;
+    const x0 = 0.86, x1 = 2.6;
+    const X = v => L + (v - x0) / (x1 - x0) * (w - L - R);
+    function curve(fn, D, Y, color, lw, dash, nPts) {
+      const n = nPts || 260;
+      ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash || []);
+      ctx.beginPath(); for (let i = 0; i <= n; i++) { const xv = x0 + (x1 - x0) * i / n; const yv = Y(fn(D, xv)); i ? ctx.lineTo(X(xv), yv) : ctx.moveTo(X(xv), yv); } ctx.stroke(); ctx.setLineDash([]);
+    }
+    function panel(top, ymin, ymax, fn, title, ticks, extra) {
+      const Y = v => top + (ymax - v) / (ymax - ymin) * ph;
+      ctx.fillStyle = rgba(tok("--panel"), 0.55); ctx.fillRect(L, top, w - L - R, ph);
+      ctx.strokeStyle = rule; ctx.lineWidth = 1; ctx.strokeRect(L, top, w - L - R, ph);
+      ticks.forEach(([v]) => { ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); });
+      [1, 1.5, 2, 2.5].forEach(t => { ctx.beginPath(); ctx.moveTo(X(t), top); ctx.lineTo(X(t), top + ph); ctx.stroke(); });
+      ctx.strokeStyle = muted; ctx.beginPath(); ctx.moveTo(L, Y(0)); ctx.lineTo(w - R, Y(0)); ctx.stroke();
+      ctx.save(); ctx.beginPath(); ctx.rect(L, top, w - L - R, ph); ctx.clip();
+      DATA.forEach(d => { if (d !== sel) curve(fn, d.E, Y, rgba(tok("--muted"), 0.16), 1, null, 120); });
+      if (extra) extra(Y);
+      curve(fn, sel.E, Y, col, 3);
+      ctx.restore();
+      panels.push({ top, Y, fn });
+      ctx.fillStyle = ink; ctx.font = "600 13px " + mono; ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+      ctx.fillText(title, L + 10, top + 18);
+      ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "right";
+      ticks.forEach(([v, s]) => ctx.fillText(s, L - 7, Y(v) + 4));
+      return Y;
+    }
+    const Ytop = panel(T, -1700, 900, U, "Energy  (kJ/mol)", [[0, "0"], [-800, "−800"], [-1600, "−1600"], [800, "+800"]], Y => {
+      if (!parts) return;
+      curve(UR, sel.E, Y, rgba(tok("--teal"), 0.9), 1.6, [6, 4]);
+      curve(UA, sel.E, Y, rgba(tok("--amber"), 0.9), 1.6, [6, 4]);
+    });
+    ctx.strokeStyle = acc; ctx.setLineDash([3, 4]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(X(1), Ytop(0)); ctx.lineTo(X(1), Ytop(-sel.E)); ctx.stroke(); ctx.setLineDash([]);
+    tag(ctx, "well depth " + sel.E + " kJ/mol", X(1) + 8, sel.E < 150 ? Ytop(0) + 16 : (Ytop(0) + Ytop(-sel.E)) / 2, "left", acc);
+    if (parts) {
+      ctx.textAlign = "right"; ctx.font = "12px " + mono;
+      ctx.fillStyle = tok("--teal"); ctx.fillText("- - repulsion (electron clouds overlap)", w - R - 8, T + 18);
+      ctx.fillStyle = tok("--amber"); ctx.fillText("- - attraction", w - R - 8, T + 34);
+      ctx.fillStyle = col; ctx.fillText("—— net energy", w - R - 8, T + 50);
+    }
+    const Fmax = 1548 * A / 2;
+    const top2 = T + ph + gap;
+    const Yb = panel(top2, -0.6 * Fmax, 1.2 * Fmax, F, "Force needed to hold them at r", [[0, "0"]]);
+    const pk = sel.E * A / 2;
+    ctx.strokeStyle = muted; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(X(xPeak), Yb(pk)); ctx.lineTo(X(xPeak), Yb(0)); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "left";
+    ctx.fillText("peak = bond strength", X(xPeak) + 8, Math.max(Yb(pk) - 6, top2 + 34));
+    ctx.fillText("pull →", w - R - 50, Yb(0) - 6);
+    ctx.textAlign = "center"; ctx.fillStyle = muted;
+    for (const t of [1, 1.5, 2, 2.5]) ctx.fillText(t === 1 ? "r₀" : t + " r₀", X(t), h - 12);
+    return { L, R, ph, X, panels };
+  }
+
+  /* --- scatter: bond energy vs melting temperature */
+  let pts = [], hover = -1;
+  function drawScatter() {
+    const cv = $("#bondScatter"); const { ctx, w, h } = fit(cv, 0.4, 380, 280);
+    ctx.clearRect(0, 0, w, h);
+    const ink = tok("--ink"), muted = tok("--muted"), rule = tok("--rule");
+    const mono = FONT.mono();
+    const L = 66, R = 20, T = 34, B = 46;
+    const lx0 = Math.log10(5), lx1 = Math.log10(2500);
+    const X = E => L + (Math.log10(E) - lx0) / (lx1 - lx0) * (w - L - R);
+    const Y = t => T + (3800 - t) / (3800 + 300) * (h - T - B);
+    ctx.strokeStyle = rule; ctx.lineWidth = 1; ctx.font = "12px " + mono; ctx.fillStyle = muted;
+    [10, 30, 100, 300, 1000].forEach(E => { ctx.beginPath(); ctx.moveTo(X(E), T); ctx.lineTo(X(E), h - B); ctx.stroke(); ctx.textAlign = "center"; ctx.fillText(E, X(E), h - B + 16); });
+    [0, 1000, 2000, 3000].forEach(t => { ctx.beginPath(); ctx.moveTo(L, Y(t)); ctx.lineTo(w - R, Y(t)); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(t, L - 7, Y(t) + 4); });
+    ctx.textAlign = "center"; ctx.fillText("Bond energy (kJ/mol, log scale)", L + (w - L - R) / 2, h - 10);
+    ctx.save(); ctx.translate(16, T + (h - T - B) / 2); ctx.rotate(-Math.PI / 2); ctx.fillText("Melting point (°C)", 0, 0); ctx.restore();
+    pts = [];
+    const small = w < 600;
+    DATA.forEach((d, i) => {
+      const px = X(d.E), py = Y(d.Tm);
+      pts.push({ i, px, py });
+      const c = tok(TYPES[d.t].col);
+      ball(ctx, px, py, d === sel ? 8 : (i === hover ? 7 : 5.5), c);
+      if (d === sel) { ctx.strokeStyle = ink; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(px, py, 12, 0, Math.PI * 2); ctx.stroke(); }
+      if (d.gt) { ctx.strokeStyle = c; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(px, py - 10); ctx.lineTo(px, py - 22); ctx.moveTo(px - 4, py - 17); ctx.lineTo(px, py - 22); ctx.lineTo(px + 4, py - 17); ctx.stroke(); }
+      if (!small || d === sel) {
+        ctx.fillStyle = d === sel ? ink : muted; ctx.textAlign = "left"; ctx.font = (d === sel ? "600 " : "") + "12px " + mono;
+        ctx.fillText(d.s || d.n, px + 10, py - 8);
+      }
+    });
+    const items = [["ionic", "ionic"], ["covalent", "covalent"], ["metallic", "metallic"], ["vdw", "van der Waals / hydrogen"]];
+    let lx = L + 6; ctx.font = "12px " + mono; ctx.textAlign = "left";
+    items.forEach(([k, s]) => { ball(ctx, lx, 16, 5, tok(TYPES[k].col)); ctx.fillStyle = muted; ctx.fillText(s, lx + 10, 20); lx += ctx.measureText(s).width + 32; });
+  }
+  const sc = $("#bondScatter"), tip = $("#scatterTip");
+  function nearest(e) {
+    const r = sc.getBoundingClientRect(); const mx = e.clientX - r.left, my = e.clientY - r.top;
+    let best = null, bd = 18; pts.forEach(p => { const d = Math.hypot(p.px - mx, p.py - my); if (d < bd) { bd = d; best = p; } });
+    return best;
+  }
+  sc.addEventListener("click", e => { const b = nearest(e); if (b) pick(b.i); });
+  sc.addEventListener("mousemove", e => {
+    const b = nearest(e); const hv = b ? b.i : -1;
+    sc.style.cursor = b ? "pointer" : "default";
+    if (hv !== hover) {
+      hover = hv;
+      if (b) { const d = DATA[b.i]; tip.hidden = false; tip.textContent = d.n + " · " + TYPES[d.t].name.toLowerCase() + " · " + d.E + " kJ/mol · melts at " + (d.gt ? "> " : "") + d.Tm + " °C"; }
+      else tip.hidden = true;
+      drawScatter();
+    }
+  });
+  sc.addEventListener("mouseleave", () => { hover = -1; tip.hidden = true; drawScatter(); });
+  function drawAll(skipScatter) {
+    $("#bondROut").textContent = "r = " + x.toFixed(2) + " r₀";
+    $("#bondState").textContent = stateText();
+    drawPair(); drawPlot(); if (!skipScatter) drawScatter();
+  }
+  tabs.bonds = {
+    shown: drawAll,
+    tick: dt => {
+      tph += dt;
+      if (anim) {
+        anim.t += dt;
+        if (anim.kind === "form") {
+          if (sel.t === "ionic" && transfer < 1) { transfer = Math.min(1, anim.t / 1.1); }
+          else { const tt = clamp((anim.t - (sel.t === "ionic" ? 1.1 : 0)) / 1.6, 0, 1); setX(2.6 + (1 - 2.6) * ease(tt)); if (tt >= 1) anim = null; }
+        } else {
+          const tt = clamp(anim.t / 2.2, 0, 1); setX(anim.from + (2.6 - anim.from) * (tt * tt)); if (tt >= 1) anim = null;
+        }
+        drawAll(true); return;
+      }
+      if (!reduceMotion && (sel.t === "metallic" || sel.t === "vdw")) drawPair();
+    },
+    resize: drawAll, theme: drawAll
+  };
+  pick(0);
+})();
+
+/* ============================================================== UNIT CELLS */
+(function cells() {
+  if (!has3D) { $("#cellStage").textContent = "This 3D view needs WebGL, which this browser could not start."; return; }
+  const v = makeViewer($("#cellStage"));
+  let type = "fcc", mode = "hard", reps = 1, plane = false, metal = null, selected = null;
+  const S3 = Math.sqrt(3), S2 = Math.sqrt(2), NA = 6.022e23;
+  const tipEl = $("#cellTip");
+  const INFO = {
+    sc: { t: "Simple cubic (SC)", n: "8 corners × ⅛ = 1", cn: 6, apf: "0.52", aR: "a = 2R", why: "Atoms sit only on the cube corners. It is the easiest cell to picture and almost never found in nature, because it leaves 48% of the space empty." },
+    bcc: { t: "Body-centred cubic (BCC)", n: "8 × ⅛ + 1 centre = 2", cn: 8, apf: "0.68", aR: "a = 4R / √3", why: "One extra atom sits in the middle of the cube. BCC metals such as steel are strong, but many become brittle when cold, which is why ship hulls and pipelines are specified for a minimum service temperature." },
+    fcc: { t: "Face-centred cubic (FCC)", n: "8 × ⅛ + 6 faces × ½ = 4", cn: 12, apf: "0.74", aR: "a = 2R√2", why: "Extra atoms sit in the centre of each face. FCC packs atoms as tightly as possible and has many easy slip planes. FCC metals stay ductile even when very cold, so aluminium and nickel alloys are used for cryogenic tanks." },
+    hcp: { t: "Hexagonal close-packed (HCP)", n: "12 × ⅙ + 2 × ½ + 3 inside = 6", cn: 12, apf: "0.74", aR: "a = 2R,  c/a = 1.633 if ideal", why: "As tightly packed as FCC, but with fewer easy slip planes. That is why magnesium and titanium sheet are harder to form at room temperature than aluminium." },
+    nacl: { t: "Rock salt (NaCl): ionic", n: "Na⁺ 8 × ⅛ + 6 × ½ = 4;  Cl⁻ 12 × ¼ + 1 = 4", cn: 6, apf: "0.67", aR: "a = 2(r⁺ + r⁻)", why: "Two interleaved FCC arrangements, one of each ion. Every ion is surrounded by ions of the opposite charge. Slide one plane by half a cell and like charges meet and repel, so the crystal cleaves instead of bending." },
+    dia: { t: "Diamond cubic: covalent", n: "8 × ⅛ + 6 × ½ + 4 inside = 8", cn: 4, apf: "0.34", aR: "a = 8R / √3", why: "Each atom forms exactly four covalent bonds pointing to the corners of a tetrahedron. The structure is two-thirds empty space, yet diamond is the stiffest and hardest material there is, because the bonds are strong and cannot bend." }
+  };
+  // R (nm) Callister Table 3.1; A (g/mol) Callister Fig 2.8; rho measured (g/cm3); ca: measured c/a for HCP
+  const METALS = {
+    fcc: [["Copper", "Cu", .1278, 63.55, 8.94], ["Aluminium", "Al", .1431, 26.982, 2.71], ["Nickel", "Ni", .1246, 58.69, 8.90], ["Silver", "Ag", .1445, 107.87, 10.49], ["Gold", "Au", .1442, 196.97, 19.32], ["Lead", "Pb", .1750, 207.2, 11.35], ["Platinum", "Pt", .1387, 195.08, 21.45]],
+    bcc: [["Iron (α)", "Fe", .1241, 55.845, 7.87], ["Chromium", "Cr", .1249, 51.996, 7.19], ["Molybdenum", "Mo", .1363, 95.95, 10.22], ["Tungsten", "W", .1371, 183.84, 19.3], ["Tantalum", "Ta", .1430, 180.95, 16.6]],
+    hcp: [["Zinc", "Zn", .1332, 65.38, 7.13, 1.856], ["Cobalt", "Co", .1253, 58.933, 8.9, 1.623], ["Cadmium", "Cd", .1490, 112.41, 8.65, 1.886]],
+    dia: [["Diamond", "C", null, 12.011, 3.51, null, .3567], ["Silicon", "Si", null, 28.085, 2.33, null, .5431]],
+    nacl: [["Sodium chloride", "NaCl", null, 58.44, 2.16, null, .566]]
+  };
+  const BASIS = {
+    sc: [[0, 0, 0, 0]],
+    bcc: [[0, 0, 0, 0], [.5, .5, .5, 1]],
+    fcc: [[0, 0, 0, 0], [.5, .5, 0, 1], [.5, 0, .5, 1], [0, .5, .5, 1]],
+    nacl: [[0, 0, 0, 0], [.5, .5, 0, 0], [.5, 0, .5, 0], [0, .5, .5, 0], [.5, 0, 0, 1], [0, .5, 0, 1], [0, 0, .5, 1], [.5, .5, .5, 1]],
+    dia: [[0, 0, 0, 0], [.5, .5, 0, 0], [.5, 0, .5, 0], [0, .5, .5, 0], [.25, .25, .25, 1], [.75, .75, .25, 1], [.75, .25, .75, 1], [.25, .75, .75, 1]]
+  };
+  const RHARD = { sc: [.5, .5], bcc: [S3 / 4, S3 / 4], fcc: [S2 / 4, S2 / 4], nacl: [0.102 / 0.566, 0.181 / 0.566], dia: [S3 / 8, S3 / 8] };
+  const NN = { sc: 1, bcc: S3 / 2, fcc: S2 / 2, nacl: .5, dia: S3 / 4 };
+  let atomMeshes = [];
+
+  function roleColor(role) {
+    if (type === "nacl") return role === 0 ? tok("--amber") : tok("--teal");
+    return role === 0 ? tok("--atom") : tok("--teal");
+  }
+  function addAtom(pos, radius, color, opts) {
+    opts = opts || {};
+    const m = mat(color, opts.clip ? { clippingPlanes: opts.clip, clipShadows: true } : {});
+    if (opts.dim) { m.transparent = true; m.opacity = 0.16; m.depthWrite = false; }
+    if (opts.glow) m.emissive = new THREE.Color(tok("--accent")).multiplyScalar(0.4);
+    const s = new THREE.Mesh(sphereGeo, m);
+    s.scale.setScalar(radius); s.position.copy(pos); s.userData = opts.data || {};
+    v.root.add(s); atomMeshes.push(s);
+    if (opts.clip) {
+      // back faces, flat and darker: makes the cut face read as a solid cross-section
+      const capM = new THREE.MeshBasicMaterial({ color: new THREE.Color(color).multiplyScalar(0.62), side: THREE.BackSide, clippingPlanes: opts.clip });
+      const cap = new THREE.Mesh(sphereGeo, capM); cap.scale.setScalar(radius * 0.999); cap.position.copy(pos); v.root.add(cap);
+    }
+    return s;
+  }
+  function lineMat() { return new THREE.LineBasicMaterial({ color: new THREE.Color(tok("--ink")), transparent: true, opacity: 0.85 }); }
+  function bondCyl(p1, p2, rad, color) {
+    const d = p1.distanceTo(p2);
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(rad, rad, d, 14), mat(color, { roughness: 0.5 }));
+    c.position.copy(p1).add(p2).multiplyScalar(0.5);
+    c.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p2.clone().sub(p1).normalize());
+    v.root.add(c);
+  }
+  function sheet(verts) {
+    const g = new THREE.BufferGeometry();
+    const tri = verts.length === 3 ? [0, 1, 2] : verts.length === 4 ? [0, 1, 2, 0, 2, 3] : verts.slice(1, -1).flatMap((_, i) => [0, i + 1, i + 2]);
+    g.setFromPoints(tri.map(i => verts[i])); g.computeVertexNormals();
+    v.root.add(new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: new THREE.Color(tok("--accent")), transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false })));
+  }
+
+  /* fractional position -> description of how much of the atom is in the cell */
+  function shareCubic(f) {
+    const onB = f.filter(c => Math.abs(c) < 1e-6 || Math.abs(c - reps) < 1e-6).length;
+    const inner = f.filter(c => Math.abs(c - Math.round(c)) > 1e-6).length;
+    if (reps === 2) {
+      const k = f.filter(c => Math.abs(c) < 1e-6 || Math.abs(c - 2) < 1e-6).length;
+      return k === 0 ? "inside the block: all of it counts" : k === 1 ? "on an outer face of the block: ½ inside" : k === 2 ? "on an outer edge of the block: ¼ inside" : "on a corner of the block: ⅛ inside";
+    }
+    if (onB === 3) return "a corner atom: ⅛ of it is inside this cell, the rest is shared with 7 neighbouring cells";
+    if (onB === 2) return "an edge atom: ¼ of it is inside this cell, shared with 3 neighbouring cells";
+    if (onB === 1) return "a face atom: ½ of it is inside this cell, shared with the cell next door";
+    return "inside the cell: the whole atom counts";
+  }
+
+  function build() {
+    v.clear(); atomMeshes = []; selected = null; tipEl.hidden = true;
+    if (mode === "nbr") return buildNeighbours();
+    if (type === "hcp") return buildHCP();
+    const a = reps === 1 ? 2.6 : 1.7;
+    const L = a * reps, off = L / 2;
+    const list = [], seen = new Set(), eps = 1e-6;
+    for (let ix = -1; ix <= reps; ix++) for (let iy = -1; iy <= reps; iy++) for (let iz = -1; iz <= reps; iz++)
+      BASIS[type].forEach(b => {
+        const f = [b[0] + ix, b[1] + iy, b[2] + iz];
+        if (f.some(c => c < -eps || c > reps + eps)) return;
+        const k = f.map(c => Math.round(c * 1000)).join(",");
+        if (seen.has(k)) return; seen.add(k);
+        list.push({ f, role: b[3], pos: new THREE.Vector3(f[0] * a - off, f[2] * a - off, f[1] * a - off) });
+      });
+    let test = null;
+    if (plane && type !== "nacl" && type !== "dia") {
+      const P = f => new THREE.Vector3(f[0] * a - off, f[2] * a - off, f[1] * a - off);
+      const R = reps;
+      if (type === "fcc") { test = p => Math.abs(p.f[0] + p.f[1] + p.f[2] - R) < 1e-6; sheet([[R, 0, 0], [0, R, 0], [0, 0, R]].map(P)); }
+      if (type === "bcc") { test = p => Math.abs(p.f[0] - p.f[1]) < 1e-6; sheet([[0, 0, 0], [R, R, 0], [R, R, R], [0, 0, R]].map(P)); }
+      if (type === "sc") { test = p => Math.abs(p.f[0]) < 1e-6; sheet([[0, 0, 0], [0, R, 0], [0, R, R], [0, 0, R]].map(P)); }
+    }
+    const rh = RHARD[type];
+    const radius = mode === "ball" ? (p => (type === "nacl" ? (p.role ? 0.13 : 0.09) : 0.1) * a) : (p => rh[p.role] * a);
+    const clip = mode === "cut" ? clipPlanesFrom(v, [[1, 0, 0, off], [-1, 0, 0, off], [0, 1, 0, off], [0, -1, 0, off], [0, 0, 1, off], [0, 0, -1, off]]) : null;
+    list.forEach(p => addAtom(p.pos, radius(p), roleColor(p.role), { clip, dim: test && !test(p), glow: test && test(p), data: { share: shareCubic(p.f), role: p.role } }));
+    if (mode === "ball") {
+      const col = tok("--muted");
+      for (let i = 0; i < list.length; i++) for (let j = i + 1; j < list.length; j++) {
+        const d = list[i].pos.distanceTo(list[j].pos);
+        if (Math.abs(d - NN[type] * a) < 0.02 * a) bondCyl(list[i].pos, list[j].pos, (type === "dia" || type === "nacl" ? 0.035 : 0.018) * a, col);
+      }
+    }
+    for (let ix = 0; ix < reps; ix++) for (let iy = 0; iy < reps; iy++) for (let iz = 0; iz < reps; iz++) {
+      const e = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(a, a, a)), lineMat());
+      e.position.set((ix + .5) * a - off, (iy + .5) * a - off, (iz + .5) * a - off); v.root.add(e);
+    }
+    v.dist = reps === 1 ? 10.5 : 12.5;
+    stats();
+  }
+  function buildHCP() {
+    const ah = reps === 1 ? 1.45 : 1.15, c = 1.633 * ah, H = c * reps;
+    const yOf = z => z - H / 2;
+    const list = [];
+    for (let k = 0; k <= reps; k++) {
+      const z = k * c, cap = k === 0 || k === reps;
+      for (let i = 0; i < 6; i++) { const t = i * Math.PI / 3; list.push({ role: 0, pos: new THREE.Vector3(ah * Math.cos(t), yOf(z), ah * Math.sin(t)), share: cap ? "a corner atom: ⅙ of it is inside this hexagonal cell" : "on a vertical edge between two stacked cells: ⅓ inside this block" }); }
+      list.push({ role: 0, pos: new THREE.Vector3(0, yOf(z), 0), share: cap ? "centre of the top or bottom face: ½ of it is inside" : "on the plane between two stacked cells: whole atom inside this block" });
+      if (k < reps) [30, 150, 270].forEach(d => { const t = d * Math.PI / 180; list.push({ role: 1, pos: new THREE.Vector3(ah / S3 * Math.cos(t), yOf(z + c / 2), ah / S3 * Math.sin(t)), share: "inside the cell (the B layer): the whole atom counts" }); });
+    }
+    let test = null;
+    if (plane) {
+      test = p => Math.abs(p.pos.y - yOf(0)) < 1e-6;
+      sheet(Array.from({ length: 6 }, (_, i) => new THREE.Vector3(ah * Math.cos(i * Math.PI / 3), yOf(0), ah * Math.sin(i * Math.PI / 3))));
+    }
+    const radius = mode === "ball" ? 0.2 * ah : ah / 2;
+    let clip = null;
+    if (mode === "cut") {
+      const ap = ah * S3 / 2, defs = [];
+      for (let i = 0; i < 6; i++) { const t = (30 + 60 * i) * Math.PI / 180; defs.push([-Math.cos(t), 0, -Math.sin(t), ap]); }
+      defs.push([0, 1, 0, H / 2], [0, -1, 0, H / 2]);
+      clip = clipPlanesFrom(v, defs);
+    }
+    list.forEach(p => addAtom(p.pos, radius, roleColor(p.role), { clip, dim: test && !test(p), glow: test && test(p), data: { share: p.share, role: p.role } }));
+    const segs = [];
+    const hv = (i, z) => new THREE.Vector3(ah * Math.cos(i * Math.PI / 3), yOf(z), ah * Math.sin(i * Math.PI / 3));
+    for (let k = 0; k <= reps; k++) for (let i = 0; i < 6; i++) segs.push(hv(i, k * c), hv(i + 1, k * c));
+    for (let i = 0; i < 6; i++) segs.push(hv(i, 0), hv(i, H));
+    v.root.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segs), lineMat()));
+    v.dist = reps === 1 ? 10.5 : 12.5;
+    stats();
+  }
+  /* one atom and its touching neighbours (the coordination shell) */
+  function buildNeighbours() {
+    const pts = [];
+    const sc = 2.2; // scene units per nearest-neighbour distance
+    if (type === "hcp") {
+      const a = 1, c = 1.633;
+      for (let k = -1; k <= 1; k++) for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) {
+        const x = i + j * 0.5, y = j * S3 / 2;
+        pts.push({ p: [x, y, k * c], role: 0 });
+        pts.push({ p: [x + 0.5, y + S3 / 6, (k + 0.5) * c], role: 1 });
+        pts.push({ p: [x + 0.5, y + S3 / 6, (k - 0.5) * c], role: 1 });
+      }
+      finish(pts, 1, sc);
+      return;
+    }
+    for (let ix = -2; ix <= 2; ix++) for (let iy = -2; iy <= 2; iy++) for (let iz = -2; iz <= 2; iz++)
+      BASIS[type].forEach(b => pts.push({ p: [b[0] + ix, b[1] + iy, b[2] + iz], role: b[3] }));
+    finish(pts, NN[type], sc / NN[type]);
+  }
+  function finish(pts, dnn, scale) {
+    const seen = new Set(), keep = [];
+    pts.forEach(q => {
+      const d = Math.hypot(q.p[0], q.p[1], q.p[2]);
+      const k = q.p.map(c => Math.round(c * 1000)).join(",");
+      if (seen.has(k)) return; seen.add(k);
+      if (d < 1e-6 || Math.abs(d - dnn) < 0.02 * dnn) keep.push({ q, centre: d < 1e-6 });
+    });
+    const toV = p => new THREE.Vector3(p[0] * scale, p[2] * scale, p[1] * scale);
+    const rFull = type === "hcp" || type === "fcc" ? 0.5 * dnn * scale : (type === "nacl" ? null : 0.5 * dnn * scale);
+    const n = keep.length - 1;
+    keep.forEach(({ q, centre }) => {
+      const pos = toV(q.p);
+      let r = (rFull || 0.5 * dnn * scale) * 0.5;
+      if (type === "nacl") r = (q.role === 0 ? 0.102 : 0.181) / 0.283 * dnn * scale * 0.55;
+      addAtom(pos, centre ? r * 1.15 : r, centre ? tok("--accent") : roleColor(q.role), { data: { share: centre ? "the chosen atom" : "a touching neighbour" } });
+      if (!centre) bondCyl(new THREE.Vector3(0, 0, 0), pos, 0.06, tok("--muted"));
+    });
+    v.dist = 11;
+    stats(n);
+  }
+  function metalLine() {
+    const list = METALS[type];
+    if (!list || !metal) return null;
+    const [name, sym, R, Aw, rhoM, ca, a0] = metal;
+    let a, V, n, txt;
+    if (type === "fcc") { a = 2 * S2 * R; V = a ** 3; n = 4; }
+    else if (type === "bcc") { a = 4 * R / S3; V = a ** 3; n = 2; }
+    else if (type === "hcp") { a = 2 * R; const c = ca * a; V = 1.5 * S3 * a * a * c; n = 6; txt = "a = " + a.toFixed(3) + " nm, c = " + c.toFixed(3) + " nm (c/a " + ca + ")"; }
+    else if (type === "dia") { a = a0; V = a ** 3; n = 8; }
+    else if (type === "nacl") { a = a0; V = a ** 3; n = 4; }
+    const rho = n * Aw / (V * 1e-21 * NA);
+    return { name, a: txt || "a = " + a.toFixed(4) + " nm" + (R ? " (from R = " + R + " nm)" : " (measured)"), rho: rho.toFixed(2) + " g/cm³ from the cell · " + rhoM + " measured" };
+  }
+  function stats(nShown) {
+    const info = INFO[type];
+    $("#cellTitle").textContent = info.t;
+    $("#cellWhy").textContent = mode === "nbr" ? "The red atom is one atom of the crystal; the others are every atom touching it. This count, the coordination number, is " + info.cn + " for " + info.t.split(":")[0] + ". More neighbours means tighter packing." : info.why;
+    const dl = $("#cellStats"); dl.innerHTML = "";
+    const rows = [["Atoms per cell", info.n], ["Neighbours touching each atom", String(nShown != null ? nShown : info.cn)], ["Fraction of space filled", info.apf], ["Cell size", info.aR]];
+    const m = metalLine();
+    if (m) { rows.push(["Example", m.name], ["Lattice constant", m.a], ["Density", m.rho]); }
+    else if (type === "sc") rows.push(["Example", "Polonium only. It packs too loosely for almost any metal."]);
+    rows.forEach(([k, val]) => { const dt = document.createElement("dt"); dt.textContent = k; const dd = document.createElement("dd"); dd.textContent = val; dl.append(dt, dd); });
+    const pb = $("#cellPlane");
+    pb.disabled = type === "nacl" || type === "dia" || mode === "nbr";
+    $("#cellReps").disabled = mode === "nbr";
+    const names = { fcc: "Show densest plane (close-packed)", bcc: "Show densest plane (not close-packed)", sc: "Show a cube face", hcp: "Show basal plane (close-packed)" };
+    pb.textContent = names[type] || "Show densest plane";
+    v.dirty = true;
+  }
+  function fillMetals() {
+    const sel = $("#cellMetal"); sel.innerHTML = "";
+    const list = METALS[type];
+    $("#metalRow").hidden = !list;
+    if (!list) { metal = null; return; }
+    list.forEach((m, i) => { const o = document.createElement("option"); o.value = i; o.textContent = m[0] + " (" + m[1] + ")"; sel.appendChild(o); });
+    metal = list[0];
+  }
+  $("#cellMetal").addEventListener("change", e => { metal = METALS[type][+e.target.value]; stats(mode === "nbr" ? INFO[type].cn : undefined); });
+  function setType(t, keepMetal) {
+    type = t; setPressed($("#cellType"), t);
+    if (!keepMetal) fillMetals();
+    build();
+  }
+  pressGroup($("#cellType"), t => setType(t));
+  pressGroup($("#cellMode"), m => { mode = m; build(); });
+  toggle($("#cellReps"), on => { reps = on ? 2 : 1; build(); });
+  toggle($("#cellPlane"), on => { plane = on; build(); });
+  toggle($("#cellSpin"), on => { v.spin = on; });
+  v.onClick = ndc => {
+    const hit = v.pick(ndc, atomMeshes);
+    if (selected) { selected.material.emissive.setHex(0); selected = null; }
+    if (!hit) { tipEl.hidden = true; v.dirty = true; return; }
+    selected = hit; hit.material.emissive = new THREE.Color(tok("--accent")).multiplyScalar(0.55);
+    const who = type === "nacl" ? (hit.userData.role === 0 ? "Na⁺ ion, " : "Cl⁻ ion, ") : "";
+    tipEl.hidden = false; tipEl.textContent = "This atom: " + who + hit.userData.share + ".";
+    v.dirty = true;
+  };
+  const iron = $("#ironT");
+  iron.addEventListener("input", () => {
+    const T = +iron.value;
+    let ph, st, note;
+    if (T < 912) { ph = "α-iron (ferrite)"; st = "bcc"; note = "Below 912 °C iron is BCC."; }
+    else if (T < 1394) { ph = "γ-iron (austenite)"; st = "fcc"; note = "Between 912 and 1394 °C iron is FCC. It packs more tightly, so the iron shrinks slightly as it switches. Heat treatment of steel depends on this change."; }
+    else if (T < 1538) { ph = "δ-iron"; st = "bcc"; note = "Between 1394 and 1538 °C iron is BCC again."; }
+    else { ph = "liquid iron"; st = null; note = "Above 1538 °C iron melts: no crystal at all."; }
+    $("#ironOut").textContent = T + " °C · " + (st ? st.toUpperCase() : "liquid");
+    $("#ironNote").textContent = ph[0].toUpperCase() + ph.slice(1) + ". " + note;
+    if (st && st !== type) setType(st);
+    if (st === "bcc") { metal = METALS.bcc[0]; $("#cellMetal").value = 0; stats(mode === "nbr" ? 8 : undefined); }
+  });
+  tabs.cells = { shown: () => { v.size(); v.dirty = true; }, tick: () => v.render(), theme: () => build(), resize: () => v.size() };
+  fillMetals(); build();
+})();
+
+/* ================================================================ STACKING */
+(function stacking() {
+  if (!has3D) { $("#stackStage").textContent = "This 3D view needs WebGL, which this browser could not start."; return; }
+  const v = makeViewer($("#stackStage"));
+  v.rotX = 0.42; v.rotY = 0.5; v.dist = 14;
+  const H = Math.sqrt(2 / 3), RMAX = 2.75;
+  const OFF = { A: [0, 0], B: [0.5, Math.sqrt(3) / 6], C: [0, Math.sqrt(3) / 3] };
+  const COL = { A: "--accent", B: "--teal", C: "--amber" };
+  let seq = ["A", "B"], glass = false, drops = [];
+  function sites(letter, rmax) {
+    const o = OFF[letter], out = [];
+    for (let i = -8; i <= 8; i++) for (let j = -8; j <= 8; j++) {
+      const u = i + j * 0.5 + o[0], w = j * Math.sqrt(3) / 2 + o[1];
+      if (Math.hypot(u, w) < rmax) out.push([u, w]);
+    }
+    return out;
+  }
+  function build(animateTop) {
+    v.clear(); drops = [];
+    const n = seq.length, y0 = -(n - 1) * H / 2;
+    seq.forEach((L, k) => {
+      const g = new THREE.Group();
+      const m = mat(tok(COL[L]), glass ? { transparent: true, opacity: 0.5, depthWrite: false } : {});
+      sites(L, RMAX).forEach(([u, w]) => { const s = new THREE.Mesh(sphereGeo, m); s.scale.setScalar(0.495); s.position.set(u, 0, w); g.add(s); });
+      g.position.y = y0 + k * H; v.root.add(g);
+      if (animateTop && k === n - 1 && !reduceMotion) { drops.push({ g, y: g.position.y, t: 0 }); g.position.y += 3; }
+    });
+    const top = seq[n - 1];
+    if (n < 10) ["A", "B", "C"].filter(L => L !== top).forEach(L => {
+      const m = new THREE.MeshBasicMaterial({ color: new THREE.Color(tok(COL[L])) });
+      const g = new THREE.Group();
+      sites(L, RMAX - 0.6).forEach(([u, w]) => { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.03, 20), m); d.position.set(u, 0, w); g.add(d); });
+      g.position.y = y0 + (n - 1) * H + 0.5; v.root.add(g);
+      if (drops.length) { g.visible = false; drops[0].markers = (drops[0].markers || []).concat(g); }
+    });
+    ui(); v.dirty = true;
+  }
+  v.onFrame = () => {
+    if (!drops.length) return false;
+    drops.forEach(d => {
+      d.t = Math.min(1, d.t + frameDt / 0.55);
+      // fall, then a small settle
+      const s = d.t < 0.8 ? ease(d.t / 0.8) : 1 + Math.sin((d.t - 0.8) / 0.2 * Math.PI) * 0.03;
+      d.g.position.y = d.y + 3 * (1 - s);
+      if (d.t >= 1) { d.g.position.y = d.y; (d.markers || []).forEach(m => { m.visible = true; }); }
+    });
+    drops = drops.filter(d => d.t < 1);
+    return true;
+  };
+  function ui() {
+    const top = seq[seq.length - 1];
+    $$("[data-v]", $("#stackAdd")).forEach(b => { b.disabled = b.dataset.v === top || seq.length >= 10; b.title = b.dataset.v === top ? "Atoms cannot sit directly on top of atoms" : ""; });
+    $("#stackUndo").disabled = seq.length <= 1;
+    const box = $("#stackSeq"); box.innerHTML = "";
+    seq.forEach(L => { const b = document.createElement("b"); b.textContent = L; b.style.background = tok(COL[L]); box.appendChild(b); });
+    let txt;
+    if (seq.length < 3) txt = "Add at least three layers to tell which crystal this is.";
+    else {
+      const env = [];
+      for (let i = 1; i < seq.length - 1; i++) env.push(seq[i - 1] === seq[i + 1] ? "h" : "c");
+      if (env.every(e => e === "h")) txt = "ABAB… repeats every 2 layers: hexagonal close-packed (HCP).";
+      else if (env.every(e => e === "c")) txt = "ABCABC… repeats every 3 layers: face-centred cubic (FCC).";
+      else {
+        const bad = env.map((e, i) => e === "h" ? i + 2 : 0).filter(Boolean);
+        const mostlyC = env.filter(e => e === "c").length >= env.length / 2;
+        txt = mostlyC ? "Mostly FCC, but layer" + (bad.length > 1 ? "s " : " ") + bad.join(" and ") + (bad.length > 1 ? " break" : " breaks") + " the ABC pattern: a stacking fault." : "Mixed stacking: neither pure HCP nor pure FCC.";
+      }
+    }
+    $("#stackVerdict").textContent = txt;
+  }
+  $$("[data-v]", $("#stackAdd")).forEach(b => b.addEventListener("click", () => { if (seq.length < 10 && b.dataset.v !== seq[seq.length - 1]) { seq.push(b.dataset.v); build(true); } }));
+  $("#stackUndo").addEventListener("click", () => { if (seq.length > 1) { seq.pop(); build(); } });
+  $("#stackClear").addEventListener("click", () => { seq = ["A"]; build(); });
+  $$("[data-preset]").forEach(b => b.addEventListener("click", () => { seq = b.dataset.preset.split(""); build(); }));
+  $("#stackSide").addEventListener("click", () => { v.rotX = 0.1; v.rotY = 0; v.dirty = true; });
+  $("#stackTop").addEventListener("click", () => { v.rotX = Math.PI / 2; v.rotY = 0; v.dirty = true; });
+  toggle($("#stackGlass"), on => { glass = on; build(); });
+  toggle($("#stackSpin"), on => { v.spin = on; });
+  let frameDt = 1 / 60;
+  tabs.stack = { shown: () => { v.size(); v.dirty = true; }, tick: dt => { frameDt = dt; v.render(); }, theme: () => build(), resize: () => v.size() };
+  build();
+})();
+
+/* ==================================================================== RAFT */
+(function raft() {
+  const NX = 40, NY = 46, A0 = Math.sqrt(2 / (Math.sqrt(3) * 0.85));
+  const LX = NX * A0, LY = NY * A0 * Math.sqrt(3) / 2;
+  let x = [], y = [], vx = [], vy = [], sg = [], coord = [], c6 = [], s6 = [];
+  let fx = new Float64Array(0), fy = new Float64Array(0);
+  let T0 = 0.05, tau = 0.08, ramp = null, mix = "one", tool = "remove", colorBy = "nbr", paused = false, poke = null;
+  const dt = 0.004, RC = 2.2;
+  window.__raft = { state: () => ({ N: x.length, T: temp(), six: six(), cooling: !!ramp }) };
+  function perfect(vac) {
+    x = []; y = []; sg = [];
+    for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) { x.push((i + (j % 2) * 0.5) * A0); y.push(j * A0 * Math.sqrt(3) / 2); sg.push(1); }
+    for (let k = 0; k < vac; k++) { const i = Math.floor(Math.random() * x.length); x.splice(i, 1); y.splice(i, 1); sg.splice(i, 1); }
+    vx = x.map(() => (Math.random() - 0.5) * 0.3); vy = x.map(() => (Math.random() - 0.5) * 0.3);
+    coord = x.map(() => 6);
+    T0 = 0.05; ramp = null; mix = "one"; setPressed($("#raftMix"), "one");
+  }
+  function forces() {
+    const N = x.length;
+    fx = new Float64Array(N); fy = new Float64Array(N);
+    c6 = new Float64Array(N); s6 = new Float64Array(N);
+    const cs = RC * 1.3, ncx = Math.max(3, Math.floor(LX / cs)), ncy = Math.max(3, Math.floor(LY / cs));
+    const head = new Int32Array(ncx * ncy).fill(-1), next = new Int32Array(N);
+    for (let i = 0; i < N; i++) {
+      const cx = Math.min(ncx - 1, Math.floor(x[i] / LX * ncx)), cy = Math.min(ncy - 1, Math.floor(y[i] / LY * ncy));
+      const c = cy * ncx + cx; next[i] = head[c]; head[c] = i;
+    }
+    for (let i = 0; i < N; i++) coord[i] = 0;
+    const done = new Set();
+    for (let cy = 0; cy < ncy; cy++) for (let cx = 0; cx < ncx; cx++) {
+      const c1 = cy * ncx + cx;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const c2 = ((cy + dy + ncy) % ncy) * ncx + ((cx + dx + ncx) % ncx);
+        const key = c1 < c2 ? c1 * 100000 + c2 : c2 * 100000 + c1;
+        if (done.has(key)) continue; done.add(key);
+        for (let i = head[c1]; i !== -1; i = next[i]) {
+          for (let j = head[c2]; j !== -1; j = next[j]) {
+            if (c1 === c2 && j <= i) continue;
+            let rx = x[j] - x[i], ry = y[j] - y[i];
+            rx -= LX * Math.round(rx / LX); ry -= LY * Math.round(ry / LY);
+            const r2 = rx * rx + ry * ry, s = (sg[i] + sg[j]) / 2;
+            if (r2 > RC * RC * s * s || r2 < 1e-4) continue;
+            if (r2 < 1.42 * 1.42 * s * s) {
+              coord[i]++; coord[j]++;
+              const th = Math.atan2(ry, rx);
+              c6[i] += Math.cos(6 * th); s6[i] += Math.sin(6 * th); c6[j] += Math.cos(6 * th); s6[j] += Math.sin(6 * th);
+            }
+            const s2 = s * s / r2, q6 = s2 * s2 * s2;
+            let f = 24 * (2 * q6 * q6 - q6) / r2;
+            f = clamp(f, -400, 400);
+            fx[i] -= f * rx; fy[i] -= f * ry; fx[j] += f * rx; fy[j] += f * ry;
+          }
+        }
+      }
+    }
+    if (poke) {
+      for (let i = 0; i < N; i++) {
+        let rx = x[i] - poke.x, ry = y[i] - poke.y; rx -= LX * Math.round(rx / LX); ry -= LY * Math.round(ry / LY);
+        const d = Math.hypot(rx, ry);
+        if (d < 1.8 && d > 1e-3) { const k = 90 * (1.8 - d) / d; fx[i] += k * rx; fy[i] += k * ry; }
+      }
+    }
+  }
+  function temp() { let k = 0; for (let i = 0; i < x.length; i++) k += vx[i] * vx[i] + vy[i] * vy[i]; return k / (2 * Math.max(1, x.length)); }
+  /* crystal-like site: exactly 6 neighbours arranged as a regular hexagon (bond-orientational order |psi6| > 0.75) */
+  function isCryst(i) { return coord[i] === 6 && Math.hypot(c6[i], s6[i]) / 6 > 0.75; }
+  function six() { let n = 0; for (let i = 0; i < x.length; i++) if (isCryst(i)) n++; return n / Math.max(1, x.length); }
+  function step() {
+    const N = x.length;
+    for (let i = 0; i < N; i++) {
+      vx[i] += 0.5 * dt * fx[i]; vy[i] += 0.5 * dt * fy[i];
+      const sp = Math.hypot(vx[i], vy[i]); if (sp > 12) { vx[i] *= 12 / sp; vy[i] *= 12 / sp; }
+      x[i] = ((x[i] + dt * vx[i]) % LX + LX) % LX; y[i] = ((y[i] + dt * vy[i]) % LY + LY) % LY;
+    }
+    forces();
+    for (let i = 0; i < N; i++) { vx[i] += 0.5 * dt * fx[i]; vy[i] += 0.5 * dt * fy[i]; }
+    const T = temp();
+    if (T > 0) {
+      const lam = clamp(Math.sqrt(1 + dt / tau * (T0 / T - 1)), 0.9, 1.1);
+      for (let i = 0; i < N; i++) { vx[i] *= lam; vy[i] *= lam; }
+    }
+  }
+  /* cached shaded sprites so 500 atoms draw quickly */
+  const sprites = new Map();
+  function sprite(col, rpx) {
+    const key = col + "|" + rpx.toFixed(1);
+    let s = sprites.get(key);
+    if (s) return s;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const c = document.createElement("canvas"); const R = Math.ceil(rpx * dpr) + 1;
+    c.width = c.height = R * 2;
+    const g = c.getContext("2d"); g.scale(dpr, dpr);
+    const r0 = R / dpr;
+    ball(g, r0, r0, rpx, col);
+    s = { c, r: r0 }; sprites.set(key, s);
+    if (sprites.size > 600) sprites.clear();
+    return s;
+  }
+  function hueCol(i) {
+    const n = Math.hypot(c6[i], s6[i]);
+    if (coord[i] !== 6 || n < 4.5) return tok("--muted");
+    const ang = (Math.atan2(s6[i], c6[i]) + Math.PI) / (2 * Math.PI);
+    const hsl = (h, s, l) => { const a = s * Math.min(l, 1 - l); const f = k => { const kk = (k + h * 12) % 12; return l - a * Math.max(-1, Math.min(kk - 3, 9 - kk, 1)); }; return "#" + [f(0), f(8), f(4)].map(v => Math.round(v * 255).toString(16).padStart(2, "0")).join(""); };
+    return hsl(ang, 0.62, 0.55);
+  }
+  function legend() {
+    const L = $("#raftLegend");
+    L.innerHTML = colorBy === "nbr"
+      ? '<span><i style="background:var(--atom)"></i>6 neighbours: perfect crystal</span><span><i style="background:var(--amber)"></i>5</span><span><i style="background:var(--teal)"></i>7</span><span><i style="background:var(--accent)"></i>other</span>'
+      : '<span><i class="rainbow"></i>each colour is one grain orientation</span><span><i style="background:var(--muted)"></i>boundary, defect or liquid</span>';
+  }
+  const cv = $("#raftCv");
+  let geom = null;
+  function draw() {
+    const g = fit(cv, LY / LX, 700); geom = g;
+    const { ctx, w, h } = g;
+    ctx.clearRect(0, 0, w, h);
+    const k = w / LX;
+    const C = { 6: tok("--atom"), 5: tok("--amber"), 7: tok("--teal"), o: tok("--accent") };
+    const ink = tok("--ink");
+    for (let i = 0; i < x.length; i++) {
+      const col = colorBy === "grain" ? hueCol(i) : (C[coord[i]] || C.o);
+      const r = 0.5 * sg[i] * k * 1.08;
+      const sp = sprite(col, r);
+      const xs = [x[i]];
+      if (x[i] < 1) xs.push(x[i] + LX); else if (x[i] > LX - 1) xs.push(x[i] - LX);
+      const ys = [y[i]];
+      if (y[i] < 1) ys.push(y[i] + LY); else if (y[i] > LY - 1) ys.push(y[i] - LY);
+      xs.forEach(X => ys.forEach(Y => ctx.drawImage(sp.c, X * k - sp.r, Y * k - sp.r, sp.r * 2, sp.r * 2)));
+      if (sg[i] !== 1 && mix === "one") { ctx.strokeStyle = ink; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(x[i] * k, y[i] * k, r, 0, Math.PI * 2); ctx.stroke(); }
+    }
+    if (poke) { ctx.strokeStyle = tok("--accent"); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(poke.x * k, poke.y * k, 1.8 * k, 0, Math.PI * 2); ctx.stroke(); }
+    const T = temp(), cr = six();
+    const phase = cr > 0.6 ? "crystal" : cr > 0.35 ? "partly crystalline" : T > 0.45 ? "liquid" : "glass: frozen disorder";
+    $("#raftTnow").textContent = T.toFixed(2) + "  (" + phase + ")";
+    $("#raftOrder").textContent = Math.round(100 * cr) + "% of atoms";
+    $("#raftN").textContent = x.length;
+  }
+  function setT(t) { T0 = t; $("#raftT").value = t; $("#raftTOut").textContent = t.toFixed(2); }
+  $("#raftT").addEventListener("input", e => { ramp = null; tau = 0.08; setT(+e.target.value); });
+  $("#raftMelt").addEventListener("click", () => { ramp = null; tau = 0.05; setT(1.4); });
+  $("#raftSlow").addEventListener("click", () => { tau = 0.08; ramp = { from: Math.max(T0, 0.8), to: 0.05, n: 0, N: 9000 }; });
+  $("#raftQuench").addEventListener("click", () => { ramp = null; tau = 0.01; setT(0.02); });
+  $("#raftReset").addEventListener("click", () => { perfect(3); setT(0.05); forces(); draw(); });
+  toggle($("#raftPause"), on => { paused = on; $("#raftPause").textContent = on ? "Resume" : "Pause"; });
+  pressGroup($("#raftMix"), m => {
+    mix = m;
+    for (let i = 0; i < sg.length; i++) sg[i] = m === "one" ? 1 : (Math.random() < 0.5 ? 0.82 : 1.15);
+    ramp = null; tau = 0.05; setT(1.4);
+  });
+  pressGroup($("#raftColor"), c => { colorBy = c; legend(); draw(); });
+  const HINTS = { remove: "click an atom: remove it", big: "click an atom: make it bigger", small: "click an atom: make it smaller", poke: "press and drag: push atoms aside" };
+  pressGroup($("#raftTool"), t => { tool = t; $("#raftHint").textContent = HINTS[t]; });
+  function simXY(e) { const r = cv.getBoundingClientRect(); const k = geom.w / LX; return [(e.clientX - r.left) / k, (e.clientY - r.top) / k]; }
+  cv.addEventListener("pointerdown", e => {
+    if (!geom) return;
+    const [px, py] = simXY(e);
+    if (tool === "poke") { poke = { x: px, y: py }; cv.setPointerCapture(e.pointerId); return; }
+    let best = -1, bd = 0.8;
+    for (let i = 0; i < x.length; i++) { let rx = x[i] - px, ry = y[i] - py; rx -= LX * Math.round(rx / LX); ry -= LY * Math.round(ry / LY); const d = Math.hypot(rx, ry); if (d < bd) { bd = d; best = i; } }
+    if (best < 0) return;
+    if (tool === "remove") { [x, y, vx, vy, sg, coord].forEach(a => a.splice(best, 1)); }
+    else sg[best] = tool === "big" ? 1.3 : 0.8;
+    forces(); draw();
+  });
+  cv.addEventListener("pointermove", e => { if (poke) { const [px, py] = simXY(e); poke.x = px; poke.y = py; } });
+  const endPoke = () => { poke = null; };
+  cv.addEventListener("pointerup", endPoke); cv.addEventListener("pointercancel", endPoke);
+  tabs.raft = {
+    shown: draw,
+    tick: dt => {
+      if (paused) { draw(); return; }
+      for (let s = 0; s < 6; s++) {
+        if (ramp) { ramp.n++; T0 = ramp.from + (ramp.to - ramp.from) * Math.min(1, ramp.n / ramp.N); if (ramp.n >= ramp.N) ramp = null; }
+        step();
+      }
+      if (ramp || T0 !== +$("#raftT").value) setT(T0);
+      draw();
+    },
+    theme: () => { sprites.clear(); draw(); }, resize: () => { sprites.clear(); draw(); }
+  };
+  perfect(3); forces(); legend();
+})();
+
+/* ============================================================ DISLOCATION */
+(function dislocation() {
+  const half = 11, NC = 2 * half + 1, ROWS = 5;
+  let mode = "disl", xd = -15, t = 0, running = false, solute = false, gb = false, burgers = false, done = false, stepTo = null;
+  const SOL_X = -4, GB_X = 6;
+  const tauIn = $("#dislTau");
+  tauIn.addEventListener("input", () => { $("#dislTauOut").textContent = tauIn.value; draw(); });
+  pressGroup($("#dislMode"), m => { mode = m; $("#dislStep").disabled = m === "rigid"; reset(); });
+  $("#dislGo").addEventListener("click", () => { if (done) reset(); running = !running; stepTo = null; $("#dislGo").textContent = running ? "Stop" : "Push"; draw(); });
+  $("#dislStep").addEventListener("click", () => {
+    if (mode !== "disl") return;
+    if (done) reset();
+    running = false; $("#dislGo").textContent = "Push";
+    const base = xd < -half - 0.5 ? -half - 0.5 : Math.floor(xd + 0.5) + 0.5;
+    stepTo = Math.min(15, base + 1);
+    if (reduceMotion) { xd = stepTo; stepTo = null; }
+    draw();
+  });
+  $("#dislReset").addEventListener("click", reset);
+  toggle($("#dislSolute"), on => { solute = on; draw(); });
+  toggle($("#dislGB"), on => { gb = on; draw(); });
+  toggle($("#dislBurgers"), on => { burgers = on; draw(); });
+  function reset() { xd = -15; t = 0; running = false; done = false; stepTo = null; $("#dislGo").textContent = "Push"; draw(); }
+  function need(p) {
+    if (mode === "rigid") return 95;
+    if (gb && Math.abs(p - (GB_X + 0.5)) < 0.6) return 101;
+    if (solute && Math.abs(p - SOL_X) < 1.0) return 45;
+    return 8;
+  }
+  function shift(xb, yrow) {
+    let s;
+    if (mode === "rigid") s = t;
+    else { const w = 0.9 + 0.55 * Math.abs(yrow); s = 0.5 - Math.atan((xb - xd) / w) / Math.PI; }
+    return yrow > 0 ? s / 2 : -s / 2;
+  }
+  function draw() {
+    const cv = $("#dislCv"); const { ctx, w, h } = fit(cv, 0.64, 600, 230);
+    ctx.clearRect(0, 0, w, h);
+    const padL = w < 520 ? 44 : 86;
+    const b = Math.min((w - padL - 22) / (NC + 1.2), h / (2 * ROWS + 3));
+    const ox = padL + (half + 0.6) * b, oy = h / 2 + b * 0.25;
+    const P = (i, j) => { const yrow = j + 0.5; return [ox + (i + shift(i, yrow)) * b, oy - yrow * b]; };
+    const ink = tok("--ink"), muted = tok("--muted"), acc = tok("--accent"), amb = tok("--amber"), atomC = tok("--atom"), teal = tok("--teal");
+    const mono = FONT.mono();
+    if (gb) {
+      const gx = ox + (GB_X + 0.5) * b;
+      ctx.fillStyle = rgba(teal, 0.1); ctx.fillRect(gx, oy - (ROWS + 0.6) * b, (half - GB_X + 1) * b, (2 * ROWS + 0.6) * b);
+      ctx.strokeStyle = teal; ctx.setLineDash([6, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(gx, oy - (ROWS + 0.7) * b); ctx.lineTo(gx, oy + (ROWS + 0.2) * b); ctx.stroke(); ctx.setLineDash([]);
+      tag(ctx, "grain boundary", ox + (half + 0.9) * b, oy - (ROWS + 1.0) * b, "right", teal);
+    }
+    // bonds inside each half, coloured by strain
+    const strainCol = d => { const e = Math.abs(d / b - 1); return e > 0.18 ? acc : e > 0.08 ? amb : muted; };
+    ctx.lineWidth = Math.max(1, b * 0.09);
+    for (let j = -ROWS; j < ROWS; j++) for (let i = -half; i <= half; i++) {
+      const [x1, y1] = P(i, j);
+      if (i < half) { const [x2, y2] = P(i + 1, j); ctx.strokeStyle = strainCol(Math.hypot(x2 - x1, y2 - y1)); ctx.globalAlpha = 0.6; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+      if (j !== -1 && j < ROWS - 1) { const [x2, y2] = P(i, j + 1); ctx.strokeStyle = muted; ctx.globalAlpha = 0.45; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    }
+    ctx.globalAlpha = 1;
+    // bonds across the slip plane
+    let broken = 0;
+    const tops = []; for (let i = -half; i <= half; i++) tops.push(P(i, 0));
+    for (let i = -half; i <= half; i++) {
+      const [xb, yb] = P(i, -1);
+      let best = null, bd = 1e9; tops.forEach(p => { const d = Math.abs(p[0] - xb); if (d < bd) { bd = d; best = p; } });
+      const mis = bd / b;
+      if (mis > 0.62) continue;
+      let c = muted, lw = Math.max(1, b * 0.09), a = 0.6;
+      if (mis > 0.3) { c = acc; lw = b * 0.15; a = 1; broken++; } else if (mis > 0.15) { c = amb; lw = b * 0.12; a = 1; }
+      ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.globalAlpha = a; ctx.beginPath(); ctx.moveTo(xb, yb); ctx.lineTo(best[0], best[1]); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    let extra = null;
+    if (mode === "disl" && xd > -half - 0.5 && xd < half + 0.5) {
+      let bd = 1e9; for (let i = -half; i <= half; i++) { const d = Math.abs(i + shift(i, 0.5) - xd); if (d < bd) { bd = d; extra = i; } }
+    }
+    const r = b * 0.3;
+    for (let j = -ROWS; j < ROWS; j++) for (let i = -half; i <= half; i++) {
+      const [px, py] = P(i, j);
+      let fill = atomC, rr = r;
+      if (extra !== null && i === extra && j >= 0) fill = acc;
+      if (solute && i === SOL_X && j === -1) { fill = amb; rr = r * 1.5; }
+      ball(ctx, px, py, rr, fill);
+    }
+    // slip plane
+    ctx.strokeStyle = ink; ctx.globalAlpha = 0.6; ctx.setLineDash([2, 5]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL - 2, oy); ctx.lineTo(ox + (half + 0.9) * b, oy); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+    ctx.fillStyle = muted; ctx.font = (w < 520 ? "10px " : "12px ") + mono; ctx.textAlign = "right";
+    if (w < 520) { ctx.fillText("slip", padL - 6, oy - 2); ctx.fillText("plane", padL - 6, oy + 10); } else ctx.fillText("slip plane", padL - 8, oy + 4);
+    if (extra !== null) {
+      const sx = ox + xd * b, sy = oy;
+      ctx.strokeStyle = acc; ctx.lineWidth = 3.5; ctx.lineCap = "round";
+      ctx.beginPath(); ctx.moveTo(sx - b * 0.42, sy + b * 0.1); ctx.lineTo(sx + b * 0.42, sy + b * 0.1); ctx.moveTo(sx, sy + b * 0.1); ctx.lineTo(sx, sy - b * 0.62); ctx.stroke(); ctx.lineCap = "butt";
+      ctx.fillStyle = acc; ctx.font = "600 12px " + mono; ctx.textAlign = "center"; ctx.fillText("extra half-plane", ox + (extra + shift(extra, ROWS - 0.5)) * b, oy - (ROWS + 0.2) * b);
+    }
+    // Burgers circuit: equal atom steps right, up, left, down around the core
+    if (burgers && mode === "disl") {
+      const n = 3, path = [];
+      for (let i = -n; i <= n; i++) path.push(P(i, -3));
+      const nearestBottom = X => { let k = -half, bd = 1e9; for (let i = -half; i <= half; i++) { const d = Math.abs(P(i, -1)[0] - X); if (d < bd) { bd = d; k = i; } } return k; };
+      const nearestTop = X => { let k = -half, bd = 1e9; for (let i = -half; i <= half; i++) { const d = Math.abs(P(i, 0)[0] - X); if (d < bd) { bd = d; k = i; } } return k; };
+      let ci = n; for (let j = -2; j <= -1; j++) path.push(P(ci, j));
+      ci = nearestTop(P(ci, -1)[0]); for (let j = 0; j <= 2; j++) path.push(P(ci, j));
+      for (let s = 1; s <= 2 * n; s++) path.push(P(ci - s, 2));
+      ci = ci - 2 * n; for (let j = 1; j >= 0; j--) path.push(P(ci, j));
+      ci = nearestBottom(P(ci, 0)[0]); for (let j = -1; j >= -3; j--) path.push(P(ci, j));
+      ctx.strokeStyle = teal; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.beginPath(); path.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
+      const s0 = path[0], e0 = path[path.length - 1];
+      ball(ctx, s0[0], s0[1], r * 0.75, teal);
+      const gap = Math.hypot(e0[0] - s0[0], e0[1] - s0[1]) / b;
+      ctx.font = "600 12px " + mono; ctx.textAlign = "center";
+      if (gap > 0.5) {
+        ctx.strokeStyle = acc; ctx.fillStyle = acc; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(e0[0], e0[1] + b * 0.55); ctx.lineTo(s0[0] + 6, s0[1] + b * 0.55); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(s0[0], s0[1] + b * 0.55); ctx.lineTo(s0[0] + 9, s0[1] + b * 0.55 - 5); ctx.lineTo(s0[0] + 9, s0[1] + b * 0.55 + 5); ctx.fill();
+        tag(ctx, "b: the circuit fails to close", (s0[0] + e0[0]) / 2, s0[1] + b * 1.2, "center", acc);
+      } else { tag(ctx, "circuit closes: no dislocation inside", s0[0] + 3 * b, s0[1] + b * 1.2, "center", teal); }
+    }
+    // shear arrows sized by stress
+    const tau = +tauIn.value; const ay = oy - (ROWS + 1.5) * b, by2 = oy + (ROWS + 0.75) * b;
+    const len = 1.6 * b + tau / 100 * 4 * b;
+    ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = 2.5;
+    const arrow = (x1, y1, x2) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y1); ctx.stroke(); const d = Math.sign(x2 - x1); ctx.beginPath(); ctx.moveTo(x2 + d * 2, y1); ctx.lineTo(x2 - d * 9, y1 - 6); ctx.lineTo(x2 - d * 9, y1 + 6); ctx.fill(); };
+    arrow(ox - len / 2, ay, ox + len / 2); arrow(ox + len / 2, by2, ox - len / 2);
+    ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "left"; ctx.fillText("τ = " + tau, ox + len / 2 + 10, ay + 4);
+    if (done || (mode === "disl" && xd > half + 0.5)) { ctx.fillStyle = acc; ctx.font = "600 12px " + mono; ctx.textAlign = "right"; ctx.fillText("slip step", ox + (half + 0.9) * b, oy - (ROWS + 0.25) * b); }
+    $("#dislBroken").textContent = broken + " of " + NC;
+    const nd = need(mode === "rigid" ? 0 : clamp(xd, -half, half));
+    $("#dislNeed").textContent = (nd > 100 ? "blocked" : String(nd)) + (mode === "rigid" ? "  (ideal strength)" : "");
+    let st;
+    if (done || (mode === "disl" && xd >= 15)) st = "Slipped by one atom spacing. Look for the step at each end.";
+    else if (stepTo !== null) st = "Stepping one atom spacing.";
+    else if (!running) st = mode === "rigid" ? "Press Push. The whole top half must move together." : "Press Push, or step it along one atom at a time.";
+    else if (tau < nd) st = nd > 100 ? "Stuck at the grain boundary. More dislocations would pile up behind it." : (mode === "rigid" ? "Not enough stress: every bond holds. Raise it toward 95." : nd > 10 ? "Pinned by the solute atom. Raise the stress to break free." : "Below the stress needed to move it. Raise it.");
+    else st = mode === "rigid" ? "Every bond across the plane is breaking at once." : "Gliding: only the bonds at the red symbol are breaking.";
+    $("#dislStatus").textContent = st;
+  }
+  tabs.disl = {
+    shown: draw, resize: draw, theme: draw,
+    tick: dt => {
+      const f = dt * 60;
+      if (stepTo !== null) {
+        xd = Math.min(stepTo, xd + 0.05 * f);
+        if (xd >= stepTo - 1e-9) { xd = stepTo; stepTo = null; if (xd >= 15) done = true; }
+        draw(); return;
+      }
+      if (!running || done) return;
+      const tau = +tauIn.value;
+      if (mode === "rigid") {
+        if (tau >= 95) { t = Math.min(1, t + 0.012 * f); if (t >= 1) { done = true; running = false; $("#dislGo").textContent = "Push"; } }
+        else t = 0.06 * tau / 95;
+      } else {
+        const nd = need(xd);
+        if (tau > nd) xd += (0.012 + 0.0016 * (tau - nd)) * f;
+        if (xd > 15) { xd = 15; done = true; running = false; $("#dislGo").textContent = "Push"; }
+      }
+      draw();
+    }
+  };
+  draw();
+})();
+
+/* ---------------------------------------------------------------- driver */
+let last = 0;
+function loop(ts) {
+  const dt = last ? Math.min(0.1, (ts - last) / 1000) : 1 / 60; last = ts;
+  const t = tabs[active];
+  if (t && t.tick) { try { t.tick(dt); } catch (e) { console.error(e); } }
+  requestAnimationFrame(loop);
+}
+const retheme = () => Object.values(tabs).forEach(t => t.theme && t.theme());
+if (window.matchMedia) { const mq = matchMedia("(prefers-color-scheme: dark)"); (mq.addEventListener ? mq.addEventListener("change", retheme) : mq.addListener(retheme)); }
+new MutationObserver(retheme).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+let rz = null;
+window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { const t = tabs[active]; if (t && t.resize) t.resize(); }, 120); });
+show((location.hash || "#bonds").slice(1));
+requestAnimationFrame(loop);
+})();
+</script>
