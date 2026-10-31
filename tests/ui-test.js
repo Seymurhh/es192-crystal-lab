@@ -2,7 +2,8 @@
 const puppeteer = require("puppeteer-core");
 const path = require("path"), fs = require("fs");
 const arg = process.argv[2] || path.join(__dirname, "..", "index.html");
-const url = /^(https?|file):/.test(arg) ? arg : "file://" + path.resolve(arg);
+const url0 = /^(https?|file):/.test(arg) ? arg : "file://" + path.resolve(arg);
+const url = url0 + (url0.includes("?") ? "&" : "?") + "mode=explore";   // these suites test the full bench; learn-test.js covers Learn mode
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const log = []; const ok = (c, m) => log.push((c ? "PASS " : "FAIL ") + m);

@@ -3,7 +3,8 @@
 const puppeteer = require("puppeteer-core");
 const path = require("path"), fs = require("fs");
 const arg = process.argv[2] || path.join(__dirname, "..", "index.html");
-const url = /^(https?|file):/.test(arg) ? arg : "file://" + path.resolve(arg);
+const url0 = /^(https?|file):/.test(arg) ? arg : "file://" + path.resolve(arg);
+const url = url0 + (url0.includes("?") ? "&" : "?") + "mode=explore";   // these suites test the full bench; learn-test.js covers Learn mode
 const out = process.argv[3] || path.join(__dirname, "out"), W = +(process.argv[4] || 1440), H = +(process.argv[5] || 900);
 fs.mkdirSync(out, { recursive: true });
 const sleep = ms => new Promise(r => setTimeout(r, ms));

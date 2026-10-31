@@ -1,7 +1,7 @@
 <title>ES 192 Crystal Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
 /* Layout: a lab bench. A slim bar of tabs on top; under it the live model fills the screen height beside a
    scrolling instrument column, so nothing important sits below the fold. Stacks on phones. */
@@ -22,6 +22,7 @@
   --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+  --serif: "Source Serif 4", "Iowan Old Style", Georgia, serif;
   --barH: 56px;
 }
 @media (prefers-color-scheme: dark) {
@@ -231,6 +232,113 @@ body.present main.wrap { max-width: none; padding-block: 10px 12px; }
 body.present .bench { grid-template-columns: minmax(0, 1fr) minmax(300px, 25vw); height: calc(100vh - var(--barH) - 22px); }
 body.present .exq { font-size: 17px; }
 @media (max-width: 960px) { body.present .bench { grid-template-columns: minmax(0, 1fr); height: auto; } }
+
+/* ---------- chapter index in the top bar: numbered like a lab manual, a hairline progress bar under each */
+nav.tabs button { border-radius: 0; padding: 16px 11px 15px; background: none; box-shadow: none; position: relative; gap: 7px; }
+nav.tabs button:hover { background: none; color: var(--ink); }
+nav.tabs button .n { width: auto; height: auto; border: 0; background: none; border-radius: 0; font: 500 11.5px/1 var(--mono); color: var(--muted); letter-spacing: .02em; }
+nav.tabs button[aria-selected="true"] { background: none; box-shadow: inset 0 -2px 0 var(--accent); }
+nav.tabs button[aria-selected="true"] .n { background: none; color: var(--accent); }
+nav.tabs .pg { position: absolute; left: 11px; right: 11px; bottom: 5px; height: 2px; background: var(--rule); display: none; }
+nav.tabs .pg > b { display: block; height: 100%; width: 0; background: var(--teal); transition: width .4s; }
+body.learn nav.tabs .pg { display: block; }
+body.learn nav.tabs button[aria-selected="true"] .pg { bottom: 0; opacity: 0; }
+.modesw { display: inline-flex; align-items: center; margin-right: 6px; font: 600 14px/1 var(--body); }
+.modesw button { all: unset; cursor: pointer; padding: 8px 9px; color: var(--muted); border-radius: 6px; }
+.modesw button:hover { color: var(--ink); }
+.modesw button[aria-checked="true"] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); border-radius: 0; }
+.modesw button:focus-visible { outline: 2px solid var(--accent); }
+.modesw i { width: 1px; height: 16px; background: var(--rule); }
+
+/* ---------- Learn mode: the live model on the left, one step of the lesson on the right */
+body.learn main.wrap { display: grid; grid-template-columns: minmax(0, 1fr) clamp(350px, 29vw, 450px); gap: 0 26px; align-items: start; }
+body.learn .tabpanel:not([hidden]) { grid-column: 1; grid-row: 1; min-width: 0; }
+body.learn .bench { grid-template-columns: minmax(0, 1fr); }
+body.learn .bench > .side { display: none; }
+body.learn .pdtool, body.learn .pdbot, body.learn #pdSys { display: none; }
+body.learn .pdtop { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); }
+body.learn .pdtop > :first-child { grid-row: span 2; grid-column: auto; }
+#lesson { grid-column: 2; grid-row: 1; position: sticky; top: calc(var(--barH) + 14px); max-height: calc(100vh - var(--barH) - 28px); overflow-y: auto; scrollbar-width: thin;
+  font-family: var(--serif); color: var(--ink); padding: 2px 4px 20px 24px; border-left: 1px solid var(--rule); }
+.lsn-chap { font: 600 11px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.lsn-title { font: 650 27px/1.12 var(--serif); letter-spacing: -0.012em; margin: 8px 0 8px; font-family: var(--serif); }
+.lsn-obj { font: italic 400 15.5px/1.45 var(--serif); color: var(--muted); margin: 0 0 14px; }
+.lsn-rail { display: flex; gap: 4px; margin: 0 0 20px; }
+.lsn-rail button { all: unset; flex: 1; height: 20px; cursor: pointer; position: relative; }
+.lsn-rail button::before { content: ""; position: absolute; left: 0; right: 0; top: 8px; height: 4px; border-radius: 2px; background: var(--rule); transition: background .2s; }
+.lsn-rail button.done::before { background: color-mix(in srgb, var(--teal) 70%, var(--rule)); }
+.lsn-rail button[aria-current="step"]::before { background: var(--ink); top: 6px; height: 8px; }
+.lsn-rail button:hover::before { background: var(--muted); }
+.lsn-rail button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.lsn-kind { display: flex; align-items: center; gap: 8px; font: 600 11.5px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--kc); }
+.lsn-kind svg { width: 19px; height: 19px; flex: none; }
+.lsn-of { margin-left: auto; color: var(--muted); letter-spacing: .04em; }
+.lsn-step > h3 { font: 650 22px/1.22 var(--serif); margin: 10px 0 10px; letter-spacing: -0.005em; text-transform: none; color: var(--ink); }
+.lsn-body { font-size: 17px; line-height: 1.58; }
+.lsn-body p { margin: 0 0 11px; }
+.lsn-eq { font: 500 15.5px/1.5 var(--mono); background: var(--soft); border-left: 3px solid var(--ink); padding: 8px 12px; margin: 4px 0 12px !important; }
+.lsn-ctl { margin: 14px 0 6px; padding: 14px; background: var(--panel); border: 1px solid var(--rule); border-radius: 10px; display: grid; gap: 12px; font-family: var(--body); }
+.lsn-ctl .group h3, .lsn-ctl .readout h3 { margin: 0 0 6px; }
+.lsn-ctl #pdLog { max-height: 300px; overflow: auto; }
+.lsn-goals { list-style: none; margin: 14px 0 4px; padding: 0; display: grid; gap: 8px; font: 600 15.5px/1.4 var(--body); }
+.lsn-goals li { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; color: var(--ink); }
+.lsn-goals li::before { content: ""; width: 14px; height: 14px; margin-top: 3px; border-radius: 50%; border: 2px solid var(--kc, var(--accent)); box-sizing: border-box; }
+.lsn-goals li.ok { color: var(--teal); }
+.lsn-goals li.ok::before { border-color: var(--teal); background: var(--teal); box-shadow: inset 0 0 0 2px var(--paper); }
+.lsn-opts { display: grid; border-top: 1px solid var(--rule); margin: 14px 0 6px; }
+.lsn-opts button { all: unset; display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 11px 8px; border-bottom: 1px solid var(--rule); cursor: pointer; font: 16.5px/1.42 var(--serif); color: var(--ink); }
+.lsn-opts button b { font: 600 12.5px/1.9 var(--mono); color: var(--muted); }
+.lsn-opts button:hover:not(:disabled) { background: var(--soft); }
+.lsn-opts button:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.lsn-opts button:disabled { cursor: default; }
+.lsn-opts button.right { color: var(--teal); background: color-mix(in srgb, var(--teal) 9%, transparent); }
+.lsn-opts button.right b, .lsn-opts button.wrong b { color: inherit; }
+.lsn-opts button.wrong { color: var(--accent); }
+.lsn-opts button.wrong span { text-decoration: line-through; text-decoration-thickness: 1px; }
+.lsn-opts button.chosen b::after { content: " ◂"; }
+.lsn-blank { font: 17px/2 var(--serif); margin: 14px 0 4px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.lsn-blank input { font: 600 17px var(--mono); width: 7ch; border: 0; border-bottom: 2px solid var(--ink); background: transparent; color: var(--ink); text-align: center; padding: 1px 4px; border-radius: 0; }
+.lsn-blank input:focus { outline: none; border-bottom-color: var(--accent); background: var(--soft); }
+.lsn-blank input.ok { border-bottom-color: var(--teal); color: var(--teal); }
+.lsn-blank input.bad { border-bottom-color: var(--accent); animation: lsn-shake .35s; }
+@keyframes lsn-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.lsn-check { all: unset; cursor: pointer; font: 600 14px/1 var(--body); padding: 8px 12px; border: 1px solid var(--ink); border-radius: 7px; margin-left: 4px; }
+.lsn-check:hover { background: var(--ink); color: var(--paper); }
+.lsn-fb { font: 15px/1.45 var(--body); color: var(--accent); margin: 6px 0 0; min-height: 0; }
+.lsn-fb:empty { display: none; }
+.lsn-why { border-left: 3px solid var(--teal); padding: 4px 0 4px 14px; margin: 16px 0 4px; font-size: 16.5px; line-height: 1.55; animation: lsn-in .35s ease-out; }
+.lsn-why b { color: var(--teal); }
+@keyframes lsn-in { from { opacity: 0; transform: translateY(6px); } }
+.lsn-nav { display: flex; align-items: center; gap: 8px; margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--rule); font-family: var(--body); }
+.lsn-nav button { all: unset; cursor: pointer; font: 600 15px/1 var(--body); padding: 11px 15px; border-radius: 8px; color: var(--ink); }
+.lsn-nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#lsnBack:disabled { opacity: .35; cursor: default; }
+#lsnLink { color: var(--muted); padding: 9px; display: inline-grid; }
+#lsnLink svg { width: 17px; height: 17px; }
+#lsnNext { margin-left: auto; color: var(--muted); background: var(--soft); }
+#lsnNext.go { background: var(--ink); color: var(--paper); }
+#lsnNext.go:hover { background: var(--accent); }
+/* pins: a pulsing ring and a label, pointing at a part of the model */
+.pin { position: absolute; z-index: 6; pointer-events: none; width: 0; height: 0; }
+.pin i { position: absolute; left: -9px; top: -9px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--accent); box-sizing: border-box; animation: pin-pulse 1.8s ease-out infinite; }
+.pin.flip span { left: auto; right: 12px; }
+.pin span { position: absolute; left: 12px; top: -30px; white-space: nowrap; font: 600 12.5px/1 var(--body); background: var(--ink); color: var(--paper); padding: 5px 8px; border-radius: 5px; box-shadow: var(--shadow); }
+@keyframes pin-pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) { .pin i, .lsn-why, .lsn-blank input.bad { animation: none; } }
+@media (max-width: 960px) {
+  body.learn main.wrap { grid-template-columns: minmax(0, 1fr); }
+  #lesson { position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 25; max-height: 46vh; background: var(--paper); border-left: 0; border-top: 1px solid var(--rule);
+    box-shadow: 0 -10px 30px rgba(16, 24, 40, .14); padding: 12px 16px 14px; border-radius: 14px 14px 0 0; }
+  body.learn main.wrap { padding-bottom: 50vh; }
+  #lesson .lsn-obj, #lesson .lsn-title { display: none; }
+  #lesson .lsn-rail { margin-bottom: 12px; }
+  #lesson .lsn-body { font-size: 16px; }
+  body.learn .pdtop { grid-template-columns: minmax(0, 1fr); }
+  body.learn .pdtop > :first-child { grid-row: auto; }
+}
+body.present.learn main.wrap { grid-template-columns: minmax(0, 1fr) clamp(380px, 30vw, 520px); }
+body.present #lesson .lsn-body, body.present #lesson .lsn-why { font-size: 19px; }
+body.present #lesson .lsn-step h3 { font-size: 25px; }
 </style>
 <script>try { var th = localStorage.getItem("crystal-lab-theme"); if (th) document.documentElement.dataset.theme = th; } catch (e) {}</script>
 
@@ -238,14 +346,15 @@ body.present .exq { font-size: 17px; }
   <div class="in">
     <a class="brand" href="#bonds" aria-label="Crystal Lab, first tab"><svg viewBox="0 0 32 32" aria-hidden="true"><g fill="none" stroke="var(--accent)" stroke-width="2"><ellipse cx="16" cy="16" rx="14" ry="5.5"/><ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(60 16 16)"/><ellipse cx="16" cy="16" rx="14" ry="5.5" transform="rotate(120 16 16)"/></g><circle cx="16" cy="16" r="3.2" fill="var(--accent)"/></svg>Crystal <span>Lab</span></a>
     <nav class="tabs" role="tablist" aria-label="Demos">
-      <button role="tab" id="t-bonds" data-tab="bonds" aria-selected="true" aria-controls="p-bonds" title="Lecture 9A · key 1"><span class="n">1</span>Bonds</button>
-      <button role="tab" id="t-cells" data-tab="cells" aria-selected="false" aria-controls="p-cells" title="Lecture 9A · key 2"><span class="n">2</span>Unit cells</button>
-      <button role="tab" id="t-stack" data-tab="stack" aria-selected="false" aria-controls="p-stack" title="Lecture 9A · key 3"><span class="n">3</span>Stacking</button>
-      <button role="tab" id="t-raft" data-tab="raft" aria-selected="false" aria-controls="p-raft" title="Lectures 9A and 10A · key 4"><span class="n">4</span>Atom raft</button>
-      <button role="tab" id="t-disl" data-tab="disl" aria-selected="false" aria-controls="p-disl" title="Lecture 10A · key 5"><span class="n">5</span>Dislocations</button>
-      <button role="tab" id="t-phase" data-tab="phase" aria-selected="false" aria-controls="p-phase" title="Week 9 lab and Lecture 10B · key 6"><span class="n">6</span>Phase diagrams</button>
+      <button role="tab" id="t-bonds" data-tab="bonds" aria-selected="true" aria-controls="p-bonds" title="Lecture 9A · key 1"><span class="n">01</span>Bonds</button>
+      <button role="tab" id="t-cells" data-tab="cells" aria-selected="false" aria-controls="p-cells" title="Lecture 9A · key 2"><span class="n">02</span>Unit cells</button>
+      <button role="tab" id="t-stack" data-tab="stack" aria-selected="false" aria-controls="p-stack" title="Lecture 9A · key 3"><span class="n">03</span>Stacking</button>
+      <button role="tab" id="t-raft" data-tab="raft" aria-selected="false" aria-controls="p-raft" title="Lectures 9A and 10A · key 4"><span class="n">04</span>Atom raft</button>
+      <button role="tab" id="t-disl" data-tab="disl" aria-selected="false" aria-controls="p-disl" title="Lecture 10A · key 5"><span class="n">05</span>Dislocations</button>
+      <button role="tab" id="t-phase" data-tab="phase" aria-selected="false" aria-controls="p-phase" title="Week 9 lab and Lecture 10B · key 6"><span class="n">06</span>Phase diagrams</button>
     </nav>
     <div class="tools">
+      <div class="modesw" id="modeSw" role="radiogroup" aria-label="Mode"><button role="radio" data-m="learn" aria-checked="true" title="Step-by-step lessons">Learn</button><i aria-hidden="true"></i><button role="radio" data-m="explore" aria-checked="false" title="Every control, for free experiments and demos">Explore</button></div>
       <button class="ibtn" id="themeBtn" title="Switch between light and dark" aria-label="Switch between light and dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
       <button class="ibtn" id="presentBtn" aria-pressed="false" title="Present mode: full screen, larger models (key P)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg><span class="lbl">Present</span></button>
     </div>
@@ -579,6 +688,7 @@ body.present .exq { font-size: 17px; }
       </div>
     </div>
   </section>
+  <aside id="lesson" aria-label="Lesson" hidden></aside>
 </main>
 
 <script src="assets/micro-fields.js"></script>
@@ -681,6 +791,7 @@ const ICON = {
 
 /* ------------------------------------------------------------------ tabs */
 const tabs = {};
+let learnHook = null;
 const ORDER = ["bonds", "cells", "stack", "raft", "disl", "phase"];
 let active = "bonds";
 function show(name) {
@@ -693,6 +804,7 @@ function show(name) {
   const nav = $("nav.tabs"), b = $("#t-" + name);
   if (b && (b.offsetLeft < nav.scrollLeft || b.offsetLeft + b.offsetWidth > nav.scrollLeft + nav.clientWidth)) nav.scrollLeft = b.offsetLeft - 12;
   if (tabs[name] && tabs[name].shown) tabs[name].shown();
+  if (learnHook) learnHook(name);
 }
 $$("nav.tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.tab)));
 $("nav.tabs").addEventListener("keydown", e => {
@@ -704,6 +816,8 @@ $("nav.tabs").addEventListener("keydown", e => {
 /* links: #cells opens a tab; #cells:2 also sets up its second Explore question; #phase:cuni:1 picks the system first */
 function route() {
   const parts = decodeURIComponent((location.hash || "#bonds").slice(1)).split(":");
+  if (parts[0] === "learn" && ORDER.includes(parts[1]) && window.__learn) { window.__learn.go(parts[1], Math.max(0, (parseInt(parts[2], 10) || 1) - 1)); return; }
+  if (parts.length > 1 && window.__learn && window.__learn.mode === "learn") window.__learn.setMode("explore");
   const name = ORDER.includes(parts[0]) ? parts[0] : "bonds";
   show(name);
   if (name === "phase" && parts.length > 2 && tabs.phase && tabs.phase.system) { tabs.phase.system(parts[1]); parts.splice(1, 1); }
@@ -1024,6 +1138,7 @@ function clipPlanesFrom(v, defs) {
   const F = (D, x) => 2 * D * A * (Math.exp(-A * (x - 1)) - Math.exp(-2 * A * (x - 1)));
   const xPeak = 1 + Math.log(2) / A;
   let sel = DATA[0], x = 1, parts = true, anim = null, transfer = 1;
+  const seen = new Set();   // bond types looked at, for the lessons
   const chips = $("#bondChips");
   [["ionic", "Ionic"], ["covalent", "Covalent"], ["metallic", "Metallic"], ["vdw", "Van der Waals"], ["hyd", "Hydrogen"]].forEach(([t, label]) => {
     const row = document.createElement("div"); row.className = "row";
@@ -1040,7 +1155,7 @@ function clipPlanesFrom(v, defs) {
     chips.appendChild(row);
   });
   function pick(i) {
-    sel = DATA[i]; anim = null; transfer = 1;
+    sel = DATA[i]; anim = null; transfer = 1; seen.add(sel.t);
     $$("button", chips).forEach(b => b.setAttribute("aria-pressed", +b.dataset.i === i ? "true" : "false"));
     $("#bondTitle").textContent = TYPES[sel.t].name;
     $("#bondDesc").textContent = TYPES[sel.t].d;
@@ -1351,7 +1466,8 @@ function clipPlanesFrom(v, defs) {
       }
       if (!reduceMotion && (sel.t === "metallic" || sel.t === "vdw")) drawPair();
     },
-    resize: drawAll, theme: drawAll
+    resize: drawAll, theme: drawAll,
+    state: () => ({ name: sel.n, type: sel.t, x, view: $("#bondPlot").hidden ? "scatter" : "curves", seen: Array.from(seen), anim: !!anim })
   };
   /* graph: energy and force curves, or the bond-energy vs melting-point chart */
   pressGroup($("#bondView"), view => {
@@ -1466,8 +1582,10 @@ function clipPlanesFrom(v, defs) {
     return "inside the cell: the whole atom counts";
   }
 
+  const combos = new Set();   // structure:view pairs looked at, for the lessons
   function build() {
     v.clear(); atomMeshes = []; selected = null; tipEl.hidden = true;
+    combos.add(type + ":" + mode);
     if (mode === "nbr") return buildNeighbours();
     if (type === "hcp") return buildHCP();
     const a = reps === 1 ? 2.6 : 1.7;
@@ -1667,7 +1785,8 @@ function clipPlanesFrom(v, defs) {
     if (st && st !== type) setType(st);
     if (st === "bcc") { metal = METALS.bcc[0]; $("#cellMetal").value = 0; stats(mode === "nbr" ? 8 : undefined); }
   });
-  tabs.cells = { shown: () => { v.size(); v.dirty = true; }, tick: () => v.render(), theme: () => build(), resize: () => v.size() };
+  tabs.cells = { shown: () => { v.size(); v.dirty = true; }, tick: () => v.render(), theme: () => build(), resize: () => v.size(),
+    state: () => ({ type, mode, reps, plane, ironT: +iron.value, combos: Array.from(combos) }) };
   const look111 = () => { v.rotX = 0.6155; v.rotY = -Math.PI / 4; v.zoom = 1; v.dirty = true; };  // view straight down the cube diagonal [111]
   mountGuide("cells", [
     { q: "Choose “Only what's inside the cell” for FCC and click a corner atom, then a face atom. How many whole atoms fit in one cell?",
@@ -1770,7 +1889,8 @@ function clipPlanesFrom(v, defs) {
   toggle($("#stackGlass"), on => { glass = on; build(); });
   toggle($("#stackSpin"), on => { v.spin = on; });
   let frameDt = 1 / 60;
-  tabs.stack = { shown: () => { v.size(); v.dirty = true; }, tick: dt => { frameDt = dt; v.render(); }, theme: () => build(), resize: () => v.size() };
+  tabs.stack = { shown: () => { v.size(); v.dirty = true; }, tick: dt => { frameDt = dt; v.render(); }, theme: () => build(), resize: () => v.size(),
+    state: () => ({ seq: seq.join(""), verdict: $("#stackVerdict").textContent, glass }) };
   mountGuide("stack", [
     { q: "Build A, B, then put the third layer back over A. Keep going. What do you get?",
       a: "ABAB… is hexagonal close-packed (HCP): Mg, Ti, Zn.",
@@ -1796,7 +1916,7 @@ function clipPlanesFrom(v, defs) {
   const LX = NX * A0, LY = NY * A0 * Math.sqrt(3) / 2;
   let x = [], y = [], vx = [], vy = [], sg = [], coord = [], c6 = [], s6 = [];
   let fx = new Float64Array(0), fy = new Float64Array(0);
-  let T0 = 0.05, tau = 0.08, ramp = null, mix = "one", tool = "remove", colorBy = "nbr", paused = false, poke = null;
+  let T0 = 0.05, tau = 0.08, ramp = null, mix = "one", tool = "remove", colorBy = "nbr", paused = false, poke = null, lastCool = null;
   const dt = 0.004, RC = 2.2;
   window.__raft = { state: () => ({ N: x.length, T: temp(), six: six(), cooling: !!ramp }) };
   function perfect(vac) {
@@ -1935,15 +2055,15 @@ function clipPlanesFrom(v, defs) {
   }
   function setT(t) { T0 = t; $("#raftT").value = t; $("#raftTOut").textContent = t.toFixed(2); }
   $("#raftT").addEventListener("input", e => { ramp = null; tau = 0.08; setT(+e.target.value); });
-  $("#raftMelt").addEventListener("click", () => { ramp = null; tau = 0.05; setT(MELT_T); });
-  $("#raftSlow").addEventListener("click", () => { tau = 0.08; ramp = { from: Math.max(T0, 0.8), to: 0.05, n: 0, N: 9000 }; });
-  $("#raftQuench").addEventListener("click", () => { ramp = null; tau = 0.01; setT(0.02); });
+  $("#raftMelt").addEventListener("click", () => { ramp = null; tau = 0.05; setT(MELT_T); lastCool = "melt"; });
+  $("#raftSlow").addEventListener("click", () => { tau = 0.08; ramp = { from: Math.max(T0, 0.8), to: 0.05, n: 0, N: 9000 }; lastCool = "cooling"; });
+  $("#raftQuench").addEventListener("click", () => { ramp = null; tau = 0.01; setT(0.02); lastCool = "quench"; });
   $("#raftReset").addEventListener("click", () => { perfect(3); setT(0.05); forces(); draw(); });
   toggle($("#raftPause"), on => { paused = on; $("#raftPause").textContent = on ? "Resume" : "Pause"; });
   pressGroup($("#raftMix"), m => {
     mix = m;
     for (let i = 0; i < sg.length; i++) sg[i] = m === "one" ? 1 : (Math.random() < 0.5 ? 0.82 : 1.15);
-    ramp = null; tau = 0.05; setT(MELT_T);
+    ramp = null; tau = 0.05; setT(MELT_T); lastCool = "melt";
   });
   pressGroup($("#raftColor"), c => { colorBy = c; legend(); draw(); });
   const HINTS = { remove: "click an atom: remove it", big: "click an atom: make it bigger", small: "click an atom: make it smaller", poke: "press and drag: push atoms aside" };
@@ -1969,13 +2089,14 @@ function clipPlanesFrom(v, defs) {
     tick: dt => {
       if (paused) { draw(); return; }
       for (let s = 0; s < 6; s++) {
-        if (ramp) { ramp.n++; T0 = ramp.from + (ramp.to - ramp.from) * Math.min(1, ramp.n / ramp.N); if (ramp.n >= ramp.N) ramp = null; }
+        if (ramp) { ramp.n++; T0 = ramp.from + (ramp.to - ramp.from) * Math.min(1, ramp.n / ramp.N); if (ramp.n >= ramp.N) { ramp = null; lastCool = "slow"; } }
         step();
       }
       if (ramp || T0 !== +$("#raftT").value) setT(T0);
       draw();
     },
-    theme: () => { sprites.clear(); draw(); }, resize: () => { sprites.clear(); draw(); }
+    theme: () => { sprites.clear(); draw(); }, resize: () => { sprites.clear(); draw(); },
+    state: () => Object.assign(window.__raft.state(), { colorBy, mix, lastCool })
   };
   watch($("#raftStage"), "raft", () => { sprites.clear(); draw(); });
   mountGuide("raft", [
@@ -2017,6 +2138,7 @@ function clipPlanesFrom(v, defs) {
   toggle($("#dislSolute"), on => { solute = on; draw(); });
   toggle($("#dislGB"), on => { gb = on; draw(); });
   toggle($("#dislBurgers"), on => { burgers = on; draw(); });
+  let dgeo = null;
   function reset() { xd = -15; t = 0; running = false; done = false; stepTo = null; $("#dislGo").textContent = "Push"; draw(); }
   function need(p) {
     if (mode === "rigid") return 95;
@@ -2039,6 +2161,7 @@ function clipPlanesFrom(v, defs) {
     const b = Math.min((w - padL - 22) / (NC + 1.2), avail / (2 * ROWS + 3.2), 64);
     const ox = Math.max(padL + (half + 0.6) * b, (w + padL) / 2 - 10), oy = topR + avail / 2 + b * 0.6;
     const lx = ox - (half + 0.6) * b;   // left end of the lattice, for the slip-plane label
+    dgeo = { ox, oy, b, lx };
     const P = (i, j) => { const yrow = j + 0.5; return [ox + (i + shift(i, yrow)) * b, oy - yrow * b]; };
     const ink = tok("--ink"), muted = tok("--muted"), acc = tok("--accent"), amb = tok("--amber"), atomC = tok("--atom"), teal = tok("--teal");
     const mono = FONT.mono();
@@ -2151,6 +2274,8 @@ function clipPlanesFrom(v, defs) {
   ]);
   tabs.disl = {
     shown: draw, resize: draw, theme: draw,
+    state: () => ({ mode, xd, done, burgers, solute, gb, tau: +tauIn.value, running }),
+    pin: k => dgeo && { core: [dgeo.ox + clamp(xd, -half - 0.5, half + 0.5) * dgeo.b, dgeo.oy + dgeo.b * 0.1], plane: [dgeo.lx + dgeo.b * 2.5, dgeo.oy] }[k],
     tick: dt => {
       const f = dt * 60;
       if (stepTo !== null) {
@@ -2515,7 +2640,7 @@ function clipPlanesFrom(v, defs) {
     const lvb = lever(r), short = { L: "liquid", "α+L": "α + liquid", "β+L": "β + liquid", "L+γ": "γ + liquid", "δ+L": "δ + liquid", "L+Fe₃C": "liquid + Fe₃C" }[r.k] || r.k.replace("+", " + ");
     const bx = sys.box === "right" ? L + pw - 8 : L + 8, al = sys.box === "right" ? "right" : "left";
     tag(ctx, short + (lvb ? "" : "  ·  one phase"), bx, Tp + 16, al, ink);
-    if (lvb) tag(ctx, "W" + r.p1 + " = " + lvb.w1.toFixed(2) + "   W" + r.p2 + " = " + lvb.w2.toFixed(2), bx, Tp + 40, al, over);
+    if (lvb && !quiet) tag(ctx, "W" + r.p1 + " = " + lvb.w1.toFixed(2) + "   W" + r.p2 + " = " + lvb.w2.toFixed(2), bx, Tp + 40, al, over);
     $("#pdHint").textContent = pinned ? "point pinned: drag it, use the arrow keys, or type a value" : "move over the diagram; click to pin a point";
   }
   function fmtC(c) { return sysKey === "fec" ? c.toFixed(c < 0.1 ? 3 : 2) : c.toFixed(1); }
@@ -3127,7 +3252,7 @@ function clipPlanesFrom(v, defs) {
   }
 
   /* ---------- wiring */
-  let lastR = null;
+  let lastR = null, quiet = false;
   function update(full) {
     C = clamp(C, sys.cMin, sys.cMax); T = clamp(T, sys.tMin, sys.tMax);
     const r = sys.classify(C, T);
@@ -3194,6 +3319,10 @@ function clipPlanesFrom(v, defs) {
   });
   tabs.phase = {
     system: k => { if (SYS[k] && k !== sysKey) setSystem(k); },
+    state: () => ({ sys: sysKey, C, T, k: lastR && lastR.k, mode: microMode, view: feView, cooling: !!cool, cored }),
+    xy: (c, t) => geo && [geo.X(c), geo.Y(t)],
+    set: (k, c, t, view) => { cool = null; $("#pdCool").textContent = "Cool slowly from the top"; if (k && k !== sysKey) setSystem(k); if (k === "fec" && view && view !== feView) setFeView(view); C = c; T = t; pinned = true; $("#pdFollow").hidden = false; update(true); },
+    quiet: on => { quiet = !!on; drawDiagram(); },
     shown: () => update(true),
     resize: () => { fillKey = ""; update(false); },
     theme: () => { fillKey = ""; update(false); },
@@ -3218,12 +3347,428 @@ function clipPlanesFrom(v, defs) {
   setSystem("pbsn");
 })();
 
+/* ================================================================== LEARN */
+/* Learn mode turns each tab into a short chapter. Every step is one move in a learning cycle:
+     watch    the model demonstrates while the text narrates
+     predict  commit to an answer first, then see what happens
+     try      do something to the model; the model itself checks when the goal is reached
+     work     calculate a number from what you read off the model
+     idea     the principle, stated once, with its equation
+     apply    use the idea to make an engineering choice
+   A step brings in only the controls it needs, sets the model up, and can point at parts of it.
+   Explore mode is the full bench, unchanged. */
+const ST = name => (tabs[name] && tabs[name].state) ? tabs[name].state() : null;
+const near = (a, b, t) => Math.abs(a - b) <= t;
+const pd = (k, c, t, view) => () => tabs.phase && tabs.phase.set(k, c, t, view);
+const saw = (m, key, cond) => { if (cond) m[key] = true; return !!m[key]; };   // goal met at any moment during the step
+const LESSONS = {
+  bonds: {
+    title: "Why atoms hold together",
+    obj: "Explain why bonded atoms sit at one spacing, what bond energy and bond strength are, and why stronger bonds melt at higher temperatures and make stiffer solids.",
+    steps: [
+      { k: "watch", h: "Two atoms, far apart",
+        p: "<p>Sodium gives one electron to chlorine. Now one is positive and one is negative, and opposite charges pull together. Watch them close in.</p><p>Notice that they stop. Something pushes back when they get too close.</p>",
+        setup: [["click", '#bondChips [data-i="0"]'], ["click", '#bondView [data-v="curves"]'], ["val", "#bondR", 2.6]], play: [["wait", 600], ["click", "#bondForm"]] },
+      { k: "try", h: "Find where they sit",
+        p: "<p>Drag the slider to change the spacing. The lower graph is the force you would need to hold the atoms at that spacing: above zero they pull together, below zero they push apart.</p>",
+        show: ["#bondR < .range"], setup: [["val", "#bondR", 2.1]],
+        goals: [{ t: "Move the atoms to the spacing where that force is zero", ok: s => near(s.x, 1, 0.025) }],
+        why: "That spacing is r₀. The pull of the opposite charges and the push of the overlapping electron clouds balance, so the net force is zero and the energy is at its lowest. Every bonded pair sits at its own r₀." },
+      { k: "idea", h: "An energy well",
+        p: "<p>The energy curve (top graph) adds two parts. <b>Attraction</b> lowers the energy as the atoms approach. <b>Repulsion</b> rises very steeply once the electron clouds overlap. Their sum dips to a minimum at r₀: an energy well.</p><p class=\"lsn-eq\">bond energy E₀ = depth of the well</p><p>E₀ is the energy needed to pull the pair completely apart, in kJ per mole of bonds (Callister §2.5).</p>",
+        show: ["#bondParts"], setup: [["on", "#bondParts"], ["val", "#bondR", 1]] },
+      { k: "try", h: "Pull until it breaks",
+        p: "<p>Pull the atoms apart and watch the force graph.</p>",
+        show: ["#bondR < .range"], setup: [["val", "#bondR", 1]],
+        goals: [{ t: "Pull past the top of the force curve", ok: s => s.x > 1.3 }],
+        why: "The force rose to a peak and then fell. The peak is the most force the bond can carry, the bond's strength. Past it the bond is giving way: you no longer need more force to separate the atoms." },
+      { k: "try", h: "Four ways to bond",
+        p: "<p>Pick substances with each kind of bond and compare the pictures and the depth of the wells.</p>",
+        show: ["#bondChips < .group"], setup: [["click", '#bondView [data-v="curves"]'], ["val", "#bondR", 1]],
+        goals: [{ t: "An ionic bond", ok: s => s.type === "ionic" || s.seen.includes("ionic") }, { t: "A covalent bond", ok: s => s.seen.includes("covalent") }, { t: "A metallic bond", ok: s => s.seen.includes("metallic") }, { t: "A van der Waals bond", ok: s => s.seen.includes("vdw") }],
+        why: "Ionic: electrons handed over. Covalent: electron pairs shared in fixed directions. Metallic: outer electrons shared by the whole crystal. Van der Waals: nothing exchanged, only a flickering imbalance of charge. The first three are about 100 to 1000 kJ/mol; van der Waals and hydrogen bonds are 10 to 100 times weaker." },
+      { k: "predict", h: "Which melts hotter?",
+        p: "<p>Tungsten's bond energy is 850 kJ/mol. Mercury's is 62 kJ/mol. Both are metals.</p>",
+        q: { opts: ["Tungsten, by thousands of degrees", "About the same: both are metals", "Mercury: its atoms are heavier"], ans: 0, then: [["click", '#bondChips [data-i="12"]'], ["click", '#bondView [data-v="scatter"]']] },
+        why: "Tungsten melts at 3414 °C; mercury is liquid at room temperature. To melt a solid, heat must shake atoms out of their wells, so a deeper well needs a higher temperature. The chart shows the trend across all twenty substances." },
+      { k: "apply", h: "Melting doesn't break every bond",
+        p: "<p>Inside a Cl₂ molecule the two atoms share a covalent bond of 121 kJ/mol, yet solid chlorine melts at −101 °C. Which bonds break when it melts?</p>",
+        q: { opts: ["The weak van der Waals bonds between the molecules", "The covalent bond inside each molecule", "Both"], ans: 0, then: [["click", '#bondChips [data-i="16"]']] },
+        why: "Melting only has to free the molecules from each other (31 kJ/mol between Cl₂ molecules). The strong bond inside each molecule survives. Polymers work the same way: strong chains, weak bonds between chains, so they soften at modest temperatures." },
+      { k: "apply", h: "Stiffness comes from the well",
+        p: "<p>Young's modulus E measures stiffness: the stress needed per unit of stretch (σ = Eε). Near r₀, which well has steeper walls, argon's (7.7 kJ/mol) or tungsten's (850 kJ/mol)?</p>",
+        q: { opts: ["Tungsten: steeper walls, so more force for the same stretch and a higher E", "Argon: a shallow well is easier to measure", "Neither: both atoms sit at r₀"], ans: 0, then: [["click", '#bondView [data-v="curves"]'], ["click", '#bondChips [data-i="13"]'], ["wait", 900], ["click", '#bondChips [data-i="12"]']] },
+        why: "The slope of the force curve at r₀ sets the stiffness, and it grows with the depth of the well. Tungsten's E is about 400 GPa (Callister Table 6.1); solid argon is very soft. Strong bonds give stiff, high-melting materials." }
+    ]
+  },
+  cells: {
+    title: "Crystals are boxes that repeat",
+    obj: "Describe SC, BCC, FCC and HCP, count the atoms in a unit cell and the neighbours of each atom, and predict a metal's density from the size of its atoms.",
+    steps: [
+      { k: "watch", h: "One small box, repeated",
+        p: "<p>The atoms in a metal pack in a pattern that repeats in all three directions. The smallest box that builds the whole crystal by repeating is the <b>unit cell</b>. Here are eight face-centred cubic (FCC) cells; drag to turn them.</p>",
+        setup: [["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]'], ["on", "#cellReps"], ["on", "#cellSpin"]] },
+      { k: "work", h: "How many atoms belong to one FCC cell?",
+        p: "<p>Only part of each atom on the surface is inside the cell. Click atoms to see how much of each one counts.</p>",
+        setup: [["off", "#cellReps"], ["off", "#cellSpin"], ["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="cut"]']],
+        n: { pre: "Atoms per FCC cell =", ans: 4, tol: 0.01, hint: "A corner atom is shared by 8 cells (⅛ each); a face atom by 2 (½ each)." },
+        why: "8 corners × ⅛ + 6 faces × ½ = 1 + 3 = 4 atoms." },
+      { k: "work", h: "And one BCC cell?",
+        p: "<p>Body-centred cubic: an atom at each corner and one in the middle.</p>",
+        setup: [["click", '#cellType [data-v="bcc"]'], ["click", '#cellMode [data-v="cut"]']],
+        n: { pre: "Atoms per BCC cell =", ans: 2, tol: 0.01, hint: "8 corners × ⅛, plus the whole atom in the middle." },
+        why: "8 × ⅛ + 1 = 2 atoms." },
+      { k: "try", h: "Who touches whom?",
+        p: "<p>In Ball and stick, a rod joins two atoms that touch. The dashed lines are only the edges of the box.</p>",
+        show: ["#cellType < .group"], setup: [["click", '#cellMode [data-v="ball"]'], ["click", '#cellType [data-v="sc"]']],
+        goals: [{ t: "Look at BCC", ok: (s, m) => saw(m, "b", s.type === "bcc") }, { t: "Look at FCC", ok: (s, m) => saw(m, "f", s.type === "fcc") }, { t: "Look at HCP", ok: (s, m) => saw(m, "h", s.type === "hcp") }],
+        why: "In BCC each atom touches 8 others, along the cube's diagonals; the corner atoms never touch each other. In FCC and HCP each atom touches 12, the most that equal spheres can touch. These two are the close-packed structures." },
+      { k: "idea", h: "How full is the box?",
+        p: "<p class=\"lsn-eq\">packing fraction = volume of the atoms in the cell ÷ volume of the cell</p><p>FCC and HCP fill 74% of space, BCC 68%, simple cubic 52%. In FCC the atoms touch along a face diagonal, so the cell edge is a = 2R√2. In BCC they touch along the body diagonal: a = 4R/√3.</p>",
+        setup: [["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]']] },
+      { k: "work", h: "Predict copper's density",
+        p: "<p>Copper is FCC. Its atomic radius is R = 0.128 nm and its atomic weight A = 63.55 g/mol.</p><p class=\"lsn-eq\">ρ = n A / (V N<sub>A</sub>)</p><p>with n atoms per cell, cell volume V = a³ and N<sub>A</sub> = 6.022 × 10²³ per mole.</p>",
+        setup: [["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]']],
+        n: { pre: "ρ of copper =", post: "g/cm³", ans: 8.94, tol: 0.15, hint: "a = 2R√2 = 0.3615 nm = 3.615 × 10⁻⁸ cm, so V = a³ = 4.72 × 10⁻²³ cm³, and n = 4." },
+        why: "ρ = (4 × 63.55) / (4.72 × 10⁻²³ × 6.022 × 10²³) = 8.94 g/cm³, exactly what a block of copper weighs. A box a third of a nanometre across predicts a property you can hold (Callister Eq. 3.8)." },
+      { k: "try", h: "Same atoms, different crystal",
+        p: "<p>Iron is BCC at room temperature. Heat it.</p>",
+        show: ["#ironT < .range"], setup: [["val", "#ironT", 20]],
+        goals: [{ t: "Heat it until it changes to FCC", ok: s => s.ironT >= 912 && s.ironT < 1394 }],
+        why: "At 912 °C iron changes from BCC (ferrite) to FCC (austenite): polymorphism. FCC packs tighter, so the iron shrinks a little as it changes. Every heat treatment of steel relies on this change." }
+    ]
+  },
+  stack: {
+    title: "Stacking close-packed layers",
+    obj: "Build FCC and HCP from the same layer of atoms, explain what makes them different, and recognise a stacking fault.",
+    steps: [
+      { k: "watch", h: "Layers settle into dips",
+        p: "<p>In one close-packed layer each atom touches six others: the densest way to pack equal spheres on a flat surface. The next layer settles into the dips. There are two sets of dips, B and C, and only one set can be used at a time.</p>",
+        setup: [["off", "#stackGlass"], ["click", "#stackClear"], ["click", "#stackSide"]], play: [["wait", 700], ["click", '#stackAdd [data-v="B"]'], ["wait", 1100], ["click", '#stackAdd [data-v="C"]']] },
+      { k: "try", h: "Build hexagonal close-packed",
+        p: "<p>Put every new layer back over the one two below it.</p>",
+        show: ["#stackAdd < .group", "#stackSeq < .readout"], setup: [["click", "#stackClear"]],
+        goals: [{ t: "Stack at least four layers that repeat every two: A B A B", ok: s => s.seq.length >= 4 && /HCP/.test(s.verdict) }],
+        why: "ABAB… is hexagonal close-packed (HCP): magnesium, titanium, zinc." },
+      { k: "try", h: "Build face-centred cubic",
+        p: "<p>This time use all three positions in turn.</p>",
+        show: ["#stackAdd < .group", "#stackSeq < .readout"], setup: [["click", "#stackClear"]],
+        goals: [{ t: "Stack at least four layers that repeat every three: A B C A", ok: s => s.seq.length >= 4 && /FCC/.test(s.verdict) && !/fault/.test(s.verdict) }],
+        why: "ABCABC… is face-centred cubic (FCC): aluminium, copper, nickel. Viewed along the cube's diagonal, FCC's densest planes are exactly these layers. Same layer, same density; only the order differs." },
+      { k: "predict", h: "Look straight down",
+        p: "<p>Make the atoms see-through and look straight down a tall stack.</p>",
+        q: { opts: ["You can see gaps all the way through ABAB (HCP)", "You can see gaps all the way through ABCABC (FCC)", "Neither has gaps"], ans: 0, then: [["click", '[data-preset="ABABAB"]'], ["on", "#stackGlass"], ["click", "#stackTop"]] },
+        why: "In HCP the C positions are never filled, so open channels run straight down through the crystal. In FCC the A, B and C layers between them cover every position." },
+      { k: "try", h: "Make a mistake on purpose",
+        p: "<p>Real crystals sometimes get the order wrong.</p>",
+        show: ["#stackAdd < .group", "#stackSeq < .readout"], setup: [["off", "#stackGlass"], ["click", "#stackClear"], ["click", "#stackSide"]],
+        goals: [{ t: "Build mostly ABC stacking with one layer out of order", ok: s => /stacking fault/.test(s.verdict) }],
+        why: "That is a stacking fault: a planar defect where a thin slice of HCP sits inside FCC. Faults form as FCC metals grow and as they deform, and they change how easily the metal deforms." }
+    ]
+  },
+  raft: {
+    title: "From liquid to crystal",
+    obj: "Explain how crystals form from a liquid, why the cooling rate sets the grain size, and what vacancies, grain boundaries and glasses are.",
+    steps: [
+      { k: "watch", h: "1,800 atoms",
+        p: "<p>Each atom attracts and repels its neighbours like the bonded pair in Bonds, and jiggles with heat. Grey atoms have exactly six neighbours in a perfect hexagon: crystal.</p>",
+        setup: [["off", "#raftPause"], ["click", "#raftReset"], ["click", '#raftColor [data-v="nbr"]'], ["click", '#raftTool [data-v="remove"]']] },
+      { k: "try", h: "Make vacancies",
+        p: "<p>Click atoms to remove them.</p>",
+        show: ["#raftTool < .group"], setup: [["click", '#raftTool [data-v="remove"]']], mark: () => ({ N: ST("raft").N }),
+        goals: [{ t: "Remove three atoms", ok: (s, m) => s.N <= m.N - 3 }],
+        why: "Each hole is a vacancy, the simplest defect in a crystal. The atoms around it have lost a neighbour (amber). Near the melting point a metal has about one vacancy per 10,000 atoms, and atoms move through the solid (diffuse) by hopping into them." },
+      { k: "try", h: "Melt it",
+        show: ["#raftMelt < .group"], setup: [],
+        goals: [{ t: "Melt the crystal", ok: s => s.T > 1.2 && s.six < 0.4 }],
+        why: "In the liquid the atoms still touch, but the repeating pattern is gone: few atoms have six neighbours in a perfect hexagon." },
+      { k: "try", h: "Freeze it slowly",
+        p: "<p>Slow cooling takes about half a minute.</p>",
+        show: ["#raftMelt < .group", "#raftColor < .group"], setup: [],
+        goals: [{ t: "Press Cool slowly and wait until it has frozen", ok: s => s.lastCool === "slow" }, { t: "Colour the atoms by grain orientation", ok: s => s.colorBy === "grain" }],
+        why: "Crystals start (nucleate) at a few places and grow until they meet. Each colour is one grain, where the rows of atoms all point the same way. Where grains meet, the atoms cannot fit both patterns: a grain boundary." },
+      { k: "predict", h: "Now cool it in an instant",
+        p: "<p>If the same liquid is quenched instead of cooled slowly, what grains will you get?</p>",
+        q: { opts: ["More, smaller grains", "Fewer, larger grains", "The same grains"], ans: 0, then: [["click", "#raftMelt"], ["wait", 2500], ["click", "#raftQuench"], ["click", '#raftColor [data-v="grain"]']] },
+        why: "Quenching starts many crystals at once, and they meet before any can grow large. Fine grains make a metal stronger, because grain boundaries block slip (see Dislocations). The grain size of a casting is set by how fast it cools." },
+      { k: "try", h: "Make a glass",
+        show: ["#raftMix < .group", "#raftMelt < .group"], setup: [],
+        goals: [{ t: "Switch to two atom sizes (it melts)", ok: s => s.mix === "two" }, { t: "Quench it", ok: s => s.mix === "two" && s.lastCool === "quench" && s.T < 0.1 }],
+        why: "With two sizes, the atoms cannot find a repeating pattern before they stop moving. The result is an amorphous solid, a glass: solid, but arranged like a frozen liquid. Window glass and metallic glasses form this way." }
+    ]
+  },
+  disl: {
+    title: "Why metals bend",
+    obj: "Explain why real metals yield at a tiny fraction of their ideal strength, what a dislocation and its Burgers vector are, and how solute atoms and grain boundaries make metals stronger.",
+    steps: [
+      { k: "predict", h: "Slide a whole plane at once",
+        p: "<p>To slide the top half of a perfect crystal over the bottom half, every bond across the plane must break at the same moment. Compared with how easily real metals bend, how much stress would that take?</p>",
+        q: { opts: ["Far more than real metals need", "About what real metals need", "Less"], ans: 0, then: [["click", '#dislMode [data-v="rigid"]'], ["click", "#dislReset"]] },
+        why: "That ideal strength is about a tenth of the shear modulus, several GPa. Pure copper starts to slip at about 1 MPa, thousands of times less. Something else must be happening." },
+      { k: "try", h: "The whole plane",
+        show: ["#dislMode < .group", "#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="rigid"]'], ["click", "#dislReset"], ["val", "#dislTau", 30]],
+        goals: [{ t: "Slide the whole plane (raise the stress, then Push)", ok: s => s.mode === "rigid" && s.done }],
+        why: "It only moves near 95 on this scale, because every bond across the plane breaks together." },
+      { k: "try", h: "With a dislocation",
+        p: "<p>The red symbol marks the end of an extra half-plane of atoms squeezed into the top half: an edge dislocation.</p>",
+        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["val", "#dislTau", 15]],
+        pins: [{ host: "#dislCv", at: () => tabs.disl && tabs.disl.pin("core"), t: "the dislocation" }],
+        goals: [{ t: "Push the dislocation all the way through", ok: s => s.mode === "disl" && s.done }],
+        why: "The dislocation breaks one row of bonds at a time, like moving a rug by pushing a wrinkle along it. It moved at about 8, and the crystal still ended up slipped by one atom spacing. Real metals deform this way, which is why they yield at a tiny fraction of their ideal strength." },
+      { k: "try", h: "The Burgers circuit",
+        p: "<p>Take equal numbers of atom steps right, up, left and down. In a perfect crystal you end where you started.</p>",
+        show: ["#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislGB"], ["on", "#dislBurgers"], ["val", "#dislTau", 30]],
+        goals: [{ t: "Step the dislocation inside the circuit", ok: s => s.burgers && s.xd > -3 && s.xd < 3 }],
+        why: "Around a dislocation the circuit fails to close. The gap is the Burgers vector b: one atom spacing, in the direction the crystal slips." },
+      { k: "try", h: "Pin it with a solute atom",
+        show: ["#dislTau < .range"], setup: [["click", "#dislReset"], ["off", "#dislBurgers"], ["off", "#dislGB"], ["on", "#dislSolute"], ["val", "#dislTau", 25], ["click", "#dislGo"]],
+        goals: [{ t: "The big atom stops it. Raise the stress until it breaks free", ok: s => s.solute && s.xd > -2 }],
+        why: "A larger atom distorts the lattice around it. The dislocation is attracted to it and held, so more stress is needed to move it on. That is solid-solution strengthening: copper with 30% nickel yields at 125 MPa, pure copper at 69 MPa (Callister Table 11.6)." },
+      { k: "try", h: "Run into a grain boundary",
+        show: ["#dislTau < .range"], setup: [["click", "#dislReset"], ["off", "#dislSolute"], ["on", "#dislGB"], ["val", "#dislTau", 40], ["click", "#dislGo"]],
+        goals: [{ t: "Push the dislocation into the boundary", ok: s => s.gb && s.xd > 5.4 && !s.done }],
+        why: "Across the boundary the planes point another way, so the dislocation cannot continue; the next ones pile up behind it. More boundary per volume means a stronger metal: σ<sub>y</sub> = σ₀ + k<sub>y</sub> d<sup>−1/2</sup> (Hall–Petch), where d is the grain size." },
+      { k: "apply", h: "Make a copper part stronger",
+        p: "<p>You need a stronger copper part without changing its shape. Which works?</p>",
+        q: { opts: ["Alloy it with nickel, or give it finer grains", "Use purer copper", "Grow larger grains"], ans: 0 },
+        why: "Both put obstacles in the way of dislocations. Purer metal and larger grains remove obstacles and make it softer." }
+    ]
+  },
+  phase: {
+    title: "Reading a phase diagram",
+    obj: "Read which phases are present, what each is made of (tie line) and how much of each there is (lever rule); predict the microstructure an alloy forms as it cools; use the diagram to choose an alloy.",
+    steps: [
+      { k: "idea", h: "A map of phases",
+        p: "<p>Across: composition. Up: temperature. Each region tells you which phases are stable there. A <b>phase</b> is a region of uniform structure and composition: the liquid, or one kind of crystal.</p><p>α is tin dissolved in lead's FCC crystal; β is lead dissolved in tin's crystal.</p>",
+        setup: [pd("pbsn", 40, 300)],
+        pins: [{ host: "#pdCv", at: () => tabs.phase.xy(78, 300), t: "liquid" }, { host: "#pdCv", at: () => tabs.phase.xy(7, 150), t: "α: lead-rich crystal" }, { host: "#pdCv", at: () => tabs.phase.xy(50, 90), t: "α + β: two crystals" }, { host: "#pdCv", at: () => tabs.phase.xy(61.9, 183), t: "eutectic point" }] },
+      { k: "try", h: "Find the lowest melting point",
+        p: "<p>Drag the point on the diagram.</p>",
+        setup: [pd("pbsn", 30, 300)],
+        goals: [{ t: "Put the point at the lowest temperature where any liquid can exist", ok: s => s.sys === "pbsn" && near(s.C, 61.9, 1.5) && near(s.T, 183, 5) }],
+        why: "61.9 wt% Sn melts at 183 °C, lower than pure lead (327 °C) or pure tin (232 °C). This point is the eutectic. It is why 63Sn–37Pb was the standard electronics solder: it melts at the lowest temperature, all at once." },
+      { k: "work", h: "How much of each phase?",
+        p: "<p>At 40 wt% Sn and 150 °C the alloy is α + β. The tie line (teal) runs across the region; its ends give the compositions: C<sub>α</sub> ≈ 10.6 and C<sub>β</sub> ≈ 98.4 wt% Sn. The lever rule gives the amounts:</p><p class=\"lsn-eq\">W<sub>α</sub> = (C<sub>β</sub> − C₀) / (C<sub>β</sub> − C<sub>α</sub>)</p>",
+        setup: [pd("pbsn", 40, 150)], quiet: true,
+        n: { pre: "W<sub>α</sub> =", ans: 0.67, tol: 0.02, hint: "C₀ = 40 is the alloy. The arm on the far side, C<sub>β</sub> − C₀, over the whole tie line." },
+        why: "W<sub>α</sub> = (98.4 − 40)/(98.4 − 10.6) = 0.67, so two-thirds of the alloy by mass is α and one-third β (Callister Example 9.2). Each phase keeps its own composition; only the amounts change with C₀." },
+      { k: "watch", h: "Cool it and watch the structure grow",
+        p: "<p>Above about 235 °C, liquid. Below it, lead-rich α grows as dendrites while the liquid becomes richer in tin. At 183 °C the remaining liquid, now 61.9 wt% Sn, freezes all at once into fine alternating layers of α and β.</p>",
+        show: ["#pdLog < .group"], setup: [pd("pbsn", 40, 320)], play: [["wait", 500], ["click", "#pdCool"]],
+        goals: [{ t: "Let it cool to room temperature", ok: s => !s.cooling && s.T < 21 }],
+        why: "Each step of the log is a line you crossed on the diagram. Click a step to return to it." },
+      { k: "predict", h: "The eutectic alloy",
+        p: "<p>What will the 61.9 wt% Sn alloy look like after it freezes?</p>",
+        q: { opts: ["Only fine alternating layers of α and β", "Large α dendrites with layers between them", "Grains of one phase"], ans: 0, then: [pd("pbsn", 61.9, 150)] },
+        why: "It never passes through a region with liquid plus one solid, so no large primary crystals grow. All of it freezes at 183 °C as eutectic. The atoms only need to move sideways a few micrometres, between neighbouring layers, which is why the layers are so fine." },
+      { k: "try", h: "Compare with a real micrograph",
+        show: ["#pdMicroMode"], setup: [pd("pbsn", 40, 150), ["click", '#pdMicroMode [data-v="look"]']],
+        goals: [{ t: "Switch the microstructure to Real photo", ok: s => s.mode === "real" }],
+        why: "Lead with 45 wt% tin, photographed in 1909: dark lead-rich α dendrites in the layered eutectic, the structure the simulation grows." },
+      { k: "work", h: "Copper–nickel",
+        p: "<p>Copper and nickel mix in any proportion. At 35 wt% Ni and 1250 °C, the tie line ends at C<sub>L</sub> = 31.5 (liquid) and C<sub>α</sub> = 42.5 wt% Ni (solid).</p>",
+        setup: [["click", '#pdMicroMode [data-v="look"]'], pd("cuni", 35, 1250)], quiet: true,
+        n: { pre: "Fraction that is liquid, W<sub>L</sub> =", ans: 0.68, tol: 0.02, hint: "W<sub>L</sub> = (C<sub>α</sub> − C₀) / (C<sub>α</sub> − C<sub>L</sub>)." },
+        why: "W<sub>L</sub> = (42.5 − 35)/(42.5 − 31.5) = 0.68 (Callister §9.8). The first solid is richer in nickel than the alloy; cooled too fast, the grains stay uneven (cored)." },
+      { k: "work", h: "Steel: how much pearlite?",
+        p: "<p>A 0.45 wt% C steel is cooled slowly. Below 727 °C, all the austenite that was left (0.76 wt% C) has become pearlite.</p><p class=\"lsn-eq\">W<sub>p</sub> = (C₀ − 0.022) / (0.76 − 0.022)</p>",
+        setup: [pd("fec", 0.45, 600, "steel")], quiet: true,
+        n: { pre: "W<sub>p</sub> =", ans: 0.58, tol: 0.02, hint: "C₀ = 0.45 wt% C." },
+        why: "W<sub>p</sub> = (0.45 − 0.022)/(0.76 − 0.022) = 0.58 (Callister Eq. 9.20). The other 0.42 is proeutectoid ferrite: the white grains in the micrograph." },
+      { k: "apply", h: "Choose the steel",
+        p: "<p>A knife blade must stay sharp. A car body panel must bend into shape without cracking. Which carbon content suits each?</p>",
+        q: { opts: ["Knife ≈ 1.0 wt% C; panel ≈ 0.1–0.2 wt% C", "Knife ≈ 0.2 wt% C; panel ≈ 1.0 wt% C", "The same steel for both"], ans: 0, then: [pd("fec", 1.0, 600, "steel")] },
+        why: "Cementite is hard and brittle; ferrite is soft and ductile. More carbon means more pearlite and cementite: harder and stronger but less ductile. Low-carbon steel bends and welds; high-carbon steel holds an edge. The phase diagram tells you the amounts that make this trade-off." }
+    ]
+  }
+};
+
+const GLYPH = {
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>',
+  q: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>',
+  hand: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V5a1.5 1.5 0 0 1 3 0v5"/><path d="M12 10V4a1.5 1.5 0 0 1 3 0v6"/><path d="M15 10V6a1.5 1.5 0 0 1 3 0v8a7 7 0 0 1-7 7h-.6a6 6 0 0 1-4.6-2.2L3.5 16a1.6 1.6 0 0 1 2.4-2.1L9 16.5V11"/></svg>',
+  pen: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4L8 20H4v-4z"/><path d="M14 6l4 4"/></svg>',
+  key: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.3h6c0-1 .4-1.8 1-2.3A7 7 0 0 0 12 2z"/></svg>',
+  target: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg>'
+};
+const KIND = { watch: ["Watch", "--teal", "eye"], predict: ["Predict", "--amber", "q"], try: ["Try it", "--accent", "hand"], work: ["Work it out", "--ink", "pen"], idea: ["The idea", "--ink", "key"], apply: ["Apply it", "--accent", "target"] };
+
+const learn = (() => {
+  const box = $("#lesson");
+  let mode = "explore", tab = null, i = 0, step = null, moved = [], mark = {}, solved = false, tries = 0, pinEls = [], lastCheck = 0, gen = 0;
+  let prog = {}; try { prog = JSON.parse(localStorage.getItem("crystal-lab-learn") || "{}"); } catch (e) {}
+  const save = () => { try { localStorage.setItem("crystal-lab-learn", JSON.stringify(prog)); } catch (e) {} };
+  const P = t => (prog[t] = prog[t] || { i: 0, done: [] });
+  const grab = spec => { const [sel, up] = spec.split(" < "); const el = $(sel); return el && up ? el.closest(up) : el; };
+  function restore() { moved.forEach(({ el, ph }) => { if (ph.parentNode) { ph.parentNode.insertBefore(el, ph); ph.remove(); } }); moved = []; }
+  function clearPins() { pinEls.forEach(p => p.el.remove()); pinEls = []; }
+  function leaveStep() { restore(); clearPins(); if (tabs.phase && tabs.phase.quiet && step && step.quiet) tabs.phase.quiet(false); }
+  function spine() {
+    ORDER.forEach(t => {
+      const b = $("#t-" + t), L = LESSONS[t]; if (!b || !L) return;
+      let g = $(".pg", b); if (!g) { g = document.createElement("span"); g.className = "pg"; g.setAttribute("aria-hidden", "true"); g.innerHTML = "<b></b>"; b.appendChild(g); }
+      $("b", g).style.width = Math.round(100 * P(t).done.length / L.steps.length) + "%";
+    });
+  }
+  function markDone() {
+    const d = P(tab).done; if (!d.includes(i)) { d.push(i); save(); }
+    spine(); rail();
+  }
+  function rail() {
+    const L = LESSONS[tab], r = $(".lsn-rail", box); if (!r) return;
+    r.innerHTML = L.steps.map((s, k) => '<button class="' + (P(tab).done.includes(k) ? "done" : "") + '"' + (k === i ? ' aria-current="step"' : "") + ' title="' + (k + 1) + ". " + s.h.replace(/"/g, "&quot;") + '" aria-label="Step ' + (k + 1) + ": " + s.h.replace(/"/g, "&quot;") + '" data-k="' + k + '"></button>').join("");
+  }
+  function render(t) {
+    leaveStep();
+    tab = t; const L = LESSONS[t]; if (!L) { box.innerHTML = ""; return; }
+    const n = ORDER.indexOf(t) + 1;
+    box.innerHTML = '<div class="lsn-chap">Chapter ' + n + ' of ' + ORDER.length + ' · ' + $("#t-" + t).textContent.replace(/^\s*\d+/, "").trim() + '</div>' +
+      '<h2 class="lsn-title">' + L.title + '</h2><p class="lsn-obj">' + L.obj + '</p><nav class="lsn-rail" aria-label="Steps"></nav>' +
+      '<article class="lsn-step" aria-live="polite"></article>' +
+      '<footer class="lsn-nav"><button id="lsnBack">← Back</button><button id="lsnLink" title="Copy a link to this step" aria-label="Copy a link to this step">' + ICON.link + '</button><button id="lsnNext">Next →</button></footer>';
+    enter(P(t).i);
+  }
+  function enter(k) {
+    leaveStep();
+    const L = LESSONS[tab]; i = clamp(k, 0, L.steps.length - 1); step = L.steps[i]; P(tab).i = i; save();
+    solved = false; tries = 0; mark = {}; const my = ++gen;
+    const [kn, kc, kg] = KIND[step.k], el = $(".lsn-step", box);
+    el.style.setProperty("--kc", "var(" + kc + ")");
+    el.innerHTML = '<div class="lsn-kind">' + GLYPH[kg] + '<span>' + kn + '</span><span class="lsn-of">' + (i + 1) + ' / ' + L.steps.length + '</span></div>' +
+      '<h3>' + step.h + '</h3><div class="lsn-body">' + (step.p || "") + '</div><div class="lsn-ctl"></div><div class="lsn-task"></div><div class="lsn-why" hidden></div>';
+    const ctl = $(".lsn-ctl", el), task = $(".lsn-task", el);
+    (step.show || []).forEach(spec => { const c = grab(spec); if (!c) return; const ph = document.createComment("lesson"); c.parentNode.insertBefore(ph, c); ctl.appendChild(c); moved.push({ el: c, ph }); });
+    ctl.hidden = !moved.length;
+    if (step.goals) task.innerHTML = '<ul class="lsn-goals">' + step.goals.map(g => "<li>" + g.t + "</li>").join("") + "</ul>";
+    if (step.q) {
+      task.innerHTML = '<div class="lsn-opts" role="group">' + step.q.opts.map((o, j) => '<button data-j="' + j + '"><b>' + "ABCD"[j] + "</b><span>" + o + "</span></button>").join("") + '</div><p class="lsn-fb" aria-live="polite"></p>';
+      $$(".lsn-opts button", task).forEach(b => b.addEventListener("click", () => choose(+b.dataset.j)));
+    }
+    if (step.n) {
+      task.innerHTML = '<p class="lsn-blank"><span>' + step.n.pre + '</span> <input type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer"> <span>' + (step.n.post || "") + '</span> <button class="lsn-check">Check</button></p><p class="lsn-fb" aria-live="polite"></p>';
+      const inp = $("input", task);
+      $(".lsn-check", task).addEventListener("click", check); inp.addEventListener("keydown", e => { if (e.key === "Enter") check(); });
+    }
+    const passive = step.k === "watch" || step.k === "idea";
+    setNext(passive && !step.goals);
+    $("#lsnBack").disabled = i === 0;
+    rail();
+    run(step.setup, my).then(() => {
+      if (my !== gen) return;
+      if (step.mark) mark = step.mark() || {};
+      if (step.quiet && tabs.phase) tabs.phase.quiet(true);
+      (step.pins || []).forEach(p => addPin(p));
+      if (step.play) run(step.play, my);
+    });
+  }
+  // run a list of setup steps, abandoning it if the student has already moved to another step
+  function run(list, my) { let p = Promise.resolve(); (list || []).forEach(x => { p = p.then(() => (my === gen ? runSteps([x]) : null)); }); return p; }
+  function setNext(primary) {
+    const nb = $("#lsnNext"), L = LESSONS[tab], last = i === L.steps.length - 1, lastTab = ORDER.indexOf(tab) === ORDER.length - 1;
+    nb.classList.toggle("go", primary);
+    nb.textContent = (primary ? (last ? (lastTab ? "Finish" : "Next chapter →") : "Next →") : "Skip →");
+  }
+  function reveal(lead) {
+    const w = $(".lsn-why", box); if (!w) return;
+    w.hidden = false; w.innerHTML = (lead ? "<b>" + lead + "</b> " : "") + (step.why || "");
+    solved = true; markDone(); setNext(true);
+  }
+  function choose(j) {
+    const q = step.q, btns = $$(".lsn-opts button", box), fb = $(".lsn-fb", box);
+    if (solved) return;
+    if (step.k === "predict") {
+      btns.forEach((b, k) => { b.disabled = true; if (k === q.ans) b.classList.add("right"); if (k === j && j !== q.ans) b.classList.add("wrong"); if (k === j) b.classList.add("chosen"); });
+      if (q.then) run(q.then, gen);
+      reveal(j === q.ans ? "As you predicted." : "Not what you predicted, which is worth noticing.");
+      return;
+    }
+    if (j === q.ans) { btns[j].classList.add("right"); btns.forEach(b => { b.disabled = true; }); fb.textContent = ""; if (q.then) run(q.then, gen); reveal("Yes."); return; }
+    btns[j].classList.add("wrong"); btns[j].disabled = true; tries++;
+    if (tries >= 2) { btns[q.ans].classList.add("right"); btns.forEach(b => { b.disabled = true; });  if (q.then) run(q.then, gen); reveal("The answer is " + "ABCD"[q.ans] + "."); }
+    else fb.textContent = "Not quite. Think about it once more and pick another.";
+  }
+  function check() {
+    const n = step.n, inp = $(".lsn-blank input", box), fb = $(".lsn-fb", box);
+    if (!inp || solved) return;
+    const v = parseFloat(inp.value.replace(",", ".").replace(/[^\d.\-eE]/g, ""));
+    if (isNaN(v)) { fb.textContent = "Type a number."; return; }
+    if (Math.abs(v - n.ans) <= n.tol) { inp.classList.add("ok"); inp.disabled = true; fb.textContent = ""; reveal("Correct."); return; }
+    tries++; inp.classList.add("bad"); setTimeout(() => inp.classList.remove("bad"), 600);
+    if (tries >= 2) { inp.disabled = true; reveal("The answer is " + n.ans + (n.post ? " " + n.post.replace(/<[^>]+>/g, "") : "") + "."); }
+    else fb.innerHTML = "Not yet. " + (n.hint || "");
+  }
+  function addPin(p) {
+    const host = $(p.host); if (!host) return;
+    const parent = host.parentElement; if (getComputedStyle(parent).position === "static") parent.style.position = "relative";
+    const el = document.createElement("div"); el.className = "pin"; el.innerHTML = "<i></i><span>" + p.t + "</span>"; parent.appendChild(el);
+    pinEls.push({ el, host, p });
+  }
+  function placePins() {
+    pinEls.forEach(({ el, host, p }) => {
+      let xy = null; try { xy = p.at(); } catch (e) {}
+      if (!xy) { el.hidden = true; return; }
+      el.hidden = false; el.style.left = (host.offsetLeft + xy[0]) + "px"; el.style.top = (host.offsetTop + xy[1]) + "px";
+      el.classList.toggle("flip", host.clientWidth - xy[0] < 170);
+    });
+  }
+  function tick(ts) {
+    if (mode !== "learn" || !step) return;
+    placePins();
+    if (!step.goals || solved || ts - lastCheck < 200) return;
+    lastCheck = ts;
+    const s = ST(tab); if (!s) return;
+    const lis = $$(".lsn-goals li", box); let all = true;
+    step.goals.forEach((g, k) => { let ok = false; try { ok = !!g.ok(s, mark); } catch (e) {} if (lis[k]) lis[k].classList.toggle("ok", ok); all = all && ok; });
+    if (all) reveal("Done.");
+  }
+  box.addEventListener("click", e => {
+    const r = e.target.closest(".lsn-rail button"); if (r) { enter(+r.dataset.k); return; }
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.id === "lsnBack" && i > 0) enter(i - 1);
+    if (b.id === "lsnLink") {
+      const url = location.href.split("#")[0] + "#learn:" + tab + ":" + (i + 1);
+      try { navigator.clipboard.writeText(url).then(() => { b.style.color = "var(--teal)"; setTimeout(() => { b.style.color = ""; }, 1400); }, () => prompt("Link to this step:", url)); } catch (err) { prompt("Link to this step:", url); }
+    }
+    if (b.id === "lsnNext") {
+      const L = LESSONS[tab];
+      if (step.k === "watch" || step.k === "idea") markDone();
+      if (i < L.steps.length - 1) enter(i + 1);
+      else { const k = ORDER.indexOf(tab); if (k < ORDER.length - 1) show(ORDER[k + 1]); else { const w = $(".lsn-why", box); w.hidden = false; w.innerHTML = "<b>That is the whole lab.</b> Explore mode has every control for free experiments."; } }
+    }
+  });
+  function setMode(m) {
+    if (m !== "learn" && m !== "explore") m = "learn";
+    const changed = m !== mode; mode = m;
+    document.body.classList.toggle("learn", m === "learn"); box.hidden = m !== "learn";
+    $$("#modeSw [data-m]").forEach(b => b.setAttribute("aria-checked", b.dataset.m === m ? "true" : "false"));
+    try { localStorage.setItem("crystal-lab-mode", m); } catch (e) {}
+    if (m === "learn") render(active); else { leaveStep(); tab = null; step = null; }
+    spine();
+    if (changed) setTimeout(() => { const t = tabs[active]; if (t && t.resize) t.resize(); if (t && t.shown) t.shown(); }, 80);
+  }
+  $$("#modeSw [data-m]").forEach(b => b.addEventListener("click", () => setMode(b.dataset.m)));
+  let start = null; try { start = new URLSearchParams(location.search).get("mode") || localStorage.getItem("crystal-lab-mode"); } catch (e) {}
+  mode = start === "explore" ? "explore" : "learn";
+  document.body.classList.toggle("learn", mode === "learn"); box.hidden = mode !== "learn";
+  $$("#modeSw [data-m]").forEach(b => b.setAttribute("aria-checked", b.dataset.m === mode ? "true" : "false"));
+  spine();
+  return {
+    setMode, tick, get mode() { return mode; },
+    onShow: name => { if (mode === "learn" && name !== tab) render(name); },
+    go: (name, k) => { setMode("learn"); if (tab !== name) { P(name).i = k; show(name); } else enter(k); },
+    get step() { return step && { tab, i, k: step.k, solved }; }
+  };
+})();
+window.__learn = learn;
+learnHook = learn.onShow;
+
 /* ---------------------------------------------------------------- driver */
 let last = 0;
 function loop(ts) {
   const dt = last ? Math.min(0.1, (ts - last) / 1000) : 1 / 60; last = ts;
   const t = tabs[active];
   if (t && t.tick) { try { t.tick(dt); } catch (e) { console.error(e); } }
+  try { learn.tick(ts); } catch (e) { console.error(e); }
   requestAnimationFrame(loop);
 }
 const retheme = () => Object.values(tabs).forEach(t => t.theme && t.theme());
