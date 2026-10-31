@@ -110,6 +110,26 @@ main.wrap { max-width: 1680px; margin: 0 auto; padding: 14px 16px 20px; }
 .stage.col { display: flex; flex-direction: column; }
 .stage.col > .box { flex: 1 1 0; }
 .stage.col > .box + .box { border-top: 1px solid var(--rule); }
+/* bonds: the solid in 3D (left) beside the pair (right); the caption bar spans both */
+.bondtop { display: flex; }
+.bondtop > .pairbox { position: relative; flex: 1 1 0; min-width: 0; }
+.pairbox > canvas { position: absolute; left: 0; top: 0; }
+.nbr3 { position: relative; flex: 0 0 34%; min-width: 0; border-right: 1px solid var(--rule); }
+.nbr3[hidden] { display: none; }
+.nbr3 > .n3 { position: absolute; inset: 56px 0 26px 0; touch-action: none; cursor: grab; }
+.nbr3 > .n3:active { cursor: grabbing; }
+.nbr3 > .n3 > canvas { position: absolute; inset: 0; }
+.nbrlab { position: absolute; left: 12px; right: 10px; top: 9px; z-index: 2; margin: 0; font: 11.5px/1.35 var(--mono); color: var(--muted); pointer-events: none; }
+.nbrlab b { display: block; color: var(--ink); font: 600 13px/1.35 var(--body); }
+.nbrkey { position: absolute; left: 12px; bottom: 7px; margin: 0; font: 11.5px/1.3 var(--mono); color: var(--muted); pointer-events: none; display: flex; align-items: center; gap: 7px; }
+.nbrkey .on-narrow { display: none; }
+.nbrkey i { width: 18px; height: 4px; border-radius: 2px; background: var(--ink); }
+@media (max-width: 700px) {
+  .stage.col > .box.bondtop { flex-basis: 64% !important; }
+  .bondtop { flex-direction: column; }
+  .nbrkey .on-wide { display: none; } .nbrkey .on-narrow { display: inline; }
+  .nbr3 { flex: 0 0 47%; border-right: 0; border-bottom: 1px solid var(--rule); }
+}
 .stage .hint { position: absolute; left: 10px; bottom: 10px; z-index: 2; font: 12px var(--mono); color: var(--muted); background: var(--panel); border: 1px solid var(--rule); border-radius: 6px; padding: 3px 8px; pointer-events: none; }
 .stage .tip { position: absolute; z-index: 3; right: 10px; top: 10px; max-width: min(340px, 80%); font: 14px/1.4 var(--body); color: var(--ink); background: var(--panel); border: 1px solid var(--rule); border-left: 3px solid var(--accent); border-radius: 8px; padding: 8px 11px; box-shadow: var(--shadow); }
 .stage .tip.left { right: auto; left: 10px; }
@@ -411,14 +431,21 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
   <section class="tabpanel" id="p-bonds" role="tabpanel" aria-labelledby="t-bonds">
     <div class="bench">
       <div class="stage col">
-        <div class="box" style="flex:0 0 33%">
-          <canvas id="bondPair" aria-label="Two atoms and the bond between them"></canvas>
-          <dl class="hud">
-            <dt>Spacing</dt><dd id="bondRHud">r = 1.00 r₀</dd>
-            <dt>Bond energy</dt><dd id="bondE">–</dd>
-            <dt>Melts at</dt><dd id="bondTm">–</dd>
-          </dl>
-          <p class="capbar" id="bondState" aria-live="polite">–</p>
+        <div class="box bondtop" style="flex:0 0 36%">
+          <div class="nbr3" id="bondNbr" hidden>
+            <p class="nbrlab"><b>In the solid</b><span id="bondNbrCap"></span></p>
+            <div class="n3" id="bondNbr3" aria-label="The same bond in the solid: one atom and all the neighbours it bonds to, in 3D"></div>
+            <p class="nbrkey"><i></i>the pair <span class="on-wide">on the right</span><span class="on-narrow">below</span> · drag to turn</p>
+          </div>
+          <div class="pairbox">
+            <canvas id="bondPair" aria-label="Two atoms and the bond between them"></canvas>
+            <dl class="hud">
+              <dt>Spacing</dt><dd id="bondRHud">r = 1.00 r₀</dd>
+              <dt>Bond energy</dt><dd id="bondE">–</dd>
+              <dt>Melts at</dt><dd id="bondTm">–</dd>
+            </dl>
+            <p class="capbar" id="bondState" aria-live="polite">–</p>
+          </div>
         </div>
         <div class="box">
           <canvas id="bondPlot" aria-label="Energy and force against atom separation"></canvas>
@@ -1247,8 +1274,11 @@ function clipPlanesFrom(v, defs) {
     const cv = $("#bondPair"); const { ctx, w, h } = fitBox(cv);
     ctx.clearRect(0, 0, w, h);
     const ink = tok("--ink"), muted = tok("--muted"), col = tok(TYPES[sel.t].col);
-    const cy = h / 2 - 6, base = Math.min(w * 0.14, 104, h * 0.46);
-    const sep = base * x, cx = w / 2;
+    const hud = $("#p-bonds .hud"), hw = w > 480 && hud ? hud.offsetWidth + 14 : 0;   // keep clear of the readout box
+    // on a phone the readout sits above the pair instead: centre the pair in the space left between it and the caption bar
+    const top = hw || !hud ? 0 : hud.offsetHeight + 14, avail = h - 52 - top;
+    const cy = hw ? h / 2 - 6 : top + avail / 2, base = Math.min((w - hw) * 0.19, 104, hw ? h * 0.44 : avail * 0.62);
+    const sep = base * x, cx = hw + (w - hw) / 2;
     const xa = cx - sep / 2, xb = cx + sep / 2;
     const broken = x > 2.2;
     const mono = FONT.mono(), body = FONT.body();
@@ -1275,7 +1305,7 @@ function clipPlanesFrom(v, defs) {
       [xa - sep, xb + sep].forEach(X => { if (X > cx - seaW / 2 + 20 && X < cx + seaW / 2 - 20) { ctx.globalAlpha = 0.45; ball(ctx, X, cy, ra, tok("--atom")); ctx.globalAlpha = 1; } });
       ball(ctx, xa, cy, ra, tok("--atom")); label(xa, cy, sel.a[0]);
       ball(ctx, xb, cy, rb, tok("--atom")); label(xb, cy, sel.a[1]);
-      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("positive ion cores (each gave its outer electrons to the sea)", cx, Math.min(h - 58, cy + 80));
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("positive ion cores (each gave its outer electrons to the sea)", w / 2, Math.min(h - 58, cy + 80));
     } else if (sel.t === "ionic") {
       const ca = tok(ELCOL[sel.a[0]] || "--amber"), cb = tok(ELCOL[sel.a[1]] || "--teal");
       // attraction field lines
@@ -1327,7 +1357,7 @@ function clipPlanesFrom(v, defs) {
       const s = flick >= 0 ? ["δ+", "δ−"] : ["δ−", "δ+"];   // [left side, right side]: the cloud drifts right when flick > 0
       ctx.fillStyle = ink; ctx.font = "600 14px " + mono; ctx.textAlign = "center";
       [xa, xb].forEach(X => { ctx.fillText(s[1], X + ra * 0.5, cy - ra - 8); ctx.fillText(s[0], X - ra * 0.5, cy - ra - 8); });
-      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("the electron cloud sloshes: a passing + / − imbalance", cx, Math.min(h - 58, cy + 74));
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("the electron cloud sloshes: a passing + / − imbalance", w / 2, Math.min(h - 58, cy + 74));
     } else {
       // hydrogen bond: heavy atom with H atoms; one H of the left molecule points at the right molecule
       const heavy = tok(ELCOL[sel.a[0]] || "--accent"), hcol = "#e9edf2";
@@ -1346,7 +1376,7 @@ function clipPlanesFrom(v, defs) {
       if (!broken) { ctx.strokeStyle = rgba(tok("--amber"), clamp(1.4 - (x - 1), 0.15, 0.95)); ctx.setLineDash([3, 5]); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(xa - 10 + dOH + rH + 2, cy); ctx.lineTo(xb + 10 - 26, cy); ctx.stroke(); ctx.setLineDash([]); }
       ctx.fillStyle = ink; ctx.font = "600 13px " + mono; ctx.textAlign = "center";
       ctx.fillText("δ+", xa - 10 + dOH, cy - 22); ctx.fillText("δ−", xb + 10 - 30, cy - 28);
-      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("H on one molecule attracts " + sel.a[0] + " on the next", cx, Math.min(h - 58, cy + 70));
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("H on one molecule attracts " + sel.a[0] + " on the next", w / 2, Math.min(h - 58, cy + 70));
     }
     if (broken && !(anim && anim.kind === "form")) { ctx.fillStyle = tok("--accent"); ctx.textAlign = "right"; ctx.font = "600 13px " + mono; ctx.fillText("bond broken", w - 12, 20); }
   }
@@ -1497,15 +1527,251 @@ function clipPlanesFrom(v, defs) {
     }
   });
   sc.addEventListener("mouseleave", () => { hover = -1; tip.hidden = true; drawScatter(); });
+  /* --- the same bond in the solid: one atom (or molecule) with every neighbour it bonds to, in the substance's real
+     arrangement, and the next ring of atoms faded. The pair on the right is one of these bonds (drawn dark).
+     "Pull the atoms apart" stretches every bond of this kind at once; each fades with the energy it has left. */
+  const NB = (() => {
+    let v = null;
+    try { if (!has3D) throw new Error("no three.js"); v = makeViewer($("#bondNbr3"), { rotX: 0.38, rotY: 0.62 }); }
+    catch (e) { return null; }
+    $("#bondNbr").hidden = false;
+    const S3 = Math.sqrt(3), S2 = Math.sqrt(2);
+    const TET = [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]].map(p => p.map(c => c / S3));
+    const add = (a, b, k) => a.map((c, i) => c + b[i] * (k === undefined ? 1 : k)), len = a => Math.hypot(a[0], a[1], a[2]);
+    const V3 = a => new THREE.Vector3(a[0], a[1], a[2]);
+    // rotate a molecule template so that template direction `from` points along `to`
+    const aim = (pts, from, to) => { const q = new THREE.Quaternion().setFromUnitVectors(V3(from).normalize(), V3(to).normalize()); return pts.map(p => { const w = V3(p).applyQuaternion(q); return [w.x, w.y, w.z]; }); };
+    let M = null, built = "", dots = null, dotT = 0, since = 0, dotGeo = null;
+    const matC = {}, matOf = (key, col, opts) => matC[key] || (matC[key] = mat(col, opts));
+
+    /* every structure in units of the nearest-neighbour distance of the bond being pulled (1 = r₀) */
+    function structure() {
+      const at = [], bd = [], mols = [];
+      const atom = (p, el, col, r, shell, mol) => { at.push({ p, el, col, r, shell, mol: mol === undefined ? -1 : mol }); return at.length - 1; };
+      const ionR = el => [0, 1].map(s => RAD[el][s] * 0.62 / (RAD[A0][1] + RAD[A1][1]));   // [neutral atom, ion]
+      const bond = (i, j, kind, shell, pair) => bd.push({ i, j, kind, shell, pair: !!pair });
+      const nnBonds = (kind, d, pairTo) => {   // every pair of atoms d apart; the centre's bonds are the bright first shell
+        for (let i = 0; i < at.length; i++) for (let j = i + 1; j < at.length; j++) {
+          const pi = at[i].mol >= 0 ? add(mols[at[i].mol], at[i].p) : at[i].p, pj = at[j].mol >= 0 ? add(mols[at[j].mol], at[j].p) : at[j].p;
+          if (Math.abs(len(add(pi, pj, -1)) - d) < 0.02) bond(i, j, kind, i === 0 ? 1 : 2, i === 0 && j === pairTo);
+        }
+      };
+      const t = sel.t, n = sel.n, A0 = sel.a[0], A1 = sel.a[1];
+      let cap = "", scaleAll = true;
+      if (t === "ionic") {
+        const ra = RAD[A0][1], rb = RAD[A1][1], k = 0.62 / (RAD[A0][1] + RAD[A1][1]);
+        const ca = ELCOL[A0] || "--amber", cb = ELCOL[A1] || "--teal";
+        if (n === "CaF₂") {
+          // fluorite: Ca²⁺ on an FCC lattice, F⁻ in all 8 tetrahedral holes; Ca–F = a√3/4 = 1
+          const a = 4 / S3;
+          atom([0, 0, 0], A0, ca, ra * k, 0);
+          [[1, 1, 0], [1, -1, 0], [-1, 1, 0], [-1, -1, 0], [1, 0, 1], [1, 0, -1], [-1, 0, 1], [-1, 0, -1], [0, 1, 1], [0, 1, -1], [0, -1, 1], [0, -1, -1]].forEach(p => atom(p.map(c => c * a / 2), A0, ca, ra * k, 2));
+          const f0 = at.length;
+          [-1, 1].forEach(i => [-1, 1].forEach(j => [-1, 1].forEach(l => atom([i, j, l].map(c => c * a / 4), A1, cb, rb * k, 1))));
+          nnBonds("ion", 1, f0 + 7);
+          at.forEach(a => { a.rr = ionR(a.el); });
+          cap = "each Ca²⁺ has 8 F⁻ around it, and each F⁻ has 4 Ca²⁺";
+        } else {
+          // rock salt: a 3 × 3 × 3 block, every ion surrounded by 6 of the other kind
+          for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (let l = -1; l <= 1; l++) {
+            const cat = (i + j + l + 3) % 2 === 1 ? 0 : 1, sh = Math.abs(i) + Math.abs(j) + Math.abs(l);
+            const idx = atom([i, j, l], cat ? A1 : A0, cat ? cb : ca, (cat ? rb : ra) * k, sh === 0 ? 0 : sh === 1 ? 1 : 2);
+            if (sh === 0 && idx) { const c = at.splice(idx, 1)[0]; at.unshift(c); }
+          }
+          nnBonds("ion", 1, at.findIndex(p => p.p[0] === 1 && p.p[1] === 0 && p.p[2] === 0));
+          at.forEach(a => { a.rr = ionR(a.el); });
+          cap = "each " + A0 + sel.q[0] + " has 6 " + A1 + sel.q[1] + " around it, pulled equally from all sides";
+        }
+      } else if (t === "covalent" && n !== "Cl₂ (in molecule)") {
+        // diamond cubic (Si, C) and zinc blende (InSb, SiC): 4 bonds per atom at 109.5°
+        const hetero = A0 !== A1, ca = "--atom", cb = hetero ? "--teal" : "--atom";
+        atom([0, 0, 0], A0, ca, 0.2, 0);
+        TET.forEach(tk => atom(tk, A1, cb, 0.2, 1));
+        TET.forEach((tk, k) => TET.forEach((tm, m) => { if (m !== k) atom(add(tk, tm, -1), A0, ca, 0.2, 2); }));
+        nnBonds("cov", 1, 1);
+        cap = hetero ? "each " + A0 + " shares electron pairs with 4 " + A1 + ", at fixed 109.5° angles" : "each atom shares electron pairs with 4 others, at fixed 109.5° angles";
+      } else if (t === "metallic" || n === "Ar" || n === "Kr" || n === "CH₄") {
+        const kind = t === "metallic" ? "met" : "vdw", r = t === "metallic" ? 0.26 : 0.2;
+        let nn = [], second = [];
+        if (n === "W") {   // BCC: 8 nearest neighbours, 6 more only 15% farther
+          [-1, 1].forEach(i => [-1, 1].forEach(j => [-1, 1].forEach(l => nn.push([i, j, l].map(c => c / S3)))));
+          [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].forEach(p => second.push(p.map(c => c * 2 / S3)));
+          cap = "BCC: each atom has 8 nearest neighbours, all in one shared sea of electrons";
+        } else if (n === "Hg") {   // solid mercury (below −39 °C) is rhombohedral, α = 70.5°: 6 neighbours at 3.00 Å, 6 at 3.47 Å
+          const ca = Math.cos(70.53 * Math.PI / 180), sa = Math.sin(70.53 * Math.PI / 180), cy = (ca - ca * ca) / sa;
+          const av = [[1, 0, 0], [ca, sa, 0], [ca, cy, Math.sqrt(1 - ca * ca - cy * cy)]];
+          av.forEach(a => { nn.push(a); nn.push(a.map(c => -c)); });
+          [[0, 1], [1, 2], [0, 2]].forEach(([i, j]) => { const d = add(av[i], av[j], -1); second.push(d); second.push(d.map(c => -c)); });
+          cap = "solid mercury (below −39 °C): 6 neighbours, 6 more a little farther, in a shared sea of electrons";
+        } else {   // FCC: 12 nearest neighbours (Al, Ag; solid Ar, Kr and CH₄ pack the same way)
+          [[1, 1, 0], [1, -1, 0], [-1, 1, 0], [-1, -1, 0], [1, 0, 1], [1, 0, -1], [-1, 0, 1], [-1, 0, -1], [0, 1, 1], [0, 1, -1], [0, -1, 1], [0, -1, -1]].forEach(p => nn.push(p.map(c => c / S2)));
+          cap = t === "metallic" ? "FCC: each atom has 12 neighbours, all in one shared sea of electrons" : n === "CH₄" ? "each molecule touches 12 others; only weak van der Waals bonds hold them" : "each atom touches 12 others, but every bond is weak";
+        }
+        if (n === "CH₄") {
+          // rigid CH₄ molecules: C–H 1.09 Å, centres 4.17 Å apart (FCC solid methane)
+          scaleAll = false;
+          const ch = 1.09 / 4.17, H = TET.map(tk => tk.map(c => c * ch));
+          [[0, 0, 0]].concat(nn).forEach((c, m) => {
+            mols.push(c); const ci = atom([0, 0, 0], "C", "--atom", 0.13, m ? 1 : 0, m);
+            H.forEach(h => { const hi = atom(h, "H", "#e9edf2", 0.075, m ? 1 : 0, m); bond(ci, hi, "intra", m ? 1 : 0); });
+          });
+          const cs = at.map((a, i) => i).filter(i => at[i].el === "C");
+          cs.forEach((i, k) => cs.forEach((j, l) => { if (k === 0 && l > k && Math.abs(len(add(mols[at[i].mol], mols[at[j].mol], -1)) - 1) < 0.02) bond(i, j, "vdw", k === 0 ? 1 : 2, k === 0 && l === 1); }));
+        } else {
+          atom([0, 0, 0], A0, "--atom", r, 0);
+          nn.forEach(p => atom(p, A0, "--atom", r, 1)); second.forEach(p => atom(p, A0, "--atom", r, 2));
+          nnBonds(kind, 1, 1);
+        }
+        if (t === "metallic") dots = true;
+      } else if (n.startsWith("Cl₂")) {
+        // solid chlorine (below −101 °C): Cl₂ molecules in herringbone layers (orthorhombic, a 6.24, b 4.48, c 8.26 Å);
+        // molecules tilted 33° from c give the measured 3.32 Å closest contacts between molecules
+        const inside = n === "Cl₂ (in molecule)", D = inside ? 1.99 : 3.33, half = 1.99 / 2 / D, th = 33 * Math.PI / 180;
+        scaleAll = inside;
+        const cells = [];
+        for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (let l = -1; l <= 1; l++)
+          [[0, 0, 0, 1], [0, .5, .5, -1], [.5, .5, 0, 1], [.5, 0, .5, -1]].forEach(([ox, oy, oz, sg]) => cells.push({ c: [(i + ox) * 6.24 / D, (j + oy) * 4.48 / D, (l + oz) * 8.26 / D], sg }));
+        const ends = m => [1, -1].map(q => [0, q * half * Math.sin(th) * m.sg, q * half * Math.cos(th)]);
+        const c0 = cells.find(m => m.c.every(v => Math.abs(v) < 1e-9)), e0 = ends(c0);
+        const contact = m => { let best = [1e9, 0, 0]; ends(m).forEach((p, a) => e0.forEach((q, b) => { const d = len(add(add(m.c, p), q, -1)); if (d < best[0]) best = [d, a, b]; })); return best; };
+        const keep = [c0].concat(cells.filter(m => m !== c0 && contact(m)[0] < 3.75 / D));
+        keep.forEach((m, k) => {
+          mols.push(m.c); const [p, q] = ends(m);
+          const rc = 0.6 / D, i = atom(p, "Cl", "--teal", rc, k ? 1 : 0, k), j = atom(q, "Cl", "--teal", rc, k ? 1 : 0, k);   // drawn 0.6 Å, so the bond inside shows
+          bond(i, j, inside ? "cov" : "intra", k ? 2 : 1, inside && k === 0);
+          if (k) { const [, a, b] = contact(m); bond(b, i + a, "vdw", 1, !inside && k === 1); }
+        });
+        cap = inside ? "the strong bond is only inside each molecule; weak bonds hold the molecules to each other" : "each molecule is held to its neighbours only by weak van der Waals bonds";
+      } else {
+        // hydrogen-bonded solids. Rigid molecules; 1 = the distance between the heavy atoms of neighbouring molecules.
+        scaleAll = false;
+        const hc = "#e9edf2", hv = ELCOL[A0] || "--accent";
+        if (n === "H₂O") {
+          // ice: every O sits at the centre of a tetrahedron of 4 others (2.76 Å). It gives H-bonds through its own 2 H
+          // and takes 2 from neighbours. Neighbours' bonds point the opposite way (−t), as in the diamond-like ice lattice.
+          const oh = 0.96 / 2.76, mol = (c, hdirs, sh) => { mols.push(c); const m = mols.length - 1, o = atom([0, 0, 0], "O", hv, 0.16, sh, m); hdirs.forEach(dv => { const h = atom(dv.map(q => q * oh), "H", hc, 0.085, sh, m); bond(o, h, "intra", sh); }); return o; };
+          mol([0, 0, 0], [TET[0], TET[1]], 0);
+          TET.forEach((tk, j) => {
+            const others = [0, 1, 2, 3].filter(m => m !== j).map(m => TET[m].map(q => -q));
+            mol(tk, j < 2 ? [others[0], others[1]] : [tk.map(q => -q), others[0]], 1);
+          });
+          // H-bonds: centre's H (atoms 1, 2) → neighbours 0, 1; neighbours 2, 3 give their first H to the centre
+          const oOf = m => at.findIndex(a => a.mol === m && a.el === "O"), hOf = (m, k) => at.filter(a => a.mol === m && a.el === "H").map(a => at.indexOf(a))[k];
+          bond(hOf(0, 0), oOf(1), "hb", 1, true); bond(hOf(0, 1), oOf(2), "hb", 1);
+          bond(hOf(3, 0), oOf(0), "hb", 1); bond(hOf(4, 0), oOf(0), "hb", 1);
+          cap = "ice: each molecule makes 4 hydrogen bonds, giving 2 and taking 2";
+        } else if (n === "NH₃") {
+          // solid ammonia: N–H 1.01 Å, H–N–H 107°; each molecule gives 3 H-bonds and takes 3 on its lone-pair side (N···N 3.38 Å)
+          const nh = 1.01 / 3.38, ph = Math.acos(Math.sqrt(0.1384));
+          const tmpl = [0, 1, 2].map(k => [Math.sin(ph) * Math.cos(k * 2.094), Math.sin(ph) * Math.sin(k * 2.094), -Math.cos(ph)]);   // lone pair along +z
+          const mol = (c, hdirs, sh) => { mols.push(c); const m = mols.length - 1, o = atom([0, 0, 0], "N", hv, 0.16, sh, m); hdirs.forEach(dv => { const h = atom(dv.map(q => q * nh), "H", hc, 0.085, sh, m); bond(o, h, "intra", sh); }); return o; };
+          const n0 = mol([0, 0, 0], tmpl, 0);
+          tmpl.forEach((hd, k) => { const o = mol(hd, aim(tmpl, [0, 0, 1], hd.map(q => -q)), 1); bond(n0 + 1 + k, o, "hb", 1, k === 0); });
+          [0, 1, 2].forEach(k => {   // donors on the lone-pair side, each pointing one H at the centre
+            const az = k * 2.094 + 1.047, u = [Math.sin(0.9) * Math.cos(az), Math.sin(0.9) * Math.sin(az), Math.cos(0.9)];
+            const o = mol(u, aim(tmpl, tmpl[0], u.map(q => -q)), 1); bond(o + 1, n0, "hb", 1);
+          });
+          cap = "each molecule gives 3 hydrogen bonds and takes 3";
+        } else {
+          // solid HF: zig-zag chains, F···F 2.49 Å at about 120°, each H on the line to the next F
+          const fh = 0.92 / 2.49, pts = [-2, -1, 0, 1, 2, 3].map(k => [k * 0.866 - 0.433, (k & 1) * 0.5 - 0.25, 0]);
+          [0, 1.3].forEach((z, ch) => pts.forEach((p, k) => {
+            const nx = k < 5 ? pts[k + 1] : add(p, add(p, pts[k - 1], -1)), dv = add(nx, p, -1), u = dv.map(q => q / len(dv));
+            mols.push([p[0], p[1], z]); const m = mols.length - 1, sh = ch ? 2 : (k === 2 ? 0 : 1);
+            const f = atom([0, 0, 0], "F", hv, 0.2, sh, m), h = atom(u.map(q => q * fh), "H", hc, 0.1, sh, m); bond(f, h, "intra", sh);
+          }));
+          const fOf = m => at.findIndex(a => a.mol === m && a.el === "F");
+          [0, 1].forEach(ch => [0, 1, 2, 3, 4].forEach(k => { const m = ch * 6 + k; bond(fOf(m) + 1, fOf(m + 1), "hb", ch ? 2 : 1, !ch && k === 2); }));
+          cap = "zig-zag chains: each HF gives one hydrogen bond and takes one";
+        }
+      }
+      return { at, bd, mols, cap, scaleAll };
+    }
+
+    const kindCol = { ion: "--accent", cov: "--teal", met: "--muted", vdw: "--amber", hb: "--amber", intra: "--muted" };
+    const pulled = { ionic: "ion", covalent: "cov", metallic: "met", vdw: "vdw", hyd: "hb" };
+    function build() {
+      while (v.root.children.length) v.root.remove(v.root.children[0]);
+      if (dots) dots.im.dispose(); dots = null;
+      M = structure();
+      const colOf = c => c.startsWith("--") ? tok(c) : c;
+      M.at.forEach(a => {
+        const col = colOf(a.col), m = matOf("a" + col + (a.shell === 2), col, a.shell === 2 ? { transparent: true, opacity: 0.42, depthWrite: false } : {});
+        a.mesh = new THREE.Mesh(sphereGeo, m); a.mesh.scale.setScalar(a.r); v.root.add(a.mesh);
+      });
+      M.bd.forEach(b => {
+        const dashed = b.kind === "vdw" || b.kind === "hb", n = dashed ? 4 : 1;
+        const col = b.pair ? tok("--ink") : tok(kindCol[b.kind]);
+        b.base = b.shell === 2 ? 0.28 : b.kind === "met" ? 0.5 : 0.9;
+        b.m = matOf(["b", col, b.kind, b.shell, b.pair].join("|"), col, { roughness: 0.5, metalness: 0.05, transparent: true, opacity: b.base, depthWrite: b.shell !== 2 });
+        b.w = (b.pair ? 1.7 : 1) * (b.kind === "cov" ? 0.075 : b.kind === "intra" ? 0.035 : b.kind === "met" ? 0.03 : 0.045);
+        b.segs = Array.from({ length: n }, () => { const t = new THREE.Mesh(tubeGeo, b.m); v.root.add(t); return t; });
+      });
+      if (sel.t === "metallic") {
+        const N = 70, tc = tok("--teal");
+        dotGeo = dotGeo || new THREE.SphereGeometry(1, 10, 8);
+        dots = { im: new THREE.InstancedMesh(dotGeo, matOf("dot" + tc, tc, { roughness: 0.4, metalness: 0 }), N), p: [] };
+        for (let i = 0; i < N; i++) { const u = [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5]; dots.p.push(u.map(c => c * 2.2)); }
+        dots.im.userData.noFit = true; v.root.add(dots.im);
+      }
+      $("#bondNbrCap").textContent = M.cap;
+      place(1); v.refit(true);
+      place(x);
+    }
+    const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), p4 = new THREE.Vector3(), s4 = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
+    function place(xs) {
+      const pos = a => a.mol >= 0 ? add(M.mols[a.mol].map(c => c * xs), M.scaleAll ? a.p.map(c => c * xs) : a.p) : a.p.map(c => c * xs);
+      M.at.forEach(a => { a.q = pos(a); a.mesh.position.set(a.q[0], a.q[1], a.q[2]); if (a.rr) a.mesh.scale.setScalar(a.rr[transfer >= 0.5 ? 1 : 0]); });
+      const left = clamp(-U(1, xs), 0, 1);   // share of the bond energy still holding at this spacing
+      M.bd.forEach(b => {
+        const p = M.at[b.i].q, q = M.at[b.j].q, dv = add(q, p, -1), L = len(dv) || 1e-6;
+        const stretched = b.kind === pulled[sel.t] || (b.kind === "cov" && sel.n === "Cl₂ (in molecule)");
+        const f = stretched ? left : 1;
+        b.m.opacity = b.base * f; const vis = f > 0.04;
+        // dashes: n pieces with gaps between them; a solid bond is one piece
+        const n = b.segs.length, piece = n > 1 ? L / (2 * n - 1) : L;
+        q4.setFromUnitVectors(up, V3(dv).divideScalar(L));
+        b.segs.forEach((t, k) => {
+          t.visible = vis; if (!vis) return;
+          const c = n > 1 ? (2 * k + 0.5) * piece : L / 2;
+          t.position.set(p[0] + dv[0] / L * c, p[1] + dv[1] / L * c, p[2] + dv[2] / L * c);
+          t.quaternion.copy(q4); t.scale.set(b.w, piece, b.w);
+        });
+      });
+      if (dots) moveDots(0, xs);
+      v.dirty = true;
+    }
+    function moveDots(dt, xs) {   // the shared electrons wander through the whole crystal
+      dots.p.forEach((p, i) => {
+        if (dt && !reduceMotion) for (let k = 0; k < 3; k++) { p[k] += (Math.random() - 0.5) * 0.12; }
+        const l = len(p); if (l > 1.25) p.forEach((c, k) => { p[k] = c * 1.25 / l * 0.98; });
+        p4.set(p[0] * xs, p[1] * xs, p[2] * xs); s4.setScalar(0.045); m4.compose(p4, q4.identity(), s4); dots.im.setMatrixAt(i, m4);
+      });
+      dots.im.instanceMatrix.needsUpdate = true;
+    }
+    return {
+      update() { const key = [sel.n, isDark()].join("|"); if (key !== built) { built = key; build(); } else place(x); },
+      rebuild() { built = ""; this.update(); },
+      frame(dt, busy) {
+        if (dots && !reduceMotion) { dotT += dt; if (dotT > 0.05) { moveDots(dotT, x); dotT = 0; v.dirty = true; } }
+        since += dt; if ((busy || dots) && since < 0.05) return;
+        since = 0; v.render();
+      },
+      size() { v.size(); }
+    };
+  })();
+
   function drawAll(skipScatter) {
     $("#bondROut").textContent = $("#bondRHud").textContent = "r = " + x.toFixed(2) + " r₀";
+    if (NB) NB.update();
     $("#bondState").textContent = stateText();
     drawPair(); drawPlot(); if (!skipScatter) drawScatter();
   }
   tabs.bonds = {
-    shown: drawAll,
+    shown: () => { if (NB) NB.size(); drawAll(); },
     tick: dt => {
       tph += dt;
+      if (NB) NB.frame(dt, !!anim);
       if (anim) {
         anim.t += dt;
         if (anim.kind === "form") {
@@ -1518,7 +1784,7 @@ function clipPlanesFrom(v, defs) {
       }
       if (!reduceMotion && (sel.t === "metallic" || sel.t === "vdw")) drawPair();
     },
-    resize: drawAll, theme: drawAll,
+    resize: () => { if (NB) NB.size(); drawAll(); }, theme: drawAll,
     state: () => ({ name: sel.n, type: sel.t, x, view: $("#bondPlot").hidden ? "scatter" : "curves", seen: Array.from(seen), anim: !!anim })
   };
   /* graph: energy and force curves, or the bond-energy vs melting-point chart */
