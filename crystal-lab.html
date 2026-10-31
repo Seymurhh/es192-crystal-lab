@@ -196,19 +196,51 @@ details.about > div { display: grid; gap: 8px; margin-top: 8px; }
 .exa { font-size: 14.5px; line-height: 1.45; background: var(--soft); border-radius: 8px; padding: 8px 11px; }
 .exdone { font-size: 13px; color: var(--teal); font-weight: 600; }
 
-/* ---------- phase-diagram tab: diagram | microstructure | atoms in one row */
+/* ---------- phase-diagram tab: the diagram large on the left; microstructure over atoms on the right.
+   The row fills the window below the toolbar, and never gets taller than the panel is wide. */
 .pdhead { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; margin-bottom: 12px; }
 .pdtool { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 18px; margin-bottom: 12px; }
 .pdtool .group { min-width: 0; flex: 1 1 360px; }
-.pdtop { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
-@media (max-width: 1100px) { .pdtop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .pdtop > :first-child { grid-column: 1 / -1; } }
-@media (max-width: 560px) { .pdtop { grid-template-columns: minmax(0, 1fr); } }
+#p-phase { container-type: inline-size; }
+.pdtop { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1.12fr); gap: 14px;
+  height: max(540px, min(calc(100vh - var(--barH) - 250px), 62cqw)); height: max(540px, min(calc(100dvh - var(--barH) - 250px), 62cqw)); }
+.pdtop > .pdd { grid-row: 1 / span 2; }
+.pdtop > figure { display: flex; flex-direction: column; min-height: 0; }
+.pdtop .cvbox { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+.pdtop .cvbox > canvas { position: absolute; left: 0; top: 0; }
+@media (max-width: 1100px) {
+  .pdtop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; height: auto; }
+  .pdtop > .pdd { grid-row: auto; grid-column: 1 / -1; }
+  .pdtop > .pdd .cvbox { flex: none; height: clamp(360px, 62vw, 620px); }
+  .pdtop > figure:not(.pdd) .cvbox { flex: none; height: 330px; }
+}
+@media (max-width: 560px) { .pdtop { grid-template-columns: minmax(0, 1fr); } .pdtop > .pdd .cvbox { height: 360px; } .pdtop > figure:not(.pdd) .cvbox { height: 300px; } }
+/* the 3D atoms: blocks of crystal, a label over each, an element key */
+.pdtop .three { position: absolute; inset: 44px 0 0 0; touch-action: none; cursor: grab; }
+.pdtop .three:active { cursor: grabbing; }
+.pdtop .three > canvas { position: absolute; inset: 0; }
+#pdAtomTools { align-items: center; top: auto; bottom: 10px; }
+#pdAtomTools .seg { background: color-mix(in srgb, var(--panel) 88%, transparent); }
+#pdLabels { position: absolute; left: 8px; right: 8px; top: 8px; z-index: 2; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; }
+.plab { min-width: 0; letter-spacing: -0.02em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 600 12px/1.35 var(--mono); color: var(--ink); background: color-mix(in srgb, var(--panel) 90%, transparent);
+  border: 1px solid var(--rule); border-left: 5px solid var(--pc); border-radius: 6px; padding: 3px 8px; }
+.plab + .plab { text-align: right; border-left-width: 1px; border-right: 5px solid var(--pc); }
+.plab small { display: block; font: 500 11.5px/1.35 var(--mono); color: var(--accent); overflow: hidden; text-overflow: ellipsis; }
+.pdkey { position: absolute; left: 10px; bottom: 10px; z-index: 2; display: flex; gap: 12px; align-items: center; font: 600 12px var(--mono); color: var(--ink);
+  background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--rule); border-radius: 6px; padding: 4px 9px; pointer-events: none; }
+.pdkey:empty { display: none; }
+.pdkey i { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 5px; vertical-align: -2px; box-shadow: inset -2px -2px 3px rgba(0,0,0,.35), inset 2px 2px 3px rgba(255,255,255,.35); }
+.pdkey span.c i { width: 8px; height: 8px; vertical-align: 0; }
+@media (max-width: 560px) { #pdAtomSize { display: none; } }
 .pdbot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 16px; align-items: start; }
 @media (max-width: 980px) { .pdbot { grid-template-columns: minmax(0, 1fr); } }
 figure.stage { margin: 0; }
 figure.stage canvas { width: 100%; }
 figure.stage figcaption { font-size: 12.5px; line-height: 1.35; color: var(--muted); padding: 7px 10px; border-top: 1px solid var(--rule); background: var(--panel); }
 figure.stage figcaption b { color: var(--ink); }
+.pdtop figcaption { flex: none; }
+#pdMicroCap { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; min-height: 2.7em; }
+figure.atoms figcaption { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .pdin { display: flex; gap: 10px; }
 .pdin label { display: grid; gap: 4px; font-weight: 600; font-size: 14px; width: 150px; }
 .pdin input { font: 600 15px var(--mono); padding: 7px 9px; border: 1px solid var(--rule); border-radius: 8px; background: var(--panel); color: var(--ink); width: 100%; min-width: 0; }
@@ -216,7 +248,6 @@ figure.stage figcaption b { color: var(--ink); }
 .log li.on { color: var(--ink); font-weight: 600; }
 .why { font-size: 15px; line-height: 1.5; }
 #pdCv:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-figure.micro { position: relative; }
 #pdMicroMode { display: flex; width: fit-content; margin-bottom: 6px; }
 #pdReal { position: absolute; left: 0; top: 0; object-fit: contain; background: #15181c; }
 #pdMicroCap a { color: var(--muted); }
@@ -256,8 +287,13 @@ body.learn .tabpanel:not([hidden]) { grid-column: 1; grid-row: 1; min-width: 0; 
 body.learn .bench { grid-template-columns: minmax(0, 1fr); }
 body.learn .bench > .side { display: none; }
 body.learn .pdtool, body.learn .pdbot, body.learn #pdSys { display: none; }
-body.learn .pdtop { grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr); }
-body.learn .pdtop > :first-child { grid-row: span 2; grid-column: auto; }
+body.learn .pdtop { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); height: max(520px, min(calc(100vh - var(--barH) - 90px), 68cqw)); height: max(520px, min(calc(100dvh - var(--barH) - 90px), 68cqw)); }
+@media (max-width: 1250px) {   /* beside the lesson column the bench is too narrow for three panels: diagram on top, the other two under it */
+  body.learn .pdtop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto; height: auto; }
+  body.learn .pdtop > .pdd { grid-row: auto; grid-column: 1 / -1; }
+  body.learn .pdtop > .pdd .cvbox { flex: none; height: clamp(360px, 52vw, 600px); }
+  body.learn .pdtop > figure:not(.pdd) .cvbox { flex: none; height: 300px; }
+}
 #lesson { grid-column: 2; grid-row: 1; position: sticky; top: calc(var(--barH) + 14px); max-height: calc(100vh - var(--barH) - 28px); overflow-y: auto; scrollbar-width: thin;
   font-family: var(--serif); color: var(--ink); padding: 2px 4px 20px 24px; border-left: 1px solid var(--rule); }
 .lsn-chap { font: 600 11px/1.3 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
@@ -333,8 +369,7 @@ body.learn .pdtop > :first-child { grid-row: span 2; grid-column: auto; }
   #lesson .lsn-obj, #lesson .lsn-title { display: none; }
   #lesson .lsn-rail { margin-bottom: 12px; }
   #lesson .lsn-body { font-size: 16px; }
-  body.learn .pdtop { grid-template-columns: minmax(0, 1fr); }
-  body.learn .pdtop > :first-child { grid-row: auto; }
+  body.learn .pdtop { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: auto; }
 }
 body.present.learn main.wrap { grid-template-columns: minmax(0, 1fr) clamp(380px, 30vw, 520px); }
 body.present #lesson .lsn-body, body.present #lesson .lsn-why { font-size: 19px; }
@@ -354,7 +389,7 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
       <button role="tab" id="t-phase" data-tab="phase" aria-selected="false" aria-controls="p-phase" title="Week 9 lab and Lecture 10B · key 6"><span class="n">06</span>Phase diagrams</button>
     </nav>
     <div class="tools">
-      <div class="modesw" id="modeSw" role="radiogroup" aria-label="Mode"><button role="radio" data-m="learn" aria-checked="true" title="Step-by-step lessons">Learn</button><i aria-hidden="true"></i><button role="radio" data-m="explore" aria-checked="false" title="Every control, for free experiments and demos">Explore</button></div>
+      <div class="modesw" id="modeSw" role="radiogroup" aria-label="Mode"><button role="radio" data-m="explore" aria-checked="false" title="Every control, for free experiments and demos">Explore</button><i aria-hidden="true"></i><button role="radio" data-m="learn" aria-checked="true" title="Step-by-step lessons">Learn</button></div>
       <button class="ibtn" id="themeBtn" title="Switch between light and dark" aria-label="Switch between light and dark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
       <button class="ibtn" id="presentBtn" aria-pressed="false" title="Present mode: full screen, larger models (key P)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></svg><span class="lbl">Present</span></button>
     </div>
@@ -666,9 +701,15 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
       </div>
     </div>
     <div class="pdtop">
-      <figure class="stage cross"><canvas id="pdCv" tabindex="0" aria-label="Phase diagram. Move over it, or use the arrow keys, to choose a composition and temperature"></canvas><figcaption><b>Phase diagram</b> · <span id="pdHint">move over the diagram; click to pin a point</span></figcaption></figure>
-      <figure class="stage micro"><canvas id="pdMicro" aria-label="Microstructure at the chosen point"></canvas><img id="pdReal" alt="" hidden><figcaption><div class="seg sm" id="pdMicroMode" aria-label="How to show the microstructure"><button data-v="look" aria-pressed="true">Micrograph</button><button data-v="colour">Phase colours</button><button data-v="real">Real photo</button></div><span id="pdMicroCap"><b>Microstructure</b> · simulated micrograph after slow cooling, polished and etched</span></figcaption></figure>
-      <figure class="stage"><canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas><figcaption><b>Atomic arrangement</b> · one plane of atoms, about 3–4 nm across</figcaption></figure>
+      <figure class="stage cross pdd"><div class="cvbox"><canvas id="pdCv" tabindex="0" aria-label="Phase diagram. Move over it, or use the arrow keys, to choose a composition and temperature"></canvas></div><figcaption><b>Phase diagram</b> · <span id="pdHint">move over the diagram; click to pin a point</span></figcaption></figure>
+      <figure class="stage micro"><div class="cvbox"><canvas id="pdMicro" aria-label="Microstructure at the chosen point"></canvas><img id="pdReal" alt="" hidden></div><figcaption><div class="seg sm" id="pdMicroMode" aria-label="How to show the microstructure"><button data-v="look" aria-pressed="true">Micrograph</button><button data-v="colour">Phase colours</button><button data-v="real">Real photo</button></div><span id="pdMicroCap"><b>Microstructure</b> · simulated micrograph after slow cooling, polished and etched</span></figcaption></figure>
+      <figure class="stage atoms"><div class="cvbox" id="pdAtomsBox">
+        <canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas>
+        <div class="three" id="pdAtoms3" aria-label="The crystal structure of each phase present, in 3D" hidden></div>
+        <div id="pdLabels" aria-live="polite"></div>
+        <div class="pdkey" id="pdKey"></div>
+        <div class="stools" id="pdAtomTools" hidden><div class="seg sm" id="pdAtomSize" aria-label="Atom size"><button data-v="full" aria-pressed="true" title="Atoms at their real size, touching their neighbours">Real size</button><button data-v="small" title="Shrink the atoms to see the lattice inside the block, and the carbon in its gaps">Small atoms</button></div><button class="ibtn" data-reset title="Reset the view" aria-label="Reset the view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></button></div>
+      </div><figcaption><b>Atoms</b> · <span id="pdAtomCap">one plane of atoms, about 3–4 nm across</span></figcaption></figure>
     </div>
     <div class="pdbot">
       <div class="readout">
@@ -2538,7 +2579,7 @@ function clipPlanesFrom(v, defs) {
      boundaries on a light grid, ticks on all four sides, wt% along the bottom, at% along the top, °C on the left
      and °F on the right, italic phase labels. Only the field the chosen point is in is tinted. */
   function drawDiagram() {
-    const { ctx, w, h } = fit(cv, 0.8, 560, 300);
+    const { ctx, w, h } = fitBox(cv);
     const ax = sys.axes, atAxis = !!ax.at;
     const L = 58, R = 50, Tp = atAxis ? 44 : 16, B = 50;
     const pw = w - L - R, ph = h - Tp - B;
@@ -2926,13 +2967,13 @@ function clipPlanesFrom(v, defs) {
   }
   function drawReal(r, ctx, w, h) {
     const im = $("#pdReal"), s = Math.min(w, h), x0 = (w - s) / 2, y0 = (h - s) / 2;
-    ctx.fillStyle = "#15181c"; ctx.fillRect(x0, y0, s, s);
+    ctx.fillStyle = "#15181c"; ctx.fillRect(0, 0, w, h);
     const spec = microSpec(r, C, T), k = realKey(spec);
     if (!k) {
       im.hidden = true;
       const msg = spec.kind === "liquid" ? "A liquid has no microstructure to photograph." : "No openly licensed photograph of this state was found. The Micrograph view shows what it looks like.";
       ctx.fillStyle = "#e6e9ee"; ctx.font = "15px " + FONT.body(); ctx.textAlign = "center";
-      const words = msg.split(" "), lines = [""]; words.forEach(wd => { const t = (lines[lines.length - 1] + " " + wd).trim(); if (ctx.measureText(t).width > s - 48) lines.push(wd); else lines[lines.length - 1] = t; });
+      const words = msg.split(" "), lines = [""]; words.forEach(wd => { const t = (lines[lines.length - 1] + " " + wd).trim(); if (ctx.measureText(t).width > Math.min(w - 48, 420)) lines.push(wd); else lines[lines.length - 1] = t; });
       lines.forEach((ln, i) => ctx.fillText(ln, x0 + s / 2, y0 + s / 2 + (i - (lines.length - 1) / 2) * 21));
       $("#pdMicroCap").innerHTML = "<b>Real micrograph</b> · none for this state";
       return;
@@ -2940,7 +2981,7 @@ function clipPlanesFrom(v, defs) {
     const [what, [credit, url]] = REAL[k[0]], file = "assets/micrographs/" + k[0] + ".jpg";
     if (im.getAttribute("src") !== file) im.src = file;
     im.alt = what; im.hidden = false;
-    Object.assign(im.style, { left: x0 + "px", top: y0 + "px", width: s + "px", height: s + "px" });
+    Object.assign(im.style, { left: "0px", top: "0px", width: w + "px", height: h + "px" });
     const cap = $("#pdMicroCap"); cap.innerHTML = "";
     const b = document.createElement("b"); b.textContent = "Real micrograph";
     const a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = credit;
@@ -2963,15 +3004,16 @@ function clipPlanesFrom(v, defs) {
     return [];
   }
   function drawMicro(r) {
-    const { ctx, w, h } = fit(micro, 1, 420, 220);
+    const { ctx, w, h } = fitBox(micro);
     ctx.clearRect(0, 0, w, h);
-    const s = Math.min(w, h), x0 = (w - s) / 2, y0 = (h - s) / 2;
+    // the simulated field is square; it fills the panel and the long side crops it, as a microscope's field would
+    const s = Math.max(w, h), x0 = (w - s) / 2, y0 = (h - s) / 2;
     if (microMode === "real") { drawReal(r, ctx, w, h); return; }
     $("#pdReal").hidden = true;
-    if (!FLD) { tag(ctx, "loading the microstructure…", x0 + 8, y0 + 18, "left", tok("--muted")); return; }
+    if (!FLD) { tag(ctx, "loading the microstructure…", 8, 18, "left", tok("--muted")); return; }
     const spec = microSpec(r, C, T);
     paintMicro(spec);
-    ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, s, s); ctx.clip();
+    ctx.save(); ctx.beginPath(); ctx.rect(0, 0, w, h); ctx.clip();
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = "high";
     if (microMode === "look" && "filter" in ctx) ctx.filter = "blur(0.45px)";   // the microscope's optics soften the edges
     ctx.drawImage(microOff, x0 - 1, y0 - 1, s + 2, s + 2);
@@ -2983,7 +3025,7 @@ function clipPlanesFrom(v, defs) {
     }
     ctx.restore();
     // scale bar
-    const [fov, bar] = FOV[sysKey], bl = s * bar / fov, bx = x0 + s - bl - 12, by = y0 + s - 16;
+    const [fov, bar] = FOV[sysKey], bl = s * bar / fov, bx = w - bl - 12, by = h - 16;
     ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.fillRect(bx - 6, by - 20, bl + 12, 30);
     ctx.fillStyle = "#fff"; ctx.fillRect(bx, by, bl, 4);
     ctx.font = "600 12px " + FONT.mono(); ctx.textAlign = "center"; ctx.fillText(bar + " µm", bx + bl / 2, by - 6);
@@ -2996,11 +3038,11 @@ function clipPlanesFrom(v, defs) {
       if (look) { const v = Math.round(255 * (Lk[key] !== undefined ? Lk[key] : 0.5)); return "rgb(" + v + "," + v + "," + v + ")"; }
       return MIC[key === "α" && sysKey === "fec" ? "ferrite" : key] || MIC.L;
     };
-    let yy = y0 + 18;
+    let yy = 18;
     microLegend(spec).forEach(([label, key]) => {
-      tag(ctx, "   " + label, x0 + 8, yy, "left", tok("--ink"));
+      tag(ctx, "   " + label, 8, yy, "left", tok("--ink"));
       ctx.fillStyle = swatch(key); ctx.strokeStyle = tok("--ink"); ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.rect(x0 + 14, yy - 5, 10, 10); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.rect(14, yy - 5, 10, 10); ctx.fill(); ctx.stroke();
       yy += 26;
     });
     const hot = spec.kind === "liquid" || spec.kind === "mushy" || spec.kind === "proeu" || (spec.kind === "white" && !spec.pearl) || (spec.kind === "grains" && (spec.ph === "γ" || spec.ph === "δ"));
@@ -3037,7 +3079,8 @@ function clipPlanesFrom(v, defs) {
   const siteRnd = (() => { const r = rng(23); return Array.from({ length: 4000 }, () => r()); })();
   function atomColor(el) { return { Cu: "#c47a45", Ni: "#9aa6ad", Pb: "#5f6878", Sn: "#d2d8de", Fe: "#9aa3ad", C: "#24272c" }[el]; }
   function drawAtoms(r) {
-    const { ctx, w, h } = fit(atoms, 1, 420, 220);
+    if (v3) { draw3D(r); return; }
+    const { ctx, w, h } = fitBox(atoms);
     ctx.clearRect(0, 0, w, h);
     const lv = lever(r), ph = phasesOf(r.k);
     let parts;
@@ -3121,6 +3164,216 @@ function clipPlanesFrom(v, defs) {
     }
     carbon.forEach(([x, y]) => ball(ctx, x, y, rad("C"), atomColor("C"), { ring: "#ffffff", ringW: 1.5 }));
   }
+
+  /* ---------- atoms in 3D: a small block of each phase present, cut from its real crystal structure (lattice
+     parameters in Å), holding the two elements in the proportion the tie line gives. Two phases sit side by side,
+     their widths following the lever-rule amounts; a liquid is a random packing that keeps jostling. */
+  const RAD = { Cu: 1.28, Ni: 1.25, Pb: 1.75, Sn: 1.51, Fe: 1.24, C: 0.71 };   // atomic radii, Å (Callister Table 3.1; Sn from β-tin's 3.02 Å contacts)
+  const FCC = [[0, 0, 0], [.5, .5, 0], [.5, 0, .5], [0, .5, .5]], BCC = [[0, 0, 0], [.5, .5, .5]];
+  const OCT_FCC = [[.5, 0, 0], [0, .5, 0], [0, 0, .5], [.5, .5, .5]];                              // one octahedral gap per iron atom
+  const OCT_BCC = [[.5, .5, 0], [.5, 0, .5], [0, .5, .5], [.5, 0, 0], [0, .5, 0], [0, 0, .5]];    // three per iron atom
+  /* β-tin (white tin), body-centred tetragonal: a = 5.832, c = 3.182 Å, c drawn upright; four atoms per cell, each
+     touching four neighbours at 3.02 Å and two more at 3.18 Å */
+  const BSN = [[0, 0, 0], [.5, .5, .5], [0, .25, .5], [.5, .75, 0]];
+  /* cementite, Fe₃C: orthorhombic (Pnma), a = 5.090, b = 6.744, c = 4.525 Å; 12 Fe and 4 C per cell, each carbon
+     inside a prism of six iron atoms at 1.98 Å. Positions from the eight symmetry operations of Pnma. */
+  const FE3C = (() => {
+    const ops = [[1, 1, 1, 0, 0, 0], [-1, -1, 1, .5, 0, .5], [-1, 1, -1, 0, .5, 0], [1, -1, -1, .5, .5, .5],
+      [-1, -1, -1, 0, 0, 0], [1, 1, -1, .5, 0, .5], [1, -1, 1, 0, .5, 0], [-1, 1, 1, .5, .5, .5]];
+    const gen = p => { const out = []; ops.forEach(o => { const q = [0, 1, 2].map(i => (((o[i] * p[i] + o[i + 3]) % 1) + 1) % 1); if (!out.some(r => r.every((v, i) => Math.min(Math.abs(v - q[i]), 1 - Math.abs(v - q[i])) < 1e-4))) out.push(q); }); return out; };
+    return { Fe: gen([0.1816, 0.0666, 0.3374]).concat(gen([0.0367, 0.25, 0.8402])), C: gen([0.8769, 0.25, 0.4424]) };
+  })();
+  function structOf(p, xB) {
+    if (sysKey === "cuni") { const a = 3.615 + (3.524 - 3.615) * xB; return { basis: FCC, abc: [a, a, a], name: "FCC" }; }   // Vegard's law between Cu and Ni
+    if (sysKey === "pbsn") return p === "α" ? { basis: FCC, abc: [4.95, 4.95, 4.95], name: "FCC" } : { basis: BSN, abc: [5.832, 3.182, 5.832], name: "tetragonal" };
+    if (p === "Fe₃C") return { fe3c: true, abc: [5.090, 6.744, 4.525], name: "orthorhombic" };
+    if (p === "γ") return { basis: FCC, oct: OCT_FCC, abc: [3.59, 3.59, 3.59], name: "FCC" };
+    const a = p === "δ" ? 2.93 : 2.866; return { basis: BCC, oct: OCT_BCC, abc: [a, a, a], name: "BCC" };
+  }
+  /* a fixed random number for every site, so atoms change one by one (not all reshuffled) as the composition moves */
+  function hsh(a, b, c, d) {
+    let x = Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663) ^ Math.imul(c | 0, 83492791) ^ Math.imul(d | 0, 40503);
+    x = Math.imul(x ^ (x >>> 16), 0x85ebca6b); x = Math.imul(x ^ (x >>> 13), 0xc2b2ae35); return ((x ^ (x >>> 16)) >>> 0) / 4294967296;
+  }
+  function crystalAtoms(st, target, xB, seed) {
+    const n = st.abc.map((a, i) => Math.max(1, Math.round(target[i] / a))), size = n.map((k, i) => k * st.abc[i]), out = [];
+    const host = sysKey === "fec" ? "Fe" : sys.A, sol = sysKey === "fec" ? "C" : sys.B, e = 1e-6;
+    const inside = f => f[0] <= n[0] + e && f[1] <= n[1] + e && f[2] <= n[2] + e;
+    const at = (f, el) => out.push({ el, x: f[0] * st.abc[0] - size[0] / 2, y: f[1] * st.abc[1] - size[1] / 2, z: f[2] * st.abc[2] - size[2] / 2 });
+    const occ = st.oct ? xB / (1 - xB) * 4 / (st.oct.length * st.basis.length) : 0;   // carbon per gap = (C per Fe) / (gaps per Fe)
+    for (let i = 0; i <= n[0]; i++) for (let j = 0; j <= n[1]; j++) for (let k = 0; k <= n[2]; k++) {
+      if (st.fe3c) {
+        if (i === n[0] || j === n[1] || k === n[2]) continue;
+        FE3C.Fe.forEach(b => at([i + b[0], j + b[1], k + b[2]], "Fe")); FE3C.C.forEach(b => at([i + b[0], j + b[1], k + b[2]], "C"));
+        continue;
+      }
+      st.basis.forEach(b => {
+        const f = [i + b[0], j + b[1], k + b[2]]; if (!inside(f)) return;
+        const u = hsh(f[0] * 4, f[1] * 4, f[2] * 4, seed);
+        at(f, sysKey === "fec" ? "Fe" : u < xB ? sol : host);
+      });
+      (st.oct || []).forEach(b => {
+        const f = [i + b[0], j + b[1], k + b[2]]; if (!inside(f)) return;
+        if (hsh(f[0] * 4, f[1] * 4, f[2] * 4, seed + 7) < occ) at(f, "C");
+      });
+    }
+    return { atoms: out, size, n };
+  }
+  /* atoms per Å³ of the solid next to the liquid; the liquid is drawn about 4% less dense */
+  function solidDensity(xB) {
+    if (sysKey === "cuni") { const a = 3.615 + (3.524 - 3.615) * xB; return 4 / (a * a * a); }
+    if (sysKey === "pbsn") return (1 - xB) * 4 / Math.pow(4.95, 3) + xB * 4 / (5.832 * 5.832 * 3.182);
+    return 4 / Math.pow(3.59, 3);   // iron atoms in austenite; the carbon fits between them
+  }
+  let liq3 = null;
+  function liquidAtoms3(size, xB) {
+    const host = sysKey === "fec" ? "Fe" : sys.A, sol = sysKey === "fec" ? "C" : sys.B;
+    const V = size[0] * size[1] * size[2], nHost = sysKey === "fec" ? V * solidDensity(0) * 0.96 : 0;
+    const N = Math.round(sysKey === "fec" ? nHost / (1 - xB) : V * solidDensity(xB) * 0.96);
+    if (!liq3 || liq3.size.join() !== size.join()) liq3 = { size: size.slice(), pts: [] };
+    const pts = liq3.pts; let added = 0;
+    while (pts.length > N) pts.pop();
+    while (pts.length < N) { const i = pts.length; pts.push({ x: (Math.random() - 0.5) * size[0], y: (Math.random() - 0.5) * size[1], z: (Math.random() - 0.5) * size[2], u: hsh(i, 3, 5, 7) }); added++; }
+    pts.forEach(q => { q.el = q.u < xB ? sol : host; q.r = RAD[q.el]; });
+    for (let k = 0; k < (added ? 60 : 0); k++) relax3(0);
+    return pts;
+  }
+  /* push apart any two atoms closer than 95% of touching, keep the centres inside the box */
+  function relax3(kick) {
+    const { size, pts } = liq3, n = pts.length, hx = size[0] / 2, hy = size[1] / 2, hz = size[2] / 2;
+    if (kick) pts.forEach(q => { q.x += (Math.random() - 0.5) * kick; q.y += (Math.random() - 0.5) * kick; q.z += (Math.random() - 0.5) * kick; });
+    for (let i = 0; i < n; i++) {
+      const a = pts[i];
+      for (let j = i + 1; j < n; j++) {
+        const b = pts[j], d0 = (a.r + b.r) * 0.95;
+        const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z, d2 = dx * dx + dy * dy + dz * dz;
+        if (d2 >= d0 * d0 || d2 < 1e-6) continue;
+        const d = Math.sqrt(d2), push = (d0 - d) / d * 0.5;
+        a.x -= dx * push; a.y -= dy * push; a.z -= dz * push; b.x += dx * push; b.y += dy * push; b.z += dz * push;
+      }
+    }
+    pts.forEach(q => { q.x = clamp(q.x, -hx, hx); q.y = clamp(q.y, -hy, hy); q.z = clamp(q.z, -hz, hz); });
+  }
+
+  let v3 = null, atomScale = 1, built = "", blocks3 = [], liqMeshes = [], group3 = null;
+  try { if (!has3D) throw new Error("no three.js"); v3 = makeViewer($("#pdAtoms3"), { rotX: 0.3, rotY: -0.5 }); }
+  catch (e) { v3 = null; }
+  if (v3) {
+    $("#pdAtoms3").hidden = false; atoms.hidden = true; $("#pdAtomTools").hidden = false;
+    $("#pdAtomTools [data-reset]").addEventListener("click", () => v3.reset());
+  }
+  const sph3 = has3D ? new THREE.SphereGeometry(1, 18, 12) : null, matCache = {};
+  const matOf = el => matCache[el] || (matCache[el] = mat(atomColor(el), el === "C" ? { roughness: 0.4, metalness: 0.15 } : el === "Pb" ? { roughness: 0.35 } : {}));
+  // shared, never disposed: a rebuild that released a material would make three.js recompile its shader (slow on laptops without a GPU)
+  const slabMat = col => matCache["slab" + col] || (matCache["slab" + col] = new THREE.MeshStandardMaterial({ color: lin(col), roughness: 0.85, metalness: 0 }));
+  const edgeMat = () => matCache.edge || (matCache.edge = new THREE.LineDashedMaterial({ color: lin(tok("--ink")), dashSize: 0.35, gapSize: 0.28, transparent: true, opacity: 0.9 }));
+  const m4 = has3D ? new THREE.Matrix4() : null, q4 = has3D ? new THREE.Quaternion() : null, p4 = has3D ? new THREE.Vector3() : null, s4 = has3D ? new THREE.Vector3() : null;
+  function instanced(parent, list, ox) {
+    const by = {}; list.forEach((a, i) => (by[a.el] = by[a.el] || []).push(i));
+    return Object.keys(by).map(el => {
+      const idx = by[el], im = new THREE.InstancedMesh(sph3, matOf(el), idx.length);
+      im.userData.noFit = true; parent.add(im);
+      const m = { im, idx, list, ox, el }; setInst(m); return m;
+    });
+  }
+  function setInst(m) {
+    m.idx.forEach((i, k) => { const a = m.list[i]; p4.set(a.x + m.ox, a.y, a.z); s4.setScalar(RAD[a.el] * atomScale); m4.compose(p4, q4, s4); m.im.setMatrixAt(k, m4); });
+    m.im.instanceMatrix.needsUpdate = true;
+  }
+  function clear3() {
+    if (!group3) return;
+    v3.root.remove(group3);
+    group3.traverse(o => { if (o.isInstancedMesh) { if (o.dispose) o.dispose(); return; } if (o.geometry && o.geometry !== sph3) o.geometry.dispose(); });
+    group3 = null; liqMeshes = [];
+  }
+  function draw3D(r) {
+    const lv = lever(r), ph = phasesOf(r.k);
+    const parts = ph.length === 1 ? [{ p: ph[0], c: C, f: 1 }] : [{ p: r.p1, c: r.c1, f: lv.w1 }, { p: r.p2, c: r.c2, f: lv.w2 }];
+    // the solid goes on the left when one phase is liquid, so a mushy alloy always reads "crystal | liquid"
+    if (parts.length > 1 && parts[0].p === "L") parts.reverse();
+    parts.forEach(pt => { pt.xB = pt.p === "Fe₃C" ? 0.25 : wtToAt(pt.c, sys.MA, sys.MB); });
+    const minF = 0.24, two = parts.length > 1, f0 = two ? clamp(parts[0].f, minF, 1 - minF) : 1;
+    const key = [sysKey, r.k, parts.map(pt => Math.round(pt.xB * (sysKey === "fec" ? 2000 : 200))).join(","), Math.round(f0 * 20), atomScale, isDark()].join("|");   // rebuild only on a visible change: during cooling the tie-line ends move every frame
+    if (key !== built) {
+      built = key; clear3();
+      group3 = new THREE.Group(); v3.root.add(group3);
+      const H = 14, D = 14, W = two ? 30 : 22, gap = 4;
+      // build each block at its target width, then place them side by side about the centre
+      blocks3 = parts.map((pt, i) => {
+        const w = two ? W * (i ? 1 - f0 : f0) : W;
+        if (pt.p === "L") return Object.assign({}, pt, { liquid: true, size: [w, H, D] });
+        const st = structOf(pt.p, pt.xB), cr = crystalAtoms(st, [w, H, D], pt.xB, 11 + i * 31);
+        return Object.assign({}, pt, { st, atoms: cr.atoms, size: cr.size, n: cr.n });
+      });
+      blocks3.forEach(b => { if (b.liquid) { const other = blocks3.find(o => !o.liquid); if (other) { b.size[1] = other.size[1]; b.size[2] = other.size[2]; } } });
+      const total = blocks3.reduce((a, b) => a + b.size[0], 0) + (two ? gap : 0);
+      let x = -total / 2;
+      blocks3.forEach(b => { b.ox = x + b.size[0] / 2; x += b.size[0] + gap; });
+      blocks3.forEach(b => {
+        const g = new THREE.Group(); group3.add(g);
+        if (b.liquid) {
+          const pts = liquidAtoms3(b.size, b.xB);
+          liqMeshes = instanced(g, pts, b.ox);
+        } else {
+          instanced(g, b.atoms, b.ox);
+          // one unit cell outlined (dashed, so it is not read as bonds), at the block's top front corner
+          const [ax, ay, az] = b.st.abc, x0 = b.ox - b.size[0] / 2, y0 = b.size[1] / 2 - ay, z0 = b.size[2] / 2 - az;
+          const V = (i, j, k) => new THREE.Vector3(x0 + i * ax, y0 + j * ay, z0 + k * az), segs = [];
+          [0, 1].forEach(a => [0, 1].forEach(c => { segs.push(V(0, a, c), V(1, a, c), V(a, 0, c), V(a, 1, c), V(a, c, 0), V(a, c, 1)); }));
+          const l = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(segs), edgeMat());
+          l.computeLineDistances(); l.userData.noFit = true; g.add(l);
+        }
+        // a slab in the phase's colour from the diagram under each block
+        const pl = new THREE.Mesh(new THREE.BoxGeometry(b.size[0] + 2.4, 0.5, b.size[2] + 2.4), slabMat(PH[b.p] || "#999999"));
+        pl.position.set(b.ox, -b.size[1] / 2 - 2.2, 0); pl.userData.noFit = true; g.add(pl);
+      });
+      // home zoom: fit the blocks (and room for the labels above them) to the panel at the home angle
+      const hb = new THREE.Box3(new THREE.Vector3(-total / 2 - 1.5, -H / 2 - 2.5, -D / 2 - 1.5), new THREE.Vector3(total / 2 + 1.5, H / 2 + 1.5, D / 2 + 1.5));
+      group3.userData.box = hb;
+      makeLabels();
+    }
+    fit3();
+    const els = sysKey === "fec" ? ["Fe", "C"] : [sys.A, sys.B];
+    $("#pdKey").innerHTML = els.map(el => '<span class="' + (el === "C" ? "c" : "") + '"><i style="background:' + atomColor(el) + '"></i>' + el + "</span>").join("");
+    const cap = "each phase's crystal, ~1.5 nm" + (two ? ", widths by the lever rule" : "") + " · drag to turn";
+    if ($("#pdAtomCap").textContent !== cap) $("#pdAtomCap").textContent = cap;
+    v3.dirty = true;
+  }
+  /* zoom so the whole assembly fits, measured at the home angle so turning it does not change the zoom */
+  function fit3() {
+    const box = group3 && group3.userData.box; if (!box) return;
+    const e = new THREE.Euler(0.3, -0.5, 0, "XYZ"), m = new THREE.Matrix4().makeRotationFromEuler(e);
+    let hx = 0, hy = 0;
+    [0, 1].forEach(i => [0, 1].forEach(j => [0, 1].forEach(k => {
+      const p = new THREE.Vector3(i ? box.max.x : box.min.x, j ? box.max.y : box.min.y, k ? box.max.z : box.min.z).applyMatrix4(m);
+      hx = Math.max(hx, Math.abs(p.x)); hy = Math.max(hy, Math.abs(p.y));
+    })));
+    const asp = v3.camera.aspect || 1.6, vh = v3.camera.fov / 2 * Math.PI / 180, hh = Math.atan(Math.tan(vh) * asp);
+    // the camera distance that shows the box (plus a row for the labels), turned into the fitR that makeViewer's fitDist() expects
+    const d = Math.max(hy * 1.06 / Math.tan(vh), hx * 1.04 / Math.tan(hh)) + hx * 0.3;
+    v3.fitR = d * Math.sin(Math.min(vh, hh)) / 1.06;
+    v3.dirty = true;
+  }
+  /* a label for each block, in a strip above them: left names the left block, right the right one, each edged in
+     the colour of its block's base. Phase, structure, composition and, for two phases, the amount. */
+  function makeLabels() {
+    const box = $("#pdLabels"); box.innerHTML = "";
+    blocks3.forEach(b => {
+      const d = document.createElement("div"); d.className = "plab"; d.style.setProperty("--pc", PH[b.p] || "#999");
+      const comp = b.p === "Fe₃C" ? "6.70 wt% C" : fmtC(b.c) + " " + sys.unit;
+      d.title = phaseName(b.p) + ", " + (b.liquid ? "no lattice" : b.st.name) + ", " + comp;
+      const note = b.p === "α" && sysKey === "fec" ? " · ≈1 C per 1000 Fe, so none here" : blocks3.length > 1 && (b.f < 0.24) ? " · drawn wider" : "";
+      const short = { L: "liquid", "α": sysKey === "fec" ? "ferrite α" : "α", "β": "β", "γ": "austenite γ", "δ": "δ-ferrite", "Fe₃C": "cementite" }[b.p];
+      d.innerHTML = short + " · " + (b.liquid ? "no lattice" : b.st.name) + "<small>" + comp + (blocks3.length > 1 ? " · W=" + b.f.toFixed(2) : "") + note + "</small>";
+      box.appendChild(d);
+    });
+  }
+  function liquidTick(dt) {
+    if (!liq3 || !liqMeshes.length || reduceMotion) return;
+    relax3(0.12 * Math.min(3, dt * 60));
+    liqMeshes.forEach(setInst); v3.dirty = true;
+  }
+  if (v3) pressGroup($("#pdAtomSize"), m => { atomScale = m === "full" ? 1 : 0.5; if (lastR) drawAtoms(lastR); });
 
   /* ---------- side panel text */
   function whyText(r) {
@@ -3349,9 +3602,9 @@ function clipPlanesFrom(v, defs) {
     xy: (c, t) => geo && [geo.X(c), geo.Y(t)],
     set: (k, c, t, view) => { cool = null; $("#pdCool").textContent = "Cool slowly from the top"; if (k && k !== sysKey) setSystem(k); if (k === "fec" && view && view !== feView) setFeView(view); C = c; T = t; pinned = true; $("#pdFollow").hidden = false; update(true); },
     quiet: on => { quiet = !!on; drawDiagram(); },
-    shown: () => update(true),
-    resize: () => { fillKey = ""; update(false); },
-    theme: () => { fillKey = ""; update(false); },
+    shown: () => { if (v3) v3.size(); update(true); },
+    resize: () => { fillKey = ""; if (v3) v3.size(); update(false); },
+    theme: () => { fillKey = ""; built = ""; if (matCache.edge) matCache.edge.color.copy(lin(tok("--ink"))); update(false); },
     tick: dt => {
       if (cool) {
         if (cool.hold > 0) { cool.hold -= dt; }
@@ -3367,7 +3620,19 @@ function clipPlanesFrom(v, defs) {
         }
         return;
       }
-      if (lastR && lastR.k.indexOf("L") >= 0 && !reduceMotion && liq) { liquidStep(0.1 * Math.min(3, dt * 60)); drawAtoms(lastR); }
+      if (lastR && lastR.k.indexOf("L") >= 0 && !reduceMotion && !v3 && liq) { liquidStep(0.1 * Math.min(3, dt * 60)); drawAtoms(lastR); }
+    }
+  };
+  const tick0 = tabs.phase.tick; let since3 = 0;
+  tabs.phase.tick = dt => {
+    tick0(dt);
+    // the jostling liquid and a cooling run redraw the atoms at most ~20 times a second: without a graphics card
+    // (software WebGL) a full-rate redraw would slow the whole page, and the cooling run with it
+    if (v3) {
+      since3 += dt;
+      if (since3 < 0.05 && (cool || (lastR && lastR.k.indexOf("L") >= 0))) return;
+      if (lastR && lastR.k.indexOf("L") >= 0) liquidTick(since3);
+      since3 = 0; v3.render();
     }
   };
   setSystem("pbsn");
