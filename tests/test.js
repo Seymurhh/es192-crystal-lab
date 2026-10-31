@@ -36,8 +36,9 @@ const ok = (cond, msg) => { log.push((cond ? "PASS " : "FAIL ") + msg); };
   await page.click('#bondChips button[data-i="0"]');
   const bfps = await page.evaluate(() => new Promise(r => { document.getElementById("bondForm").click(); let n = 0; const t = performance.now(); const f = () => { n++; if (performance.now() - t < 1000) requestAnimationFrame(f); else r(n); }; requestAnimationFrame(f); }));
   log.push("INFO bonds: frame rate during Form animation " + bfps + " fps");
-  await click("#bondForm"); await sleep(600); await shot("bonds-ionic-transfer");
-  const mid = await text("#bondState");
+  await click("#bondForm"); await sleep(600);
+  const mid = await text("#bondState");   // read before the screenshot: under SwiftShader a screenshot can outlast the 1.1 s transfer
+  await shot("bonds-ionic-transfer");
   ok(/electron jumps/.test(mid), "bonds: Form shows electron transfer -> " + mid);
   await sleep(2600);
   const formed = await page.$eval("#bondR", e => +e.value);

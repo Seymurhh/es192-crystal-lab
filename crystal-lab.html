@@ -756,7 +756,7 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
               <button class="chip tog" id="d3Bonds" aria-pressed="true">Bonds</button>
             </div>
           </div>
-          <p class="cap">Drawn on a simple cubic lattice, as in Callister's Figs 4.4–4.6, so the planes are easy to follow. The shear stress (black arrows) pushes the top half toward +x. The <b>dislocation line</b> is the boundary between the part of the slip plane that has already slipped and the part that has not. Edge: <b>b</b> at right angles to the line, so the line moves along <b>b</b>. Screw: <b>b</b> parallel to the line, so the line moves across <b>b</b>. Mixed: one curved line that is edge at one face and screw at the other, with the same <b>b</b> everywhere. In copper (FCC), <b>b</b> = (a/2)⟨110⟩, 0.256 nm long, and slip is on {111} planes.</p>
+          <p class="cap">Drawn on a simple cubic lattice, as in Callister's Figs 4.4–4.6, so the planes are easy to follow; the bottom half is held still and each atom of the top half is coloured by how far it has moved: grey not yet, blue by one full <b>b</b>, in between at the dislocation. The shear stress (black arrows) pushes the top half toward +x. The <b>dislocation line</b> is the boundary between the part of the slip plane that has already slipped and the part that has not. Edge: <b>b</b> at right angles to the line, so the line moves along <b>b</b>. Screw: <b>b</b> parallel to the line, so the line moves across <b>b</b>. Mixed: one curved line that is edge at one face and screw at the other, with the same <b>b</b> everywhere. In copper (FCC), <b>b</b> = (a/2)⟨110⟩, 0.256 nm long, and slip is on {111} planes.</p>
         </div>
         <div class="vpane" data-view="load" hidden>
           <div class="group">
@@ -2772,6 +2772,7 @@ function clipPlanesFrom(v, defs) {
     const shearMat = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0 });
     const planeMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
     const plane = new THREE.Mesh(new THREE.PlaneGeometry(NX + 1.2, NZ + 1.2), planeMat); plane.rotation.x = -Math.PI / 2; plane.userData.noFit = true;
+
     let lineMesh = null;
     // an arrow: a shaft and a cone, along +y, then turned to `dir`
     function arrow(m, len, r) {
@@ -2789,10 +2790,10 @@ function clipPlanesFrom(v, defs) {
     v.refit(true); v.fitR *= 0.86;
 
     // where the line is, for progress p: it enters from outside the block and leaves on the far side
-    const span = () => kind === "edge" ? [-X0 - 4, X0 + 4] : kind === "screw" ? [Z0 + 4, -Z0 - 4] : [0, Math.hypot(2 * X0, 2 * Z0) + 4];
+    const span = () => kind === "edge" ? [-X0 - 4, X0 + 4] : kind === "screw" ? [Z0 + 4, -Z0 - 4] : [-3, Math.hypot(2 * X0, 2 * Z0) + 4];
     const lineAt = () => { const [a, c] = span(); return a + (c - a) * p; };
     /* how far the crystal has slipped at (x, z): 0 ahead of the line, 1 behind it, changing over a few atoms at the
-       core (wider away from the slip plane). Top layers move +s/2 along x, bottom layers −s/2: b = +x for all three. */
+       core (wider away from the slip plane). The bottom half stays put and the top half moves +s along x: b = +x for all three. */
     function slipped(x, z, y, L) {
       const w = 0.65 + 0.45 * Math.abs(y);
       const d = kind === "edge" ? L - x : kind === "screw" ? z - L : L - Math.hypot(x + X0, z - Z0);
@@ -2800,21 +2801,21 @@ function clipPlanesFrom(v, defs) {
     }
     const col = new THREE.Color(), m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion(), pv = new THREE.Vector3(), sv = new THREE.Vector3();
     let C = null;
+    const PLANE_BLUE = "#3f7fd0";
     function colours() {
       const t = c => new THREE.Color(lin(tok(c)));
-      C = { atom: t("--atom"), acc: t("--accent"), amb: t("--amber"), muted: t("--muted"), ink: t("--ink") };
-      lineMat.color.copy(C.acc); bMat.color.set(lin(tok("--teal"))); mvMat.color.copy(C.amb); shearMat.color.copy(C.ink); planeMat.color.copy(C.acc);
+      C = { atom: t("--atom"), acc: t("--accent"), amb: t("--amber"), muted: t("--muted"), ink: t("--ink"), blue: new THREE.Color(lin(PLANE_BLUE)) };
+      lineMat.color.copy(C.acc); bMat.color.set(lin(tok("--teal"))); mvMat.color.copy(C.amb); shearMat.color.copy(C.ink); planeMat.color.copy(C.muted);
     }
     function update() {
       if (!C) colours();
       const L = lineAt();
-      at.forEach(a => { const s = slipped(a.x0, a.z, a.y, L); a.s = s; a.x = a.x0 + (a.y > 0 ? s / 2 : -s / 2); });
+      at.forEach(a => { const s = a.y > 0 ? slipped(a.x0, a.z, a.y, L) : 0; a.s = s; a.x = a.x0 + s; });
       // the extra half-plane of an edge dislocation: in each top layer, the column nearest the line
-      const extra = kind === "edge" && L > -X0 && L < X0;
+      const extra = kind === "edge" && L > -X0 && L < X0;   // its top atoms sit halfway between two bottom ones
       at.forEach((a, n) => {
-        let c = C.atom;
-        if (extra && a.y > 0 && Math.abs(a.x - L) < 0.5) c = C.acc;
-        else if (Math.abs(a.y) < 1 && a.s > 0.15 && a.s < 0.85) c = C.amb;   // the core: atoms beside the slip plane, half slipped
+        let c = a.y > 0 ? col.copy(C.atom).lerp(C.blue, a.s) : C.atom;   // grey: not moved yet; blue: moved by one b
+        if (extra && a.y > 0 && Math.abs(a.x0 - L) < 0.5) c = C.acc;
         atomsIM.setColorAt(n, c);
         pv.set(a.x, a.y, a.z); sv.setScalar(0.17); m4.compose(pv, q0, sv); atomsIM.setMatrixAt(n, m4);
       });
@@ -2860,10 +2861,10 @@ function clipPlanesFrom(v, defs) {
       $("#d3Type").textContent = r[0]; $("#d3Rel").textContent = r[1]; $("#d3Moves").textContent = r[2];
       let st;
       if (p < 0.02 || (!inside && p < 0.5)) st = "A perfect crystal: the dislocation has not entered yet.";
-      else if (p > 0.98 || !inside) st = "Slipped by one atom spacing b: the top half now sticks out by one atom at the left and right faces. Edge, screw and mixed all end with this same step, because b is the same; only the direction the line travelled differs.";
-      else st = kind === "edge" ? "Behind the line (left) the crystal has slipped; ahead of it, not yet. Only the bonds at the line (red atoms, the extra half-plane) are breaking." :
-        kind === "screw" ? "The slipped part (front) and the unslipped part (back) meet along the line: around it the planes of atoms join up into a spiral ramp." :
-        "The loop's edge part pushes along b while its screw part moves across b: the one line sweeps the whole plane and leaves the same slip.";
+      else if (p > 0.98 || !inside) st = "Slipped by one atom spacing b: every top atom has moved (all blue): the top half now sticks out by one atom at the right face and stops one atom short at the left. Edge, screw and mixed all end with this same step, because b is the same; only the direction the line travelled differs.";
+      else st = kind === "edge" ? "Blue atoms have already moved one atom spacing along b; grey ones have not. The line is the border. There the top half has one plane of atoms more than the bottom: the extra half-plane (red)." :
+        kind === "screw" ? "Blue atoms (in front of the line) have moved one spacing along b, parallel to the line; grey ones (behind) have not. On the left face the moved and unmoved parts join through a twist around the line: a spiral ramp." :
+        "Blue atoms, inside the loop, have moved one spacing along b. Where the loop meets the front face it is edge and moves along b; where it meets the left face it is screw and moves across b.";
       $("#d3Status").textContent = st;
       $("#d3PosOut").textContent = Math.round(p * 100) + "%";
     }
@@ -2872,10 +2873,12 @@ function clipPlanesFrom(v, defs) {
       const ln = c => '<svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="' + c + '" stroke-width="4" stroke-linecap="round"/></svg>';
       const ar = c => '<svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="14" y2="5" stroke="' + c + '" stroke-width="2.5"/><path d="M13 1 L21 5 L13 9 Z" fill="' + c + '"/></svg>';
       const dot = c => '<svg width="22" height="10" aria-hidden="true"><circle cx="11" cy="5" r="4.5" fill="' + c + '"/></svg>';
-      $("#d3Key").innerHTML = sw(ln(tok("--accent")), "dislocation line") + sw(ar(tok("--teal")), "b, the Burgers vector") + sw(ar(tok("--amber")), "the line moves") +
-        sw(ar(tok("--ink")), "shear stress") + (kind === "edge" ? sw(dot(tok("--accent")), "extra half-plane") : "") + sw(dot(tok("--amber")), "atoms at the core");
+      const gb = '<svg width="22" height="10" aria-hidden="true"><circle cx="5" cy="5" r="4.2" fill="' + tok("--atom") + '"/><circle cx="16" cy="5" r="4.2" fill="' + PLANE_BLUE + '"/></svg>';
+      $("#d3Key").innerHTML = sw(gb, "top half: not moved yet → moved by b") + sw(ln(tok("--accent")), "dislocation line") + sw(ar(tok("--teal")), "b, the Burgers vector") + sw(ar(tok("--amber")), "the line moves") +
+        sw(ar(tok("--ink")), "shear stress") + (kind === "edge" ? sw(dot(tok("--accent")), "extra half-plane") : "");
     }
-    pressGroup($("#d3Kind"), k => { kind = k; playing = false; $("#d3Go").textContent = "Push it through"; key(); update(); });
+    const VIEW = { edge: [0.42, 0.62], screw: [0.38, 1.12], mixed: [0.5, 0.85] };
+    pressGroup($("#d3Kind"), k => { kind = k; [v.rotX, v.rotY] = VIEW[k]; v.dirty = true; playing = false; $("#d3Go").textContent = "Push it through"; key(); update(); });
     $("#d3Pos").addEventListener("input", () => { p = +$("#d3Pos").value / 100; playing = false; $("#d3Go").textContent = "Push it through"; update(); });
     $("#d3Go").addEventListener("click", () => {
       if (playing) { playing = false; $("#d3Go").textContent = "Push it through"; return; }
