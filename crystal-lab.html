@@ -102,6 +102,18 @@ main.wrap { max-width: 1680px; margin: 0 auto; padding: 14px 16px 20px; }
 .stage.col { display: flex; flex-direction: column; }
 .stage.col > .box { flex: 1 1 0; }
 .stage.col > .box + .box { border-top: 1px solid var(--rule); }
+/* dislocations: three views share the stage */
+.dview { position: absolute; inset: 0; }
+.dview[hidden] { display: none; }
+.dview > canvas { position: absolute; left: 0; top: 0; }
+.dview > .three { position: absolute; inset: 0; touch-action: none; cursor: grab; }
+.dview > .three:active { cursor: grabbing; }
+.dview > .three > canvas { position: absolute; inset: 0; }
+.dviews { margin-bottom: 12px; width: 100%; }
+.vpane[hidden] { display: none; }
+.d3key { position: absolute; right: 12px; top: 10px; z-index: 2; display: grid; gap: 3px; font: 12px/1.35 var(--mono); color: var(--muted); background: color-mix(in srgb, var(--panel) 88%, transparent); border: 1px solid var(--rule); border-radius: 8px; padding: 7px 10px; pointer-events: none; }
+.d3key span { display: flex; align-items: center; gap: 7px; }
+@media (max-width: 560px) { .d3key { display: none; } }
 /* bonds: the solid in 3D (left) beside the pair (right); the caption bar spans both */
 .bondtop { display: flex; }
 .bondtop > .pairbox { position: relative; flex: 1 1 0; min-width: 0; }
@@ -659,19 +671,41 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
   <section class="tabpanel" id="p-disl" role="tabpanel" aria-labelledby="t-disl" hidden>
     <div class="bench">
       <div class="stage box" id="dislStage">
-        <canvas id="dislCv" aria-label="An edge dislocation gliding through a crystal"></canvas>
-        <dl class="hud">
-          <dt>Bonds breaking now</dt><dd id="dislBroken">–</dd>
-          <dt>Stress needed here</dt><dd id="dislNeed">–</dd>
-        </dl>
-        <p class="capbar" id="dislStatus" aria-live="polite">–</p>
+        <div class="dview" data-view="atoms">
+          <canvas id="dislCv" aria-label="An edge dislocation gliding through a crystal"></canvas>
+          <dl class="hud">
+            <dt>Bonds breaking now</dt><dd id="dislBroken">–</dd>
+            <dt>Stress needed here</dt><dd id="dislNeed">–</dd>
+          </dl>
+          <p class="capbar" id="dislStatus" aria-live="polite">–</p>
+        </div>
+        <div class="dview" data-view="types" hidden>
+          <div class="three" id="disl3" aria-label="A block of atoms with an edge, screw or mixed dislocation, in 3D"></div>
+          <dl class="hud">
+            <dt>Type</dt><dd id="d3Type">–</dd>
+            <dt>b and the line</dt><dd id="d3Rel">–</dd>
+            <dt>The line moves</dt><dd id="d3Moves">–</dd>
+          </dl>
+          <div class="d3key" id="d3Key"></div>
+          <p class="capbar" id="d3Status" aria-live="polite">–</p>
+        </div>
+        <div class="dview" data-view="load" hidden>
+          <canvas id="dislGr" aria-label="A polished copper surface under a microscope while it is pulled, with its stress–strain curve"></canvas>
+          <p class="capbar" id="grStatus" aria-live="polite">–</p>
+        </div>
       </div>
       <aside class="side">
         <div class="sidehead">
-          <h2>Why metals bend at a fraction of their ideal strength</h2>
-          <p class="desc">Sliding the top half of a crystal over the bottom half all at once means breaking every bond across the slip plane at the same time. A <strong>dislocation</strong>, the edge of an extra half-plane of atoms (red), lets the slip happen one bond at a time, like pushing a wrinkle across a rug.</p>
+          <div class="seg g3 sm dviews" id="dislView" aria-label="View">
+            <button data-v="atoms" aria-pressed="true">Atoms (2D)</button>
+            <button data-v="types">Types (3D)</button>
+            <button data-v="load">Under load</button>
+          </div>
+          <h2 id="dislH">Why metals bend at a fraction of their ideal strength</h2>
+          <p class="desc" id="dislDesc">Sliding the top half of a crystal over the bottom half all at once means breaking every bond across the slip plane at the same time. A <strong>dislocation</strong>, the edge of an extra half-plane of atoms (red), lets the slip happen one bond at a time, like pushing a wrinkle across a rug.</p>
         </div>
         <div class="explore" data-guide="disl"></div>
+        <div class="vpane" data-view="atoms">
         <div class="group">
           <h3>How the top half moves</h3>
           <div class="seg g2" id="dislMode">
@@ -697,6 +731,54 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
           </div>
         </div>
         <p class="cap">Stress is on a schematic 0–100 scale; about 95 is the ideal strength, the stress needed to slide a whole plane of a perfect crystal at once. The real gap is far larger than 8 versus 95: a pure copper crystal starts to slip at about 1 MPa, thousands of times below its ideal shear strength of several GPa. The Burgers circuit takes as many atom steps left as right, and as many down as up; if it does not close, the gap is the Burgers vector <b>b</b>. The shaded region is a second grain; in a real metal its rows of atoms are tilted, but they are drawn straight here for simplicity.</p>
+        </div>
+        <div class="vpane" data-view="types" hidden>
+          <div class="group">
+            <h3>Type of dislocation</h3>
+            <div class="seg g3" id="d3Kind">
+              <button data-v="edge" aria-pressed="true">Edge</button>
+              <button data-v="screw">Screw</button>
+              <button data-v="mixed">Mixed</button>
+            </div>
+          </div>
+          <div class="range">
+            <label for="d3Pos">Move the dislocation through</label><output id="d3PosOut">35%</output>
+            <input type="range" id="d3Pos" min="0" max="100" step="0.5" value="35">
+          </div>
+          <div class="chips">
+            <button class="chip go" id="d3Go">Push it through</button>
+            <button class="chip" id="d3Reset">Reset</button>
+          </div>
+          <div class="group">
+            <h3>Show</h3>
+            <div class="chips">
+              <button class="chip tog" id="d3Plane" aria-pressed="true">Slip plane</button>
+              <button class="chip tog" id="d3Bonds" aria-pressed="true">Bonds</button>
+            </div>
+          </div>
+          <p class="cap">Drawn on a simple cubic lattice, as in Callister's Figs 4.4–4.6, so the planes are easy to follow. The shear stress (black arrows) pushes the top half toward +x. The <b>dislocation line</b> is the boundary between the part of the slip plane that has already slipped and the part that has not. Edge: <b>b</b> at right angles to the line, so the line moves along <b>b</b>. Screw: <b>b</b> parallel to the line, so the line moves across <b>b</b>. Mixed: one curved line that is edge at one face and screw at the other, with the same <b>b</b> everywhere. In copper (FCC), <b>b</b> = (a/2)⟨110⟩, 0.256 nm long, and slip is on {111} planes.</p>
+        </div>
+        <div class="vpane" data-view="load" hidden>
+          <div class="group">
+            <h3>Grain size</h3>
+            <div class="seg g2" id="grSize">
+              <button data-v="coarse" aria-pressed="true">Coarse, 60 µm</button>
+              <button data-v="fine">Fine, 15 µm</button>
+            </div>
+          </div>
+          <div class="chips">
+            <button class="chip go" id="grPull">Pull</button>
+            <button class="chip" id="grRelease">Release the load</button>
+            <button class="chip" id="grReset">Anneal (start again)</button>
+          </div>
+          <div class="group">
+            <h3>Show</h3>
+            <div class="chips">
+              <button class="chip tog" id="grSchmid" aria-pressed="false">Schmid factor of each grain</button>
+            </div>
+          </div>
+          <p class="cap">Annealed copper (E = 110 GPa, G = 46 GPa, b = 0.256 nm). Each grain has a random crystal orientation. Pulling along the bar resolves a shear stress τ = σ cos φ cos λ (Schmid's law, Callister Eq. 7.2) on each of its 12 {111}⟨110⟩ slip systems; a grain slips when τ on its best system reaches the stress its dislocations need, τ = τ₀ + αGb√ρ (α = 0.3, plus a Hall–Petch term k/√d with k = 0.11 MPa·m<sup>½</sup>). Slipping multiplies dislocations (density ρ rises from about 10¹² toward 10¹⁵ m⁻²), which is strain hardening. Every grain feels the same stress (the Sachs approximation; real neighbouring grains also push on each other). Necking starts when the curve's slope falls to the stress itself (Considère's criterion). Model curve: yield ≈ 68 MPa and tensile strength ≈ 206 MPa, close to Callister Table 6.1 (69 and 200 MPa).</p>
+        </div>
       </aside>
     </div>
   </section>
@@ -2579,7 +2661,7 @@ function clipPlanesFrom(v, defs) {
     $("#dislStatus").textContent = st;
   }
   watch($("#dislStage"), "disl", draw);
-  const fresh = [["click", '#dislMode [data-v="disl"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"]];
+  const fresh = [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="disl"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"]];
   mountGuide("disl", [
     { q: "With a dislocation, how much stress does it take to slip the crystal? Then try the whole plane at once.",
       a: "A small push moves the dislocation (about 8 on this scale). The whole plane needs the ideal strength (about 95), because every bond across the plane breaks at the same moment.",
@@ -2592,7 +2674,22 @@ function clipPlanesFrom(v, defs) {
       setup: fresh.concat([["val", "#dislTau", 30], ["click", "#dislGo"]]) },
     { q: "Add the solute atom, then the grain boundary. What does each one do?",
       a: "The solute atom pins it: the stress needed jumps to 45 until it tears free. The grain boundary stops it outright; in a real metal the dislocations behind it pile up until their combined push starts slip in the next grain. Both raise the stress the metal needs to keep deforming: solid-solution and grain-size strengthening.",
-      setup: fresh.concat([["on", "#dislSolute"], ["val", "#dislTau", 30], ["click", "#dislGo"]]) }
+      setup: fresh.concat([["on", "#dislSolute"], ["val", "#dislTau", 30], ["click", "#dislGo"]]) },
+    { q: "In 3D, push an edge dislocation through, then a screw. Which way does each line move, compared with the slip (b)?",
+      a: "The edge line moves along b, the same way as the shear. The screw line moves at right angles to b. Both leave the same one-atom step at the left and right faces, because b is the same (Callister Fig. 7.2).",
+      setup: [["click", '#dislView [data-v="types"]'], ["click", '#d3Kind [data-v="edge"]'], ["click", "#d3Reset"], ["click", "#d3Go"]] },
+    { q: "Pick Mixed and stop it halfway. Where along the line is it edge, and where screw?",
+      a: "Where it meets the front face the line runs at right angles to b: edge. Where it meets the left face it runs parallel to b: screw. In between it is mixed. One line, one Burgers vector, changing character as it curves.",
+      setup: [["click", '#dislView [data-v="types"]'], ["click", '#d3Kind [data-v="mixed"]'], ["val", "#d3Pos", 45]] },
+    { q: "Pull the copper bar with the Schmid factors shown. Which grains show slip lines first?",
+      a: "The red ones, with the highest Schmid factor (close to 0.5, slip plane and direction near 45° to the pull). They reach the critical resolved shear stress first (τ = σ cos φ cos λ, Callister Eq. 7.2).",
+      setup: [["click", '#dislView [data-v="load"]'], ["click", '#grSize [data-v="coarse"]'], ["on", "#grSchmid"], ["click", "#grPull"]] },
+    { q: "Pull past yield, release the load, then pull again. At what stress does it yield the second time?",
+      a: "At about the highest stress it reached before, not the original 68 MPa. The dislocations it multiplied are still there and tangle with new ones: strain hardening, the reason cold-worked copper is stronger.",
+      setup: [["click", '#dislView [data-v="load"]'], ["off", "#grSchmid"], ["click", "#grReset"], ["click", "#grPull"]] },
+    { q: "Compare coarse and fine grains. Which yields at the higher stress, and why?",
+      a: "The fine grains: more grain boundary blocks the dislocations (Hall–Petch, σy = σ0 + k/√d). Here about 68 MPa for 60 µm grains and about 84 MPa for 15 µm grains.",
+      setup: [["click", '#dislView [data-v="load"]'], ["off", "#grSchmid"], ["click", '#grSize [data-v="fine"]'], ["click", "#grPull"]] }
   ]);
   tabs.disl = {
     shown: draw, resize: draw, theme: draw,
@@ -2619,6 +2716,410 @@ function clipPlanesFrom(v, defs) {
     }
   };
   draw();
+})();
+
+/* ===================================================== DISLOCATIONS: 3D AND UNDER LOAD
+   Two more views beside the 2D atoms: edge, screw and mixed dislocations in a 3D block (Callister Figs 4.4–4.6, 7.1,
+   7.2), and a polished copper bar under a microscope while it is pulled (Schmid's law, strain hardening, necking). */
+(function dislViews() {
+  const base = tabs.disl;
+  let view = "atoms";
+  const HEAD = {
+    atoms: ["Why metals bend at a fraction of their ideal strength", $("#dislDesc").innerHTML],
+    types: ["Edge, screw and mixed dislocations", "A dislocation is a <strong>line</strong> through the crystal: the edge of the region of the slip plane that has already slipped. Its <strong>Burgers vector b</strong> is how far, and which way, the crystal slips. The angle between b and the line sets the type."],
+    load: ["What happens inside a metal when you pull it", "A polished copper bar under the microscope while it is stretched. Grains whose slip planes are best aligned with the pull slip first. Each slip line is a step where many dislocations left the surface. Inside, the dislocations multiply and tangle, so the metal gets harder as it deforms."]
+  };
+  function setView(v) {
+    view = v;
+    $$("#p-disl .dview").forEach(e => { e.hidden = e.dataset.view !== v; });
+    $$("#p-disl .vpane").forEach(e => { e.hidden = e.dataset.view !== v; });
+    $("#dislH").textContent = HEAD[v][0]; $("#dislDesc").innerHTML = HEAD[v][1];
+    if (v === "atoms") base.shown();
+    if (v === "types" && T3) { T3.size(); T3.update(); }
+    if (v === "load") LD.draw();
+  }
+
+  /* ---------------------------------------------------------------- edge, screw, mixed in 3D */
+  const T3 = (() => {
+    let v = null;
+    try { if (!has3D) throw new Error("no three.js"); v = makeViewer($("#disl3"), { rotX: 0.42, rotY: 0.62 }); }
+    catch (e) { $("#disl3").textContent = "This 3D view needs WebGL, which this browser could not start. The other two views still work."; return null; }
+    // simple cubic block, one atom spacing = 1 = |b|. The slip plane is y = 0, between the two middle layers.
+    const NX = 12, NY = 8, NZ = 8, X0 = NX / 2, Z0 = NZ / 2, MID = NY / 2;
+    let kind = "edge", p = 0.35, playing = false, showPlane = true, showBonds = true;
+    const at = [];
+    for (let i = 0; i < NX; i++) for (let j = 0; j < NY; j++) for (let k = 0; k < NZ; k++) at.push({ i, j, k, x0: i + 0.5 - X0, y: j + 0.5 - MID, z: k + 0.5 - Z0, x: 0 });
+    const id = (i, j, k) => (i * NY + j) * NZ + k;
+    const pairs = [];
+    for (let i = 0; i < NX; i++) for (let j = 0; j < NY; j++) for (let k = 0; k < NZ; k++) {
+      if (i < NX - 1) pairs.push([id(i, j, k), id(i + 1, j, k)]);
+      if (k < NZ - 1) pairs.push([id(i, j, k), id(i, j, k + 1)]);
+      if (j < NY - 1 && j !== MID - 1) pairs.push([id(i, j, k), id(i, j + 1, k)]);
+    }
+    const nSeg = pairs.length + NX * NZ;
+    const bondPos = new Float32Array(nSeg * 6), bondCol = new Float32Array(nSeg * 6);
+    const bondGeo = new THREE.BufferGeometry();
+    bondGeo.setAttribute("position", new THREE.BufferAttribute(bondPos, 3)); bondGeo.setAttribute("color", new THREE.BufferAttribute(bondCol, 3));
+    const bonds = new THREE.LineSegments(bondGeo, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.75 }));
+    bonds.userData.noFit = true; bonds.frustumCulled = false;
+    const atomMat = mat("#ffffff", { roughness: 0.35, metalness: 0.2 });
+    const atomsIM = new THREE.InstancedMesh(new THREE.SphereGeometry(1, 14, 10), atomMat, at.length);
+    atomsIM.userData.noFit = true;
+    const fitMesh = new THREE.Mesh(new THREE.BoxGeometry(NX + 3, NY + 3.5, NZ + 1), new THREE.MeshBasicMaterial()); fitMesh.visible = false;   // only for the zoom
+    const over = o => { o.renderOrder = 10; o.userData.noFit = true; return o; };   // drawn on top of the atoms, like the textbook's line
+    const lineMat = new THREE.MeshBasicMaterial({ depthTest: false, transparent: true });
+    const bMat = new THREE.MeshBasicMaterial({ depthTest: false, transparent: true }), mvMat = new THREE.MeshBasicMaterial({ depthTest: false, transparent: true });
+    const shearMat = new THREE.MeshStandardMaterial({ roughness: 0.6, metalness: 0 });
+    const planeMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
+    const plane = new THREE.Mesh(new THREE.PlaneGeometry(NX + 1.2, NZ + 1.2), planeMat); plane.rotation.x = -Math.PI / 2; plane.userData.noFit = true;
+    let lineMesh = null;
+    // an arrow: a shaft and a cone, along +y, then turned to `dir`
+    function arrow(m, len, r) {
+      const g = new THREE.Group();
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(r, r, len - r * 4, 10), m); shaft.position.y = (len - r * 4) / 2;
+      const head = new THREE.Mesh(new THREE.ConeGeometry(r * 2.6, r * 4, 14), m); head.position.y = len - r * 2;
+      g.add(shaft, head); g.traverse(o => { o.renderOrder = 11; o.userData.noFit = true; }); return g;
+    }
+    const aim = (g, pos, dir) => { g.position.set(pos[0], pos[1], pos[2]); g.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dir[0], dir[1], dir[2]).normalize()); };
+    const bArrow = arrow(bMat, 1, 0.085), mvArrow = arrow(mvMat, 1.9, 0.085);   // b is drawn its true length: one spacing
+    const shearTop = arrow(shearMat, 4.5, 0.09), shearBot = arrow(shearMat, 4.5, 0.09);
+    shearTop.traverse(o => { o.renderOrder = 0; }); shearBot.traverse(o => { o.renderOrder = 0; });
+    aim(shearTop, [-2.25, MID + 0.9, Z0 - 0.5], [1, 0, 0]); aim(shearBot, [2.25, -MID - 0.9, Z0 - 0.5], [-1, 0, 0]);
+    v.root.add(atomsIM, bonds, plane, fitMesh, bArrow, mvArrow, shearTop, shearBot);
+    v.refit(true); v.fitR *= 0.86;
+
+    // where the line is, for progress p: it enters from outside the block and leaves on the far side
+    const span = () => kind === "edge" ? [-X0 - 4, X0 + 4] : kind === "screw" ? [Z0 + 4, -Z0 - 4] : [0, Math.hypot(2 * X0, 2 * Z0) + 4];
+    const lineAt = () => { const [a, c] = span(); return a + (c - a) * p; };
+    /* how far the crystal has slipped at (x, z): 0 ahead of the line, 1 behind it, changing over a few atoms at the
+       core (wider away from the slip plane). Top layers move +s/2 along x, bottom layers −s/2: b = +x for all three. */
+    function slipped(x, z, y, L) {
+      const w = 0.65 + 0.45 * Math.abs(y);
+      const d = kind === "edge" ? L - x : kind === "screw" ? z - L : L - Math.hypot(x + X0, z - Z0);
+      return 0.5 + 0.5 * Math.tanh(1.3 * d / w);
+    }
+    const col = new THREE.Color(), m4 = new THREE.Matrix4(), q0 = new THREE.Quaternion(), pv = new THREE.Vector3(), sv = new THREE.Vector3();
+    let C = null;
+    function colours() {
+      const t = c => new THREE.Color(lin(tok(c)));
+      C = { atom: t("--atom"), acc: t("--accent"), amb: t("--amber"), muted: t("--muted"), ink: t("--ink") };
+      lineMat.color.copy(C.acc); bMat.color.set(lin(tok("--teal"))); mvMat.color.copy(C.amb); shearMat.color.copy(C.ink); planeMat.color.copy(C.acc);
+    }
+    function update() {
+      if (!C) colours();
+      const L = lineAt();
+      at.forEach(a => { const s = slipped(a.x0, a.z, a.y, L); a.s = s; a.x = a.x0 + (a.y > 0 ? s / 2 : -s / 2); });
+      // the extra half-plane of an edge dislocation: in each top layer, the column nearest the line
+      const extra = kind === "edge" && L > -X0 && L < X0;
+      at.forEach((a, n) => {
+        let c = C.atom;
+        if (extra && a.y > 0 && Math.abs(a.x - L) < 0.5) c = C.acc;
+        else if (Math.abs(a.y) < 1 && a.s > 0.15 && a.s < 0.85) c = C.amb;   // the core: atoms beside the slip plane, half slipped
+        atomsIM.setColorAt(n, c);
+        pv.set(a.x, a.y, a.z); sv.setScalar(0.17); m4.compose(pv, q0, sv); atomsIM.setMatrixAt(n, m4);
+      });
+      atomsIM.instanceMatrix.needsUpdate = true; if (atomsIM.instanceColor) atomsIM.instanceColor.needsUpdate = true;
+      // bonds: grey, amber when stretched or bent, red when badly; across the slip plane each bottom atom bonds to
+      // the nearest top atom, and where none is close (at the core) the bond is broken
+      let n = 0;
+      const put = (a, b, c) => { bondPos.set([a.x, a.y, a.z, b.x, b.y, b.z], n * 6); bondCol.set([c.r, c.g, c.b, c.r, c.g, c.b], n * 6); n++; };
+      const strainC = (a, b) => { const e = Math.abs(Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z) - 1); return e > 0.16 ? C.acc : e > 0.06 ? C.amb : C.muted; };
+      pairs.forEach(([i, j]) => put(at[i], at[j], strainC(at[i], at[j])));
+      for (let i = 0; i < NX; i++) for (let k = 0; k < NZ; k++) {
+        const lo = at[id(i, MID - 1, k)]; let best = null, bd = 9;
+        for (let q = Math.max(0, i - 1); q <= Math.min(NX - 1, i + 1); q++) { const hi = at[id(q, MID, k)], d = Math.abs(hi.x - lo.x); if (d < bd) { bd = d; best = hi; } }
+        if (bd < 0.36) put(lo, best, bd > 0.16 ? C.amb : C.muted);
+      }
+      bondGeo.setDrawRange(0, n * 2); bondGeo.attributes.position.needsUpdate = true; bondGeo.attributes.color.needsUpdate = true;
+      bonds.visible = showBonds; plane.visible = showPlane;
+      // the dislocation line, where it lies inside the block
+      const pts = [];
+      if (kind === "edge" && Math.abs(L) < X0) for (let z = -Z0; z <= Z0 + 1e-9; z += Z0) pts.push(new THREE.Vector3(L, 0, z));
+      if (kind === "screw" && Math.abs(L) < Z0) for (let x = -X0; x <= X0 + 1e-9; x += X0) pts.push(new THREE.Vector3(x, 0, L));
+      if (kind === "mixed" && L > 0.3) for (let k = 0; k <= 48; k++) { const th = k / 48 * Math.PI / 2, x = -X0 + L * Math.cos(th), z = Z0 - L * Math.sin(th); if (x <= X0 + 1e-6 && z >= -Z0 - 1e-6) pts.push(new THREE.Vector3(x, 0, z)); }
+      if (lineMesh) { v.root.remove(lineMesh); lineMesh.geometry.dispose(); lineMesh = null; }
+      const inside = pts.length > 1;
+      if (inside) { lineMesh = over(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 48, 0.11, 8, false), lineMat)); v.root.add(lineMesh); }
+      // b at the middle of the line, and the way the line moves
+      bArrow.visible = mvArrow.visible = inside;
+      if (inside) {
+        const mid = pts[Math.floor(pts.length / 2)], dir = kind === "edge" ? [1, 0, 0] : kind === "screw" ? [0, 0, -1] : [mid.x + X0, 0, mid.z - Z0];
+        aim(bArrow, [mid.x, mid.y + 0.02, mid.z], [1, 0, 0]);
+        const dl = Math.hypot(dir[0], dir[2]); aim(mvArrow, [mid.x, mid.y - 0.02, mid.z], [dir[0] / dl, 0, dir[2] / dl]);
+      }
+      text(L, inside);
+      v.dirty = true;
+    }
+    const REL = {
+      edge: ["edge", "b at right angles to the line", "along b, with the shear"],
+      screw: ["screw", "b parallel to the line", "across b, at right angles to the shear"],
+      mixed: ["mixed", "edge at the front face, screw at the left face", "outward: the loop grows"]
+    };
+    function text(L, inside) {
+      const r = REL[kind];
+      $("#d3Type").textContent = r[0]; $("#d3Rel").textContent = r[1]; $("#d3Moves").textContent = r[2];
+      let st;
+      if (p < 0.02 || (!inside && p < 0.5)) st = "A perfect crystal: the dislocation has not entered yet.";
+      else if (p > 0.98 || !inside) st = "Slipped by one atom spacing b: the top half now sticks out by one atom at the left and right faces. Edge, screw and mixed all end with this same step, because b is the same; only the direction the line travelled differs.";
+      else st = kind === "edge" ? "Behind the line (left) the crystal has slipped; ahead of it, not yet. Only the bonds at the line (red atoms, the extra half-plane) are breaking." :
+        kind === "screw" ? "The slipped part (front) and the unslipped part (back) meet along the line: around it the planes of atoms join up into a spiral ramp." :
+        "The loop's edge part pushes along b while its screw part moves across b: the one line sweeps the whole plane and leaves the same slip.";
+      $("#d3Status").textContent = st;
+      $("#d3PosOut").textContent = Math.round(p * 100) + "%";
+    }
+    function key() {
+      const sw = (svg, t) => '<span>' + svg + t + '</span>';
+      const ln = c => '<svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="' + c + '" stroke-width="4" stroke-linecap="round"/></svg>';
+      const ar = c => '<svg width="22" height="10" aria-hidden="true"><line x1="1" y1="5" x2="14" y2="5" stroke="' + c + '" stroke-width="2.5"/><path d="M13 1 L21 5 L13 9 Z" fill="' + c + '"/></svg>';
+      const dot = c => '<svg width="22" height="10" aria-hidden="true"><circle cx="11" cy="5" r="4.5" fill="' + c + '"/></svg>';
+      $("#d3Key").innerHTML = sw(ln(tok("--accent")), "dislocation line") + sw(ar(tok("--teal")), "b, the Burgers vector") + sw(ar(tok("--amber")), "the line moves") +
+        sw(ar(tok("--ink")), "shear stress") + (kind === "edge" ? sw(dot(tok("--accent")), "extra half-plane") : "") + sw(dot(tok("--amber")), "atoms at the core");
+    }
+    pressGroup($("#d3Kind"), k => { kind = k; playing = false; $("#d3Go").textContent = "Push it through"; key(); update(); });
+    $("#d3Pos").addEventListener("input", () => { p = +$("#d3Pos").value / 100; playing = false; $("#d3Go").textContent = "Push it through"; update(); });
+    $("#d3Go").addEventListener("click", () => {
+      if (playing) { playing = false; $("#d3Go").textContent = "Push it through"; return; }
+      if (p >= 0.99) p = 0;
+      playing = true; $("#d3Go").textContent = "Stop"; if (reduceMotion) { p = 1; playing = false; $("#d3Go").textContent = "Push it through"; $("#d3Pos").value = 100; } update();
+    });
+    $("#d3Reset").addEventListener("click", () => { p = 0; playing = false; $("#d3Go").textContent = "Push it through"; $("#d3Pos").value = 0; update(); });
+    toggle($("#d3Plane"), on => { showPlane = on; update(); });
+    toggle($("#d3Bonds"), on => { showBonds = on; update(); });
+    key(); update();
+    return {
+      update, size: () => v.size(),
+      theme: () => { colours(); key(); update(); },
+      tick(dt) {
+        if (playing) { p = Math.min(1, p + dt * 0.16); $("#d3Pos").value = (p * 100).toFixed(1); if (p >= 1) { playing = false; $("#d3Go").textContent = "Push it through"; } update(); }
+        v.render();
+      },
+      state: () => ({ kind, p, playing })
+    };
+  })();
+
+  /* ---------------------------------------------------------------- a copper bar under load */
+  const LD = (() => {
+    const cv = $("#dislGr");
+    // annealed copper; stresses in MPa, lengths in µm (√ρ in µm⁻¹), so αGb is in MPa·µm
+    const E = 110e3, aGb = 0.3 * 46e3 * 0.256e-3, RHO0 = 1e12, K1 = 2.0e8, K2 = 6, S0 = 45, KY = 0.11, MBAR = 0.45;
+    const FW = 360, FH = 240;   // field of view, µm
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], nrm = a => { const l = Math.hypot(a[0], a[1], a[2]); return a.map(c => c / l); };
+    // the 12 FCC slip systems: {111} planes × the three ⟨110⟩ directions lying in each
+    const SYS = [];
+    [[1, 1, 1], [-1, 1, 1], [1, -1, 1], [1, 1, -1]].forEach((n, pi) => [[1, -1, 0], [1, 0, -1], [0, 1, -1], [1, 1, 0], [1, 0, 1], [0, 1, 1]].forEach(d => { if (Math.abs(dot(n, d)) < 1e-9) SYS.push({ n: nrm(n), d: nrm(d), pi }); }));
+    let rs = 1; const rnd = () => (rs = (rs * 16807) % 2147483647) / 2147483647;
+    function rot() {   // a uniformly random orientation (crystal → sample)
+      const u1 = rnd(), u2 = rnd(), u3 = rnd();
+      const x = Math.sqrt(1 - u1) * Math.sin(2 * Math.PI * u2), y = Math.sqrt(1 - u1) * Math.cos(2 * Math.PI * u2), z = Math.sqrt(u1) * Math.sin(2 * Math.PI * u3), w = Math.sqrt(u1) * Math.cos(2 * Math.PI * u3);
+      return [[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)], [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)], [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]];
+    }
+    const mv = (R, a) => R.map(r => dot(r, a));
+    /* Schmid factor of every system for a pull along x (sample frame), best first; the slip trace on the polished
+       surface (normal z) runs along n × z */
+    function systems(R) {
+      return SYS.map(s => { const n = mv(R, s.n), d = mv(R, s.d); const tr = nrm([n[1], -n[0], 1e-9]); return { m: Math.abs(n[0] * d[0]), pi: s.pi, tr }; }).sort((a, b) => b.m - a.m);
+    }
+    let size = "coarse", schmid = false, G = [], pop = [], eps = 0, epsP = 0, sig = 0, mode = "idle", hist = [], yieldS = null, neck = null, maxSig = 0, released = false, tau0 = 0;
+    const dOf = () => size === "coarse" ? 60 : 15;
+    const tauOf = g => tau0 + aGb * Math.sqrt(g.rho * 1e-12);
+    const hOf = g => Math.max(5, aGb / 2 * (K1 * 1e-6 - K2 * Math.sqrt(g.rho * 1e-12)));
+    // convex Voronoi cell of seed i: the field rectangle cut by the bisector with every other seed
+    function cell(S, i) {
+      let poly = [[0, 0], [FW, 0], [FW, FH], [0, FH]];
+      const [px, py] = S[i];
+      S.forEach(([qx, qy], j) => {
+        if (j === i || Math.abs(qx - px) > 4 * dOf() || Math.abs(qy - py) > 4 * dOf()) return;
+        const nx = qx - px, ny = qy - py, c = (qx * qx + qy * qy - px * px - py * py) / 2, f = q => q[0] * nx + q[1] * ny - c, out = [];
+        poly.forEach((a, k) => { const b = poly[(k + 1) % poly.length], fa = f(a), fb = f(b); if (fa <= 0) out.push(a); if (fa * fb < 0) { const t = fa / (fa - fb); out.push([a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])]); } });
+        poly = out;
+      });
+      return poly;
+    }
+    // where a straight line (point c, direction t) crosses a convex polygon
+    function chord(poly, c, t) {
+      let lo = -1e9, hi = 1e9;
+      for (let k = 0; k < poly.length; k++) {
+        const a = poly[k], b = poly[(k + 1) % poly.length], nx = b[1] - a[1], ny = a[0] - b[0];   // outward normal for a clockwise-in-screen polygon
+        const den = nx * t[0] + ny * t[1], num = nx * (a[0] - c[0]) + ny * (a[1] - c[1]);
+        if (Math.abs(den) < 1e-12) { if (num < 0) return null; continue; }
+        const s = num / den; if (den > 0) hi = Math.min(hi, s); else lo = Math.max(lo, s);
+      }
+      return lo < hi ? [[c[0] + t[0] * lo, c[1] + t[1] * lo], [c[0] + t[0] * hi, c[1] + t[1] * hi]] : null;
+    }
+    function build() {
+      const d = dOf(); tau0 = MBAR * (S0 + KY / Math.sqrt(d * 1e-6));
+      // a fixed statistical population sets the bar's stress–strain curve; the grains on screen feel the same stress
+      rs = 99; pop = Array.from({ length: 300 }, () => ({ m: systems(rot())[0].m, g: 0, rho: RHO0 }));
+      rs = size === "coarse" ? 11 : 23;
+      const cols = Math.round(FW / d), rows = Math.round(FH / d), S = [];
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) S.push([(c + 0.5 + (rnd() - 0.5) * 0.8) * FW / cols, (r + 0.5 + (rnd() - 0.5) * 0.8) * FH / rows]);
+      G = S.map((sd, i) => {
+        const poly = cell(S, i), sy = systems(rot()), s1 = sy[0], s2 = sy.find(s => s.pi !== s1.pi);
+        const lines = s => {   // slip-line positions across the grain, in a random order of appearance
+          const nn = [-s.tr[1], s.tr[0]], pr = poly.map(q => q[0] * nn[0] + q[1] * nn[1]), a = Math.min(...pr), b = Math.max(...pr);
+          const n = clamp(Math.round((b - a) / 4), 2, 18), out = [];
+          for (let k = 0; k < n; k++) { const o = a + (k + 0.15 + rnd() * 0.7) * (b - a) / n, c = [nn[0] * o, nn[1] * o], seg = chord(poly, c, s.tr); if (seg) out.push({ seg, r: rnd() }); }
+          return out.sort((x, y) => x.r - y.r);
+        };
+        let twin = null;
+        if (rnd() < 0.4) { const th = rnd() * Math.PI, t = [Math.cos(th), Math.sin(th)], nn = [-t[1], t[0]], w = d * (0.1 + rnd() * 0.12), off = (rnd() - 0.5) * d * 0.5;
+          const c0 = [sd[0] + nn[0] * off, sd[1] + nn[1] * off], A = chord(poly, c0, t), B = chord(poly, [c0[0] + nn[0] * w, c0[1] + nn[1] * w], t);
+          if (A && B) twin = [A[0], A[1], B[1], B[0]]; }
+        return { poly, sd, m: s1.m, m2: s2.m, l1: lines(s1), l2: lines(s2), twin, tone: rnd(), g: 0, rho: RHO0 };
+      });
+      eps = epsP = sig = 0; mode = "idle"; hist = [[0, 0]]; yieldS = null; neck = null; maxSig = 0; released = false;
+      $("#grPull").textContent = "Pull"; draw();
+    }
+    // one strain step: find the stress at which elastic + plastic strain add up to the new total (bisection)
+    function step(de) {
+      eps += de;
+      const f = s => s / E + epsP + pop.reduce((a, g) => a + g.m * Math.max(0, (s * g.m - tauOf(g)) / hOf(g)), 0) / pop.length - eps;
+      let lo = 0, hi = 2000; for (let it = 0; it < 50; it++) { const mid = (lo + hi) / 2; if (f(mid) > 0) hi = mid; else lo = mid; }
+      sig = (lo + hi) / 2;
+      const slip = g => { const dg = Math.max(0, (sig * g.m - tauOf(g)) / hOf(g)); if (dg > 0) { g.rho += (K1 * Math.sqrt(g.rho) - K2 * g.rho) * dg; g.g += dg; } return dg; };
+      pop.forEach(g => { epsP += g.m * slip(g) / pop.length; });
+      G.forEach(slip);
+      if (yieldS === null && eps - sig / E > 0.002) yieldS = sig;
+    }
+    const rhoMean = () => G.reduce((a, g) => a + g.rho, 0) / G.length;
+    function tick(dt) {
+      if (mode === "pull") {
+        const n = 5, de = Math.min(dt, 0.1) * 0.03 / n;
+        for (let k = 0; k < n; k++) {
+          const s0 = sig, e0 = eps; step(de);
+          maxSig = Math.max(maxSig, sig);
+          // Considère: necking starts once the curve's slope dσ/dε falls to the stress itself (true stress and strain)
+          if (eps - epsP > 0 && epsP > 0.05 && (sig - s0) / (eps - e0) <= sig) { neck = [eps, sig]; mode = "neck"; $("#grPull").textContent = "Pull"; break; }
+        }
+        if (eps - hist[hist.length - 1][0] > 0.0015 || Math.abs(sig - hist[hist.length - 1][1]) > 4) hist.push([eps, sig]);
+        draw();
+      } else if (mode === "release") {
+        eps = Math.max(epsP, eps - dt * 0.004); sig = E * (eps - epsP);
+        hist.push([eps, sig]);
+        if (eps <= epsP + 1e-9) { sig = 0; mode = "idle"; released = true; }
+        draw();
+      }
+    }
+    $("#grPull").addEventListener("click", () => {
+      if (mode === "neck") { draw(); return; }
+      mode = mode === "pull" ? "idle" : "pull"; released = false;
+      $("#grPull").textContent = mode === "pull" ? "Stop" : "Pull"; draw();
+    });
+    $("#grRelease").addEventListener("click", () => { if (sig > 0.5 && mode !== "neck") { mode = "release"; $("#grPull").textContent = "Pull"; } else if (mode === "neck") { mode = "release"; } });
+    $("#grReset").addEventListener("click", build);
+    pressGroup($("#grSize"), s => { size = s; build(); });
+    toggle($("#grSchmid"), on => { schmid = on; draw(); });
+
+    // a deterministic pool of dislocation lines for the TEM inset; past ~10¹⁴ m⁻² new ones gather into cell walls
+    const TEM = (() => {
+      let r = 5; const q = () => (r = (r * 16807) % 2147483647) / 2147483647;
+      const walls = Array.from({ length: 7 }, () => [q(), q()]), out = [];
+      for (let k = 0; k < 220; k++) {
+        if (k < 24) { const a = [q(), q()], th = q() * Math.PI, L = 0.15 + q() * 0.45; out.push([a, [a[0] + Math.cos(th) * L, a[1] + Math.sin(th) * L], [a[0] + Math.cos(th) * L / 2 + (q() - 0.5) * 0.15, a[1] + Math.sin(th) * L / 2 + (q() - 0.5) * 0.15]]); continue; }
+        // a short tangle segment near the boundary between two cells
+        const A = walls[k % 7], B = walls[(k * 3 + 1) % 7], t = q(), mx = A[0] + (B[0] - A[0]) * t, my = A[1] + (B[1] - A[1]) * t;
+        const cx = (mx + (A[0] + B[0]) / 2) / 2 + (q() - 0.5) * 0.08, cy = (my + (A[1] + B[1]) / 2) / 2 + (q() - 0.5) * 0.08, th = q() * Math.PI, L = 0.05 + q() * 0.14;
+        out.push([[cx - Math.cos(th) * L, cy - Math.sin(th) * L], [cx + Math.cos(th) * L, cy + Math.sin(th) * L], [cx + (q() - 0.5) * 0.08, cy + (q() - 0.5) * 0.08]]);
+      }
+      return out;
+    })();
+
+    const COPPER = [[150, 92, 52], [238, 196, 150]];
+    const mix = (a, b, t) => a.map((c, i) => Math.round(c + (b[i] - c) * t));
+    const rgb = c => "rgb(" + c.join(",") + ")";
+    function draw() {
+      if (cv.closest(".dview").hidden) return;
+      const { ctx, w, h } = fitBox(cv);
+      ctx.clearRect(0, 0, w, h);
+      const ink = tok("--ink"), muted = tok("--muted"), rule = tok("--rule"), acc = tok("--accent"), teal = tok("--teal"), mono = FONT.mono(), panel = tok("--panel");
+      const narrow = w < 640, botBar = ($("#grStatus").offsetHeight || 46) + 26, topH = Math.round((h - botBar) * (narrow ? 0.5 : 0.56));
+      // ---- the bar under the microscope: drawn at the size it will reach at necking, so it visibly grows
+      const lam = Math.exp(eps), k = Math.min((w - 150) / (FW * 1.36), (topH - 50) / FH);
+      const cx = w / 2, cy = 26 + (topH - 26) / 2;
+      const T = p => [cx + (p[0] - FW / 2) * lam * k, cy + (p[1] - FH / 2) * k / Math.sqrt(lam)];
+      const path = poly => { ctx.beginPath(); poly.forEach((q, i) => { const [x, y] = T(q); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.closePath(); };
+      const [x0, y0] = T([0, 0]), [x1, y1] = T([FW, FH]);
+      ctx.save(); ctx.beginPath(); ctx.rect(x0, y0, x1 - x0, y1 - y0); ctx.clip();
+      G.forEach(g => {
+        const base = schmid ? null : mix(COPPER[0], COPPER[1], 0.25 + 0.6 * g.tone);
+        const sc = schmid ? mix([59, 111, 182], [192, 57, 43], clamp((g.m - 0.3) / 0.2, 0, 1)) : base;
+        path(g.poly); ctx.fillStyle = rgb(sc); ctx.fill();
+        if (g.twin && !schmid) { path(g.twin); ctx.fillStyle = rgb(mix(sc, g.tone > 0.5 ? [120, 70, 40] : [250, 220, 185], 0.35)); ctx.fill(); }
+        // slip lines: the primary system first; a second system joins at larger strains
+        const show = (L, n, a) => { ctx.strokeStyle = "rgba(40,22,12," + a + ")"; ctx.lineWidth = 0.8; ctx.beginPath(); for (let q = 0; q < n; q++) { const [a1, b1] = L[q].seg; const P = T(a1), Q = T(b1); ctx.moveTo(P[0], P[1]); ctx.lineTo(Q[0], Q[1]); } ctx.stroke(); };
+        if (g.g > 0.002) show(g.l1, Math.min(g.l1.length, Math.ceil(g.l1.length * Math.min(1, g.g / 0.35))), 0.2 + 0.32 * Math.min(1, g.g / 0.3));
+        if (g.g > 0.12) show(g.l2, Math.min(g.l2.length, Math.ceil(g.l2.length * Math.min(1, (g.g - 0.12) / 0.4))), 0.15 + 0.22 * Math.min(1, (g.g - 0.12) / 0.3));
+      });
+      ctx.strokeStyle = "rgba(45,28,16,0.9)"; ctx.lineWidth = 1.3;
+      G.forEach(g => { path(g.poly); ctx.stroke(); });
+      if (schmid) { ctx.font = "600 " + Math.max(9, Math.min(13, k * dOf() * 0.28)) + "px " + mono; ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; if (size === "coarse") G.forEach(g => { const c = T([g.poly.reduce((a, q) => a + q[0], 0) / g.poly.length, g.poly.reduce((a, q) => a + q[1], 0) / g.poly.length]); ctx.fillText(g.m.toFixed(2), c[0], c[1]); }); ctx.textBaseline = "alphabetic"; }
+      ctx.restore();
+      ctx.strokeStyle = ink; ctx.lineWidth = 1; ctx.strokeRect(x0, y0, x1 - x0, y1 - y0);
+      // pull arrows, longer for more stress
+      const al = 18 + Math.min(60, sig / 4);
+      ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = 2.5;
+      [[x0 - 6, -1], [x1 + 6, 1]].forEach(([x, d]) => { ctx.beginPath(); ctx.moveTo(x, cy); ctx.lineTo(x + d * al, cy); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x + d * (al + 3), cy); ctx.lineTo(x + d * (al - 7), cy - 6); ctx.lineTo(x + d * (al - 7), cy + 6); ctx.fill(); });
+      ctx.font = "12px " + mono; ctx.fillStyle = muted; ctx.textAlign = "left";
+      ctx.fillText(schmid ? "each grain coloured by its highest Schmid factor m = cos φ cos λ:  blue 0.30 → red 0.50" : "polished, etched copper · pulled along its length", x0, y0 - 9);
+      // scale bar (100 µm) in the bottom-right corner of the field
+      const sb = 100 * k, sx = x1 - sb - 10, sy = y1 - 12;
+      ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.fillRect(sx - 6, sy - 15, sb + 12, 21);
+      ctx.fillStyle = "#222"; ctx.fillRect(sx, sy, sb, 3); ctx.font = "11px " + mono; ctx.textAlign = "center"; ctx.fillText("100 µm", sx + sb / 2, sy - 3);
+      // ---- stress–strain curve
+      const gy = topH + 8, gh = h - botBar - gy - 6, temW = narrow ? 0 : Math.min(gh, w * 0.32), gx = 64, gw = w - gx - (temW ? temW + 40 : 16);
+      const XS = e => gx + e / 0.32 * gw, YS = s => gy + gh - s / 320 * gh;
+      ctx.fillStyle = rgba(panel, 0.6); ctx.fillRect(gx, gy, gw, gh); ctx.strokeStyle = rule; ctx.lineWidth = 1; ctx.strokeRect(gx, gy, gw, gh);
+      ctx.font = "11px " + mono; ctx.fillStyle = muted;
+      [0, 100, 200, 300].forEach(s => { ctx.beginPath(); ctx.moveTo(gx, YS(s)); ctx.lineTo(gx + gw, YS(s)); ctx.stroke(); ctx.textAlign = "right"; ctx.fillText(s, gx - 6, YS(s) + 4); });
+      [0, 0.1, 0.2, 0.3].forEach(e => { ctx.beginPath(); ctx.moveTo(XS(e), gy); ctx.lineTo(XS(e), gy + gh); ctx.stroke(); ctx.textAlign = "center"; ctx.fillText(e, XS(e), gy + gh + 14); });
+      ctx.save(); ctx.translate(16, gy + gh / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = "center"; ctx.fillText("true stress (MPa)", 0, 0); ctx.restore();
+      ctx.textAlign = "right"; ctx.fillText("true strain", gx + gw - 4, gy + gh - 6);
+      ctx.strokeStyle = acc; ctx.lineWidth = 2.5; ctx.beginPath(); hist.forEach(([e, s], i) => i ? ctx.lineTo(XS(e), YS(s)) : ctx.moveTo(XS(e), YS(s))); ctx.lineTo(XS(eps), YS(sig)); ctx.stroke();
+      if (yieldS) { tag(ctx, "yield ≈ " + Math.round(yieldS) + " MPa", XS(0.012), YS(yieldS) - 4, "left", ink); }
+      if (neck) { ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(XS(neck[0]), YS(neck[1]), 4, 0, 7); ctx.fill(); tag(ctx, "necking starts: tensile strength " + Math.round(neck[1] / Math.exp(neck[0])) + " MPa (engineering)", Math.min(XS(neck[0]), gx + gw - 8), YS(neck[1]) + 22, "right", ink); }
+      ball(ctx, XS(eps), YS(sig), 6, acc);
+      ctx.textAlign = "left"; ctx.font = "600 12px " + mono; ctx.fillStyle = ink;
+      ctx.fillText("σ = " + Math.round(sig) + " MPa   ε = " + eps.toFixed(3) + "   permanent " + (epsP * 100).toFixed(1) + "%", gx + 8, gy + 16);
+      // ---- TEM: dislocations inside one grain (a 1 µm field of a thin foil)
+      const rho = rhoMean();
+      if (temW > 60) {
+        const tx = w - temW - 16, ty = gy;
+        ctx.fillStyle = "#d6d9dc"; ctx.fillRect(tx, ty, temW, temW);
+        ctx.save(); ctx.beginPath(); ctx.rect(tx, ty, temW, temW); ctx.clip();
+        const n = clamp(Math.ceil(rho * 2e-13), 1, TEM.length);
+        ctx.strokeStyle = "rgba(35,38,44,0.85)"; ctx.lineWidth = 1.5; ctx.lineCap = "round";
+        for (let q = 0; q < n; q++) { const [a, b, c] = TEM[q]; ctx.beginPath(); ctx.moveTo(tx + a[0] * temW, ty + a[1] * temW); ctx.quadraticCurveTo(tx + c[0] * temW, ty + c[1] * temW, tx + b[0] * temW, ty + b[1] * temW); ctx.stroke(); }
+        ctx.restore(); ctx.strokeStyle = ink; ctx.lineWidth = 1; ctx.strokeRect(tx, ty, temW, temW);
+        const e = Math.floor(Math.log10(rho)), mant = rho / Math.pow(10, e);
+        ctx.fillStyle = "rgba(255,255,255,0.85)"; ctx.fillRect(tx + 4, ty + 4, temW - 8, 34);
+        ctx.fillStyle = "#222"; ctx.font = "600 11.5px " + mono; ctx.textAlign = "left"; ctx.fillText("Inside a grain (TEM, 1 µm across)", tx + 9, ty + 18);
+        ctx.font = "11.5px " + mono; ctx.fillText("dislocations: ρ ≈ " + mant.toFixed(1) + "×10" + String(e).split("").map(c => "⁰¹²³⁴⁵⁶⁷⁸⁹"[c]).join("") + " m⁻²", tx + 9, ty + 32);
+      }
+      // ---- what is happening
+      const slipping = G.filter(g => g.g > 0.002).length;
+      let st;
+      if (mode === "neck") st = "Necking has begun: the curve's slope has fallen to the stress itself (Considère's criterion). The metal can no longer harden fast enough, so the strain gathers in one neck, which thins until the bar breaks. Release the load, or anneal to start again.";
+      else if (mode === "release") st = "Unloading: only the elastic stretch (σ/E) springs back, along a line as steep as the first one.";
+      else if (released && epsP > 0.001) st = "Released. The slip steps and stretched grains stay: " + (epsP * 100).toFixed(1) + "% permanent strain. Pull again: it now yields near " + Math.round(maxSig) + " MPa, not " + Math.round(yieldS || 0) + ": the dislocations already tangled inside make it harder (strain hardening).";
+      else if (eps === 0) st = "Annealed copper: few dislocations, and the grains are equal in every direction. Press Pull to stretch the bar.";
+      else if (!yieldS && slipping === 0) st = "Elastic: the atoms are only pulled slightly apart. No dislocation has moved yet; release now and the bar springs back exactly.";
+      else if (epsP < 0.03) st = "Yielding: " + slipping + " of " + G.length + " grains slip. Grains whose slip planes and directions lie near 45° to the pull (high Schmid factor) go first. Each dark line is a step where dislocations ran out to the surface.";
+      else st = "Strain hardening: dislocations multiply and tangle (see the TEM view), so every further bit of stretch needs more stress. The grains lengthen along the pull, and a second set of slip lines appears as other slip systems join in.";
+      $("#grStatus").textContent = st;
+    }
+    build();
+    return { draw, tick, state: () => ({ eps, sig, epsP, yieldS, neck: !!neck, mode, size, rho: rhoMean(), slipping: G.filter(g => g.g > 0.002).length, grains: G.length }) };
+  })();
+
+  pressGroup($("#dislView"), setView);
+  watch($("#dislStage"), "disl", () => { if (view === "load") LD.draw(); });
+  tabs.disl = Object.assign({}, base, {
+    shown: () => { if (view === "atoms") base.shown(); else if (view === "types") { if (T3) { T3.size(); T3.update(); } } else LD.draw(); },
+    resize: () => { if (view === "atoms") base.resize(); else if (view === "load") LD.draw(); else if (T3) T3.size(); },
+    theme: () => { base.theme(); if (T3) T3.theme(); LD.draw(); },
+    state: () => Object.assign(base.state(), { view }, T3 ? T3.state() : {}, { load: LD.state() }),
+    tick: dt => { base.tick(dt); if (view === "types" && T3) T3.tick(dt); if (view === "load") LD.tick(dt); }
+  });
 })();
 
 /* =========================================================== PHASE DIAGRAMS */
@@ -4159,32 +4660,42 @@ const LESSONS = {
     steps: [
       { k: "predict", h: "Slide a whole plane at once",
         p: "<p>A <b>shear stress</b> is a force per unit area that pushes one half of a crystal sideways over the other half. To slide the top half of a perfect crystal over the bottom half, every bond across the plane must break at the same moment. Compared with how easily real metals bend, how much stress would that take?</p>",
-        q: { opts: ["Far more than real metals need", "About what real metals need", "Less"], ans: 0, then: [["click", '#dislMode [data-v="rigid"]'], ["click", "#dislReset"]] },
+        q: { opts: ["Far more than real metals need", "About what real metals need", "Less"], ans: 0, then: [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="rigid"]'], ["click", "#dislReset"]] },
         why: "That ideal strength is about a tenth of the shear modulus G (the shear version of Young's modulus; 46 GPa for copper, Callister Table 6.1), so several GPa. A single crystal of pure copper starts to slip, that is to deform permanently, at a shear stress of only about 1 MPa: thousands of times less. Something else must be happening." },
       { k: "try", h: "The whole plane",
         p: "<p>The stress slider is a schematic scale from 0 to 100, where about 95 is the ideal strength of a perfect crystal.</p>",
-        show: ["#dislMode < .group", "#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="rigid"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"], ["val", "#dislTau", 30]],
+        show: ["#dislMode < .group", "#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="rigid"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"], ["val", "#dislTau", 30]],
         goals: [{ t: "Slide the whole plane (raise the stress, then Push)", ok: s => s.mode === "rigid" && s.done }],
         why: "It only moves near 95 on this scale, because every bond across the plane breaks together." },
       { k: "try", h: "With a dislocation",
         p: "<p>The red symbol marks the end of an extra half-plane of atoms squeezed into the top half: an edge dislocation.</p>",
-        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"], ["val", "#dislTau", 15], ["click", "#dislStep"]],
+        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="disl"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"], ["val", "#dislTau", 15], ["click", "#dislStep"]],
         pins: [{ host: "#dislCv", at: () => tabs.disl && tabs.disl.pin("core"), t: "the dislocation" }],
         goals: [{ t: "Push the dislocation all the way through", ok: s => s.mode === "disl" && s.done }],
         why: "The dislocation breaks one row of bonds at a time, like moving a rug by pushing a wrinkle along it. The readout shows it needs only about 8 on this scale, against about 95 for the whole plane, yet the crystal still ends up slipped by one atom spacing. Real metals deform this way, which is why they yield at a tiny fraction of their ideal strength." },
       { k: "try", h: "The Burgers circuit",
         p: "<p>Walk around a loop of atoms, taking as many steps left as right and as many down as up. In a perfect crystal you end where you started.</p>",
-        show: ["#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislGB"], ["on", "#dislBurgers"], ["val", "#dislTau", 30]],
+        show: ["#dislGo < .chips"], setup: [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislGB"], ["on", "#dislBurgers"], ["val", "#dislTau", 30]],
         goals: [{ t: "Step the dislocation inside the circuit", ok: s => s.burgers && s.xd > -3 && s.xd < 3 }],
         why: "Around a dislocation the circuit fails to close. The gap is the Burgers vector b: one atom spacing, in the direction the crystal slips." },
       { k: "try", h: "Pin it with a solute atom",
-        show: ["#dislTau < .range"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislBurgers"], ["off", "#dislGB"], ["on", "#dislSolute"], ["val", "#dislTau", 25], ["click", "#dislGo"]],
+        show: ["#dislTau < .range"], setup: [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislBurgers"], ["off", "#dislGB"], ["on", "#dislSolute"], ["val", "#dislTau", 25], ["click", "#dislGo"]],
         goals: [{ t: "The big atom stops it. Raise the stress until it breaks free", ok: s => s.solute && s.xd > -2 }],
         why: "A solute atom of a different size (the big amber atom here) distorts the lattice around it. The dislocation is attracted to that distortion and held, so more stress is needed to move it on. That is solid-solution strengthening: annealed copper with 30 wt% nickel yields at 125 MPa, nearly pure copper at 69 MPa (Callister Table 11.6). Nickel atoms are in fact slightly smaller than copper's; smaller solute atoms pin dislocations too." },
       { k: "try", h: "Run into a grain boundary",
-        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislBurgers"], ["on", "#dislGB"], ["val", "#dislTau", 40]],
+        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislView [data-v="atoms"]'], ["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislBurgers"], ["on", "#dislGB"], ["val", "#dislTau", 40]],
         goals: [{ t: "Push the dislocation into the boundary", ok: s => s.gb && s.xd > 5.4 && !s.done }, { t: "Raise the stress to 100. Does it get through?", ok: (s, m) => saw(m, "max", s.gb && s.xd > 5.4 && s.tau >= 100) }],
         why: "Across the boundary the planes of atoms point another way (the shaded grain; the drawing keeps its rows straight for simplicity), so the dislocation cannot continue, and the next ones pile up behind it. More boundary per volume means a stronger metal: σ<sub>y</sub> = σ₀ + k<sub>y</sub>/√d (Hall–Petch, Callister Eq. 7.7), where d is the average grain diameter and σ₀ and k<sub>y</sub> are constants for the metal. Smaller grains, higher yield strength." },
+      { k: "try", h: "Edge, screw and mixed",
+        p: "<p>A dislocation is really a line running through the crystal. It is the edge of the part of the slip plane that has already slipped. The Burgers vector <b>b</b> is the slip itself: one atom spacing, in the direction the top moves. In an <b>edge</b> dislocation b is at right angles to the line; in a <b>screw</b> dislocation b runs along the line.</p>",
+        show: ["#d3Kind < .group", "#d3Pos < .range"], setup: [["click", '#dislView [data-v="types"]'], ["click", '#d3Kind [data-v="screw"]'], ["val", "#d3Pos", 0]],
+        goals: [{ t: "Drag a screw dislocation all the way through", ok: (s, m) => saw(m, "screw", s.view === "types" && s.kind === "screw" && s.p >= 0.99) }, { t: "Now an edge dislocation", ok: (s, m) => saw(m, "edge", s.view === "types" && s.kind === "edge" && s.p >= 0.99) }],
+        why: "The screw line travelled at right angles to b, the edge line along b, yet both left the same one-atom step at the left and right faces (Callister Fig. 7.2). Most real dislocations are curved and <b>mixed</b>: edge in some places, screw in others, with one b along their whole length." },
+      { k: "try", h: "Pull a real metal",
+        p: "<p>Now zoom out to a polished copper bar under the microscope, many grains, each a crystal with its own orientation. Pull it.</p>",
+        show: ["#grPull < .chips"], setup: [["click", '#dislView [data-v="load"]'], ["click", '#grSize [data-v="coarse"]'], ["click", "#grReset"]],
+        goals: [{ t: "Pull until slip lines appear", ok: s => s.view === "load" && s.load.slipping > 0 }, { t: "Keep pulling until it starts to neck", ok: s => s.load.neck }],
+        why: "Slip lines appear first in grains whose slip planes lie near 45° to the pull, where the resolved shear stress τ = σ cos φ cos λ is highest (Schmid's law). As the bar stretches, dislocations multiply from about 10¹² to nearly 10¹⁵ m⁻² and tangle, so each step needs more stress: strain hardening. The grains lengthen along the pull. Necking starts when hardening can no longer keep up (the curve's slope falls to the stress itself)." },
       { k: "apply", h: "Make a copper part stronger",
         p: "<p>You need a stronger copper part without changing its shape. Which works?</p>",
         q: { opts: ["Alloy it with nickel, or give it finer grains", "Use purer copper", "Grow larger grains"], ans: 0 },

@@ -63,7 +63,7 @@ const log = []; const ok = (c, m) => log.push((c ? "PASS " : "FAIL ") + m);
   const g = '[data-guide="disl"]';
   ok(await page.$eval(g + ' [data-x="prev"]', b => b.disabled), "Explore: Previous disabled on question 1");
   await page.click(g + ' [data-x="next"]'); await sleep(100);
-  ok((await page.$eval(g + " .exn", e => e.textContent)) === "2 / 4", "Explore: Next goes to 2 / 4");
+  ok((await page.$eval(g + " .exn", e => e.textContent)) === "2 / 9", "Explore: Next goes to 2 / 9");
   ok(await page.$eval(g + " .exa", e => e.hidden), "Explore: answer hidden at first");
   await page.click(g + ' [data-x="ans"]'); await sleep(100);
   ok(!(await page.$eval(g + " .exa", e => e.hidden)) && /Burgers vector/.test(await page.$eval(g + " .exa", e => e.textContent)), "Explore: Show answer reveals it");
