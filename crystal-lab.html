@@ -408,9 +408,10 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
           <button class="chip" id="bondBreak">Pull until it breaks</button>
           <button class="chip tog" id="bondParts" aria-pressed="true">Attraction and repulsion</button>
         </div>
-        <p class="cap">r₀ is the spacing where the atoms sit when nothing pushes or pulls on them. Bond energy is the energy needed to break one mole (6 × 10²³) of these bonds, in kJ/mol. A deeper energy well means a stronger bond. The steeper the sides of the well, the stiffer the material.</p>
+        <p class="cap">r₀ is the spacing where the atoms sit when nothing pushes or pulls on them. Bond energy (Callister's “bonding energy”, Table 2.3) is the energy needed to pull one mole (6 × 10²³) of the solid's atoms, ions or molecules completely apart, in kJ/mol. A deeper energy well means a stronger bond. The steeper the force curve where it crosses zero at r₀, the stiffer the material (Callister Eq. 6.6).</p>
         <details class="about"><summary>About this model</summary><div>
           <p class="cap">Bond energies and melting points: Callister &amp; Rethwisch, <em>Materials Science and Engineering</em>, 10th ed., Table 2.3. Ar and Kr were measured below atmospheric pressure.</p>
+          <p class="cap">Bond energies are per mole of atoms, formula units or molecules, not per single bond: CaF₂'s 1548 kJ/mol covers two Ca–F bonds, and water's 51 kJ/mol about two hydrogen bonds per molecule.</p>
           <p class="cap">The curve shapes are a teaching schematic (one Morse-type shape scaled by each bond energy). They show trends, not measured curves.</p>
         </div></details>
       </aside>
@@ -543,7 +544,7 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
       <aside class="side">
         <div class="sidehead">
           <h2>A live raft of atoms</h2>
-          <p class="desc">A flat layer of about 1,800 atoms that attract and repel like real ones (a Lennard-Jones model, the same physics as the soap-bubble raft). Heat it and it melts. Cool it and it crystallises. How you cool it decides what you get.</p>
+          <p class="desc">A flat layer of about 1,800 atoms that attract and repel like real ones (a Lennard-Jones model: atoms pull on each other when slightly apart and push hard when squeezed together; soap bubbles floating on water behave in a similar way, so a bubble raft forms the same crystals and defects). Heat it and it melts. Cool it and it crystallises. How you cool it decides what you get.</p>
         </div>
         <div class="explore" data-guide="raft"></div>
         <div class="group">
@@ -586,7 +587,7 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
           <button class="chip" id="raftReset">Start again from a perfect crystal</button>
         </div>
         <details class="about"><summary>About this model</summary><div>
-          <p class="cap">Temperatures are in reduced Lennard-Jones units: 1.0 is roughly the energy of one bond. The simulation runs about 1,800 atoms in a box that wraps around at the edges, so there are no free surfaces. “In crystal sites” counts atoms with exactly six neighbours arranged as a regular hexagon.</p>
+          <p class="cap">Temperatures are in reduced units: at 1.0, each atom's typical jiggling energy equals the energy of one bond. This raft melts at about 1. The simulation runs about 1,800 atoms in a box that wraps around at the edges, so there are no free surfaces. “In crystal sites” counts atoms with exactly six neighbours arranged as a regular hexagon. The box cannot shrink, and the crystal packs a few per cent denser than the liquid, so freezing leaves small holes, mostly along grain boundaries, like shrinkage pores in a casting.</p>
         </div></details>
       </aside>
     </div>
@@ -633,7 +634,7 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
             <button class="chip tog" id="dislBurgers" aria-pressed="false">Burgers circuit</button>
           </div>
         </div>
-        <p class="cap">Stress is on a schematic 0–100 scale, where 100 is the ideal strength of a perfect crystal. The real gap is far larger than 8 versus 95: a pure copper crystal starts to slip at about 1 MPa, thousands of times below its ideal shear strength of several GPa. The Burgers circuit takes the same number of atom steps right, up, left and down; if it does not close, the gap is the Burgers vector <b>b</b>.</p>
+        <p class="cap">Stress is on a schematic 0–100 scale; about 95 is the ideal strength, the stress needed to slide a whole plane of a perfect crystal at once. The real gap is far larger than 8 versus 95: a pure copper crystal starts to slip at about 1 MPa, thousands of times below its ideal shear strength of several GPa. The Burgers circuit takes as many atom steps left as right, and as many down as up; if it does not close, the gap is the Burgers vector <b>b</b>. The shaded region is a second grain; in a real metal its rows of atoms are tilted, but they are drawn straight here for simplicity.</p>
       </aside>
     </div>
   </section>
@@ -667,7 +668,7 @@ body.present #lesson .lsn-step h3 { font-size: 25px; }
     <div class="pdtop">
       <figure class="stage cross"><canvas id="pdCv" tabindex="0" aria-label="Phase diagram. Move over it, or use the arrow keys, to choose a composition and temperature"></canvas><figcaption><b>Phase diagram</b> · <span id="pdHint">move over the diagram; click to pin a point</span></figcaption></figure>
       <figure class="stage micro"><canvas id="pdMicro" aria-label="Microstructure at the chosen point"></canvas><img id="pdReal" alt="" hidden><figcaption><div class="seg sm" id="pdMicroMode" aria-label="How to show the microstructure"><button data-v="look" aria-pressed="true">Micrograph</button><button data-v="colour">Phase colours</button><button data-v="real">Real photo</button></div><span id="pdMicroCap"><b>Microstructure</b> · simulated micrograph after slow cooling, polished and etched</span></figcaption></figure>
-      <figure class="stage"><canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas><figcaption><b>Atomic arrangement</b> · one plane of atoms, about 2–3 nm across</figcaption></figure>
+      <figure class="stage"><canvas id="pdAtoms" aria-label="Atomic arrangement at the chosen point"></canvas><figcaption><b>Atomic arrangement</b> · one plane of atoms, about 3–4 nm across</figcaption></figure>
     </div>
     <div class="pdbot">
       <div class="readout">
@@ -1121,10 +1122,10 @@ function clipPlanesFrom(v, defs) {
   ];
   const TYPES = {
     ionic: { name: "Ionic bond", col: "--accent", d: "One atom gives up electrons and another takes them. The resulting + and − ions attract each other equally in every direction. The bond is strong but not directional. Ionic crystals such as table salt are hard, brittle and split along flat planes." },
-    covalent: { name: "Covalent bond", col: "--teal", d: "Neighbouring atoms share pairs of electrons. Each shared pair points in a fixed direction, so the atoms lock into a rigid network. Covalent solids such as diamond and silicon carbide are very hard, melt at high temperatures and are brittle." },
+    covalent: { name: "Covalent bond", col: "--teal", d: "Neighbouring atoms share pairs of electrons. Each shared pair points in a fixed direction, so the atoms lock into a rigid network. Covalent solids such as diamond and silicon carbide are very hard, melt at high temperatures and are brittle. When covalent bonds only join atoms into small molecules (Cl₂) or chains (polymers), the solid is held together by much weaker bonds between the molecules and melts easily." },
     metallic: { name: "Metallic bond", col: "--atom", d: "Each atom releases its outer electrons into a shared “sea” that belongs to the whole crystal. Positive ion cores sit in that sea. The bond does not point in any direction, so rows of atoms can slide past each other without breaking apart. That is why metals bend instead of snapping." },
-    vdw: { name: "Van der Waals bond", col: "--amber", d: "No electrons are given or shared. The electron cloud of an atom is never perfectly even, so for an instant one side is slightly − and the other slightly +. That imbalance attracts the neighbour weakly. These bonds hold polymer chains to each other, which is why many polymers soften at modest temperatures." },
-    hyd: { name: "Hydrogen bond", col: "--amber", d: "A hydrogen atom bonded to O, N or F is left slightly positive. It attracts the negative end of a neighbouring molecule. Hydrogen bonds are stronger than van der Waals bonds but still roughly ten times weaker than ionic, covalent or metallic bonds." }
+    vdw: { name: "Van der Waals bond", col: "--amber", d: "No electrons are given or shared. The electron cloud of an atom is never perfectly even, so for an instant one side is slightly − and the other slightly +. That imbalance pushes the neighbour's electrons into a matching imbalance, and the two attract weakly. These bonds hold polymer chains to each other, which is why many polymers soften at modest temperatures." },
+    hyd: { name: "Hydrogen bond", col: "--amber", d: "A hydrogen atom bonded to O, N or F is left slightly positive. It attracts the negative end of a neighbouring molecule. It is the strongest kind of van der Waals (secondary) bond, but still 10 to 30 times weaker than most ionic, covalent or metallic bonds." }
   };
   const ELCOL = { Na: "--amber", Li: "--amber", Mg: "--amber", Ca: "--amber", Cl: "--teal", F: "--teal", O: "--accent", N: "--teal" };
   // radii (nm): [neutral atom, ion]. Ions from Callister Table 12.3 (Li⁺ from Shannon's table); neutral atoms are the
@@ -1179,7 +1180,7 @@ function clipPlanesFrom(v, defs) {
   toggle($("#bondParts"), on => { parts = on; drawAll(); });
 
   function stateText() {
-    if (anim && anim.kind === "form" && sel.t === "ionic" && transfer < 1) return "The electron jumps from " + sel.a[0] + " to " + sel.a[1] + ". Now one is + and the other is −.";
+    if (anim && anim.kind === "form" && sel.t === "ionic" && transfer < 1) return (sel.k ? "Two electrons leave " : "An electron jumps from ") + sel.a[0] + (sel.n === "CaF₂" ? ": one to this F, one to a second F (not shown)" : " to " + sel.a[1]) + ". Now one is + and the other is −.";
     if (x < 0.98) return "Squeezed: the atoms push back.";
     if (x <= 1.02) return "At r₀: no force. This is where the atoms sit.";
     if (x < xPeak - 0.02) return "Stretched: the bond pulls back like a spring. This is elastic behaviour.";
@@ -1221,9 +1222,9 @@ function clipPlanesFrom(v, defs) {
         ctx.beginPath(); ctx.arc(cx + e.u * (seaW / 2 - 14), cy + e.v * (seaH / 2 - 10), 2.6, 0, Math.PI * 2); ctx.fill();
       });
       [xa - sep, xb + sep].forEach(X => { if (X > cx - seaW / 2 + 20 && X < cx + seaW / 2 - 20) { ctx.globalAlpha = 0.45; ball(ctx, X, cy, ra, tok("--atom")); ctx.globalAlpha = 1; } });
-      ball(ctx, xa, cy, ra, tok("--atom")); label(xa, cy, sel.a[0] + "⁺");
-      ball(ctx, xb, cy, rb, tok("--atom")); label(xb, cy, sel.a[1] + "⁺");
-      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("positive ion cores in a shared sea of electrons", cx, Math.min(h - 58, cy + 80));
+      ball(ctx, xa, cy, ra, tok("--atom")); label(xa, cy, sel.a[0]);
+      ball(ctx, xb, cy, rb, tok("--atom")); label(xb, cy, sel.a[1]);
+      ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center"; ctx.fillText("positive ion cores (each gave its outer electrons to the sea)", cx, Math.min(h - 58, cy + 80));
     } else if (sel.t === "ionic") {
       const ca = tok(ELCOL[sel.a[0]] || "--amber"), cb = tok(ELCOL[sel.a[1]] || "--teal");
       // attraction field lines
@@ -1236,7 +1237,7 @@ function clipPlanesFrom(v, defs) {
       ball(ctx, xb, cy, rb, cb); label(xb, cy, sel.a[1] + (transfer >= 0.5 ? sel.q[1] : ""));
       // the travelling electron(s)
       if (transfer < 1) {
-        const k = sel.k || 1;
+        const k = sel.q[1] === "²⁻" ? 2 : 1;   // the electrons that go to the drawn non-metal atom
         for (let i = 0; i < k; i++) {
           const t = clamp(transfer * 1.1 - i * 0.1, 0, 1);
           const ex = xa + (xb - xa) * t, ey = cy - 44 * Math.sin(Math.PI * t) - 8;
@@ -1247,7 +1248,7 @@ function clipPlanesFrom(v, defs) {
       ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.textAlign = "center";
       if (transfer >= 0.5) {
         const ly = cy - Math.max(ra, rb) - 12;
-        ctx.textAlign = "right"; ctx.fillText("gave up " + ((sel.k || 1) > 1 ? "2 electrons" : "1 electron"), xa + ra * 0.6, ly);
+        ctx.textAlign = "right"; ctx.fillText("gave up " + ((sel.k || 1) > 1 ? (sel.n === "CaF₂" ? "2 electrons (1 to each of 2 F)" : "2 electrons") : "1 electron"), xa + ra * 0.6, ly);
         ctx.textAlign = "left"; ctx.fillText("took " + (sel.q[1] === "²⁻" ? "2 electrons" : "1 electron"), xb - rb * 0.6, ly);
       }
       else { ctx.fillText("neutral atoms: the metal atom is the larger one", cx, cy - Math.max(ra, rb) - 12); }
@@ -1272,7 +1273,7 @@ function clipPlanesFrom(v, defs) {
       ball(ctx, xa, cy, ra, tok("--atom")); label(xa, cy, sel.a[0], sel.a[0].length > 2 ? 13 : 15);
       ball(ctx, xb, cy, rb, tok("--atom")); label(xb, cy, sel.a[1], sel.a[1].length > 2 ? 13 : 15);
       if (!broken) { ctx.strokeStyle = rgba(tok("--amber"), clamp(1.4 - (x - 1), 0.15, 0.9)); ctx.setLineDash([3, 5]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(xa + ra + 6, cy); ctx.lineTo(xb - rb - 6, cy); ctx.stroke(); ctx.setLineDash([]); }
-      const s = flick >= 0 ? ["δ−", "δ+"] : ["δ+", "δ−"];
+      const s = flick >= 0 ? ["δ+", "δ−"] : ["δ−", "δ+"];   // [left side, right side]: the cloud drifts right when flick > 0
       ctx.fillStyle = ink; ctx.font = "600 14px " + mono; ctx.textAlign = "center";
       [xa, xb].forEach(X => { ctx.fillText(s[1], X + ra * 0.5, cy - ra - 8); ctx.fillText(s[0], X - ra * 0.5, cy - ra - 8); });
       ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("the electron cloud sloshes: a passing + / − imbalance", cx, Math.min(h - 58, cy + 74));
@@ -1293,7 +1294,7 @@ function clipPlanesFrom(v, defs) {
       drawMol(xb + 10, -1, sel.nh, false);
       if (!broken) { ctx.strokeStyle = rgba(tok("--amber"), clamp(1.4 - (x - 1), 0.15, 0.95)); ctx.setLineDash([3, 5]); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(xa - 10 + dOH + rH + 2, cy); ctx.lineTo(xb + 10 - 26, cy); ctx.stroke(); ctx.setLineDash([]); }
       ctx.fillStyle = ink; ctx.font = "600 13px " + mono; ctx.textAlign = "center";
-      ctx.fillText("δ+", xa - 10 + dOH, cy - 22); ctx.fillText("δ−", xb + 10, cy - 34);
+      ctx.fillText("δ+", xa - 10 + dOH, cy - 22); ctx.fillText("δ−", xb + 10 - 30, cy - 28);
       ctx.fillStyle = muted; ctx.font = "13px " + mono; ctx.fillText("H on one molecule attracts " + sel.a[0] + " on the next", cx, Math.min(h - 58, cy + 70));
     }
     if (broken && !(anim && anim.kind === "form")) { ctx.fillStyle = tok("--accent"); ctx.textAlign = "right"; ctx.font = "600 13px " + mono; ctx.fillText("bond broken", w - 12, 20); }
@@ -1375,7 +1376,7 @@ function clipPlanesFrom(v, defs) {
     ctx.strokeStyle = muted; ctx.setLineDash([2, 3]); ctx.beginPath(); ctx.moveTo(X(xPeak), Yb(pk)); ctx.lineTo(X(xPeak), Yb(0)); ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "left";
     ctx.fillText("peak = bond strength", X(xPeak) + 8, Math.max(Yb(pk) - 6, top2 + 34));
-    ctx.fillText("pull →", w - R - 50, Yb(0) - 6);
+    ctx.fillText("pull →", w - R - 50, Yb(0) - 6); ctx.fillText("push ←", w - R - 50, Yb(0) + 16);
     ctx.textAlign = "center"; ctx.fillStyle = muted;
     for (const t of [1, 1.5, 2, 2.5]) ctx.fillText(t === 1 ? "r₀" : t + " r₀", X(t), h - 12);
     return { L, R, ph, X, panels };
@@ -1488,8 +1489,8 @@ function clipPlanesFrom(v, defs) {
     { q: "Pull the atoms past the top of the force curve. What happens to the force you need?",
       a: "It drops. Past the peak the bond gives way, so the peak force is the bond's strength.",
       setup: [["click", '#bondView [data-v="curves"]'], ["click", '#bondChips [data-i="0"]'], ["val", "#bondR", 1.12]] },
-    { q: "Load Ar, then W. Which energy well has steeper walls near r₀, and what does that tell you about stiffness?",
-      a: "W's well is about 110 times deeper (850 vs 7.7 kJ/mol), so its walls are far steeper: each bit of stretch needs a much larger force. That is a high Young's modulus. Tungsten's E is about 400 GPa (Callister Table 6.1); solid argon is very soft.",
+    { q: "Load Ar, then W. On the force graph, which curve is steeper where it crosses zero at r₀, and what does that tell you about stiffness?",
+      a: "W's. Its well is about 110 times deeper (850 vs 7.7 kJ/mol), and in this schematic its force line through r₀ is 110 times steeper, so each bit of stretch needs a much larger force. That is a high Young's modulus: tungsten's E is about 407 GPa (Callister Table 6.1); solid argon is very soft.",
       setup: [["click", '#bondView [data-v="curves"]'], ["click", '#bondChips [data-i="13"]'], ["val", "#bondR", 1]] }
   ]);
   pick(0);
@@ -1506,10 +1507,10 @@ function clipPlanesFrom(v, defs) {
   const INFO = {
     sc: { t: "Simple cubic (SC)", n: "8 corners × ⅛ = 1", cn: 6, apf: "0.52", aR: "a = 2R", why: "Atoms sit only on the cube corners. It is the easiest cell to picture and almost never found in nature, because it leaves 48% of the space empty." },
     bcc: { t: "Body-centred cubic (BCC)", n: "8 × ⅛ + 1 centre = 2", cn: 8, apf: "0.68", aR: "a = 4R / √3", why: "One extra atom sits in the middle of the cube. BCC metals such as steel are strong, but many become brittle when cold, which is why ship hulls and pipelines are specified for a minimum service temperature." },
-    fcc: { t: "Face-centred cubic (FCC)", n: "8 × ⅛ + 6 faces × ½ = 4", cn: 12, apf: "0.74", aR: "a = 2R√2", why: "Extra atoms sit in the centre of each face. FCC packs atoms as tightly as possible and has many easy slip planes. FCC metals stay ductile even when very cold, so aluminium and nickel alloys are used for cryogenic tanks." },
+    fcc: { t: "Face-centred cubic (FCC)", n: "8 × ⅛ + 6 faces × ½ = 4", cn: 12, apf: "0.74", aR: "a = 2R√2", why: "Extra atoms sit in the centre of each face. FCC packs atoms as tightly as possible and has many easy slip planes. FCC metals stay ductile even when very cold, so aluminium alloys and austenitic (FCC) stainless steel are used for cryogenic tanks." },
     hcp: { t: "Hexagonal close-packed (HCP)", n: "12 × ⅙ + 2 × ½ + 3 inside = 6", cn: 12, apf: "0.74", aR: "a = 2R,  c/a = 1.633 if ideal", why: "As tightly packed as FCC, but with fewer easy slip planes. That is why magnesium and titanium sheet are harder to form at room temperature than aluminium." },
     nacl: { t: "Rock salt (NaCl): ionic", n: "Na⁺ 8 × ⅛ + 6 × ½ = 4;  Cl⁻ 12 × ¼ + 1 = 4", cn: 6, apf: "0.65 (r⁺ 0.102, r⁻ 0.181 nm)", aR: "a = 2(r⁺ + r⁻)", why: "Two interleaved FCC arrangements, one of each ion. Every ion is surrounded by ions of the opposite charge. Slide one plane by half a cell and like charges meet and repel, so the crystal cleaves instead of bending." },
-    dia: { t: "Diamond cubic: covalent", n: "8 × ⅛ + 6 × ½ + 4 inside = 8", cn: 4, apf: "0.34", aR: "a = 8R / √3", why: "Each atom forms exactly four covalent bonds pointing to the corners of a tetrahedron. The structure is two-thirds empty space, yet diamond is the stiffest and hardest material there is, because the bonds are strong and cannot bend." }
+    dia: { t: "Diamond cubic: covalent", n: "8 × ⅛ + 6 × ½ + 4 inside = 8", cn: 4, apf: "0.34", aR: "a = 8R / √3", why: "Each atom forms exactly four covalent bonds pointing to the corners of a tetrahedron. The structure is two-thirds empty space, yet diamond is one of the stiffest and hardest materials known, because its bonds are strong and resist bending." }
   };
   // R (nm) Callister Table 3.1; A (g/mol) Callister Fig 2.8; rho measured (g/cm3); ca: measured c/a for HCP
   const METALS = {
@@ -1584,7 +1585,7 @@ function clipPlanesFrom(v, defs) {
 
   const combos = new Set();   // structure:view pairs looked at, for the lessons
   function build() {
-    v.clear(); atomMeshes = []; selected = null; tipEl.hidden = true;
+    v.clear(); atomMeshes = []; selected = null; tipEl.hidden = true; v.root.visible = true;
     combos.add(type + ":" + mode);
     if (mode === "nbr") return buildNeighbours();
     if (type === "hcp") return buildHCP();
@@ -1703,7 +1704,7 @@ function clipPlanesFrom(v, defs) {
     let a, V, n, txt;
     if (type === "fcc") { a = 2 * S2 * R; V = a ** 3; n = 4; }
     else if (type === "bcc") { a = 4 * R / S3; V = a ** 3; n = 2; }
-    else if (type === "hcp") { a = 2 * R; const c = ca * a; V = 1.5 * S3 * a * a * c; n = 6; txt = "a = " + a.toFixed(3) + " nm, c = " + c.toFixed(3) + " nm (c/a " + ca + ")"; }
+    else if (type === "hcp") { a = 2 * R; const c = ca * a; V = 1.5 * S3 * a * a * c; n = 6; txt = "a = " + a.toFixed(3) + " nm, c = " + c.toFixed(3) + " nm (c/a " + ca + (ca > 1.7 ? ", above the ideal 1.633, so the 6 neighbours in the layers above and below are a little farther than the 6 in the same layer" : "") + ")"; }
     else if (type === "dia") { a = a0; V = a ** 3; n = 8; }
     else if (type === "nacl") { a = a0; V = a ** 3; n = 4; }
     const rho = n * Aw / (V * 1e-21 * NA);
@@ -1711,9 +1712,9 @@ function clipPlanesFrom(v, defs) {
   }
   const KEY = {
     sc: "In simple cubic the atoms touch along the cube edges, so every bond is a cell edge.",
-    bcc: "In BCC the corner atoms do not touch each other: each atom touches only the 8 atoms at the body centres around it, along the cube's diagonals.",
-    fcc: "In FCC each face-centre atom touches the 4 corner atoms of its face and the 4 face-centre atoms on the faces next to it, along the face diagonals.",
-    hcp: "Each atom of the middle (B) layer touches 3 atoms of the layer below, 3 of the layer above and 6 in its own layer (2 of those are inside this cell). The corner and centre atoms touch their 6 neighbours in the hexagon.",
+    bcc: "In BCC the corner atoms do not touch each other. Each atom touches 8 others along the cube's body diagonals: the centre atom touches the 8 corners, and each corner atom touches the centre atoms of the 8 cells that share it.",
+    fcc: "In FCC each face-centre atom touches the 4 corner atoms of its face and the 4 face-centre atoms on the faces next to it, along the face diagonals; its other 4 neighbours are in the next cell.",
+    hcp: "Every atom touches 12: 6 in its own layer, 3 above and 3 below. Inside this cell each middle (B) atom touches 3 atoms below, 3 above and the other 2 B atoms; the centre atom of the top or bottom face touches the 6 corner atoms and 3 B atoms.",
     nacl: "Each Na⁺ touches 6 Cl⁻ and each Cl⁻ touches 6 Na⁺; ions of the same charge never touch.",
     dia: "Each atom makes exactly 4 covalent bonds to the corners of a tetrahedron. Atoms on the cell's surface also bond to atoms of the next cell, which are not shown."
   };
@@ -1722,7 +1723,7 @@ function clipPlanesFrom(v, defs) {
     const m = { ball: "Rods are bonds: each joins two atoms that touch (nearest neighbours). Dashed red lines are the edges of the unit cell, not bonds. " + KEY[type],
       hard: "Atoms at their real size, so atoms that are bonded touch. " + KEY[type],
       cut: "The parts of each atom that lie inside the cell; add them up to count the atoms per cell.",
-      nbr: "Rods join the chosen atom to every atom it touches." }[mode];
+      nbr: "Rods join the chosen atom to every " + (type === "nacl" ? "ion" : "atom") + " it touches." }[mode];
     $("#cellKey").textContent = m + (mode === "nbr" ? "" : " " + COLKEY[type]);
   }
   function stats(nShown) {
@@ -1781,9 +1782,13 @@ function clipPlanesFrom(v, defs) {
     else if (T < 1538) { ph = "δ-iron"; st = "bcc"; note = "Between 1394 and 1538 °C iron is BCC again."; }
     else { ph = "liquid iron"; st = null; note = "Above 1538 °C iron melts: no crystal at all."; }
     $("#ironOut").textContent = T + " °C · " + (st ? st.toUpperCase() : "liquid");
-    $("#ironNote").textContent = ph[0].toUpperCase() + ph.slice(1) + ". " + note;
+    $("#ironNote").textContent = (/^[a-z]/.test(ph) ? ph[0].toUpperCase() + ph.slice(1) : ph) + ". " + note;
     if (st && st !== type) setType(st);
-    if (st === "bcc") { metal = METALS.bcc[0]; $("#cellMetal").value = 0; stats(mode === "nbr" ? 8 : undefined); }
+    // the cell's example metal must be iron: room-temperature α-iron data only below 912 °C
+    const cold = T < 912;
+    $("#metalRow").hidden = !cold; metal = cold ? METALS.bcc[0] : null; if (cold) $("#cellMetal").value = 0;
+    v.root.visible = !!st;
+    stats(mode === "nbr" ? INFO[type].cn : undefined);
   });
   tabs.cells = { shown: () => { v.size(); v.dirty = true; }, tick: () => v.render(), theme: () => build(), resize: () => v.size(),
     state: () => ({ type, mode, reps, plane, ironT: +iron.value, combos: Array.from(combos) }) };
@@ -1798,12 +1803,12 @@ function clipPlanesFrom(v, defs) {
     { q: "Pick copper. Compare the density computed from the cell with the measured value.",
       a: "The cell gives 8.94 g/cm³ and the measured value is 8.94 g/cm³. A unit cell a third of a nanometre across predicts the density of a block you can hold.",
       setup: [["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]'], ["val", "#cellMetal", "0"]] },
-    { q: "Show the densest plane of FCC, now viewed straight down the cube's diagonal. What pattern do the atoms in the plane make?",
-      a: "A hexagon: each atom in the plane touches six others. It is the same close-packed layer you stack in the Stacking tab; FCC repeats it ABCABC along this diagonal.",
-      setup: [["off", "#cellReps"], ["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]'], ["on", "#cellPlane"], look111] },
+    { q: "Turn on the 2 × 2 × 2 block and show FCC's densest plane, viewed straight down the cube's diagonal. How many atoms in the plane does an inner atom touch?",
+      a: "Six, arranged in a hexagon around it: rows of atoms, each row shifted by half a spacing. It is the same close-packed layer you stack in the Stacking tab; FCC repeats it ABCABC along this diagonal.",
+      setup: [["on", "#cellReps"], ["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]'], ["on", "#cellPlane"], look111] },
     { q: "Heat iron past 912 °C. Which structure packs more tightly?",
       a: "FCC (74% of space filled vs 68% for BCC), so iron shrinks slightly when it switches.",
-      setup: [["click", '#cellMode [data-v="hard"]'], ["val", "#ironT", 1000]] }
+      setup: [["off", "#cellPlane"], ["off", "#cellReps"], ["click", '#cellMode [data-v="hard"]'], ["val", "#ironT", 1000]] }
   ]);
   fillMetals(); build();
 })();
@@ -1816,7 +1821,7 @@ function clipPlanesFrom(v, defs) {
   const H = Math.sqrt(2 / 3), RMAX = 2.75;
   const OFF = { A: [0, 0], B: [0.5, Math.sqrt(3) / 6], C: [0, Math.sqrt(3) / 3] };
   const COL = { A: "--accent", B: "--teal", C: "--amber" };
-  let seq = ["A", "B"], glass = false, drops = [];
+  let seq = ["A", "B"], glass = false, drops = [], topView = false, markers = [];
   function sites(letter, rmax) {
     const o = OFF[letter], out = [];
     for (let i = -8; i <= 8; i++) for (let j = -8; j <= 8; j++) {
@@ -1836,11 +1841,12 @@ function clipPlanesFrom(v, defs) {
       if (animateTop && k === n - 1 && !reduceMotion) drops.push({ g, y: g.position.y, t: 0 });
     });
     const top = seq[n - 1];
-    if (n < 10) ["A", "B", "C"].filter(L => L !== top).forEach(L => {
+    markers = [];
+    if (n < 10 && !glass) ["A", "B", "C"].filter(L => L !== top).forEach(L => {
       const m = new THREE.MeshBasicMaterial({ color: lin(tok(COL[L])) });
       const g = new THREE.Group();
       sites(L, RMAX - 0.6).forEach(([u, w]) => { const d = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.03, 20), m); d.position.set(u, 0, w); g.add(d); });
-      g.position.y = y0 + (n - 1) * H + 0.5; v.root.add(g);
+      g.position.y = y0 + (n - 1) * H + 0.5; v.root.add(g); markers.push(g); g.visible = !topView;
       if (drops.length) { g.visible = false; drops[0].markers = (drops[0].markers || []).concat(g); }
     });
     v.refit();
@@ -1854,7 +1860,7 @@ function clipPlanesFrom(v, defs) {
       // fall, then a small settle
       const s = d.t < 0.8 ? ease(d.t / 0.8) : 1 + Math.sin((d.t - 0.8) / 0.2 * Math.PI) * 0.03;
       d.g.position.y = d.y + 3 * (1 - s);
-      if (d.t >= 1) { d.g.position.y = d.y; (d.markers || []).forEach(m => { m.visible = true; }); }
+      if (d.t >= 1) { d.g.position.y = d.y; (d.markers || []).forEach(m => { m.visible = !topView; }); }
     });
     drops = drops.filter(d => d.t < 1);
     return true;
@@ -1875,7 +1881,7 @@ function clipPlanesFrom(v, defs) {
       else {
         const bad = env.map((e, i) => e === "h" ? i + 2 : 0).filter(Boolean);
         const mostlyC = env.filter(e => e === "c").length >= env.length / 2;
-        txt = mostlyC ? "Mostly FCC, but layer" + (bad.length > 1 ? "s " : " ") + bad.join(" and ") + (bad.length > 1 ? " break" : " breaks") + " the ABC pattern: a stacking fault." : "Mixed stacking: neither pure HCP nor pure FCC.";
+        txt = mostlyC ? "Mostly FCC, but layer" + (bad.length > 1 ? "s " : " ") + bad.join(" and ") + " (counting from the bottom)" + (bad.length > 1 ? " break" : " breaks") + " the ABC pattern: a stacking fault." : "Mixed stacking: neither pure HCP nor pure FCC.";
       }
     }
     $("#stackVerdict").textContent = txt;
@@ -1884,8 +1890,13 @@ function clipPlanesFrom(v, defs) {
   $("#stackUndo").addEventListener("click", () => { if (seq.length > 1) { seq.pop(); build(); } });
   $("#stackClear").addEventListener("click", () => { seq = ["A"]; build(); });
   $$("[data-preset]").forEach(b => b.addEventListener("click", () => { seq = b.dataset.preset.split(""); build(); }));
-  $("#stackSide").addEventListener("click", () => { v.rotX = 0.1; v.rotY = 0; v.dirty = true; });
-  $("#stackTop").addEventListener("click", () => { v.rotX = Math.PI / 2; v.rotY = 0; v.dirty = true; });
+  // straight down, a nearly parallel view (narrow field of view from far away), so every vertical channel lines up
+  const setFov = f => { v.camera.fov = f; v.camera.updateProjectionMatrix(); v.curD = null; v.dirty = true; };
+  // in the top view the next-layer markers are hidden: they sit exactly over the open channels of HCP
+  const view = top => { topView = top; markers.forEach(g => { g.visible = !top; }); setFov(top ? 4 : 30); };
+  const home = v.reset; v.reset = () => { view(false); home(); };
+  $("#stackSide").addEventListener("click", () => { view(false); v.rotX = 0.1; v.rotY = 0; v.dirty = true; });
+  $("#stackTop").addEventListener("click", () => { view(true); v.rotX = Math.PI / 2; v.rotY = 0; v.dirty = true; });
   toggle($("#stackGlass"), on => { glass = on; build(); });
   toggle($("#stackSpin"), on => { v.spin = on; });
   let frameDt = 1 / 60;
@@ -1901,16 +1912,16 @@ function clipPlanesFrom(v, defs) {
     { q: "Look at the stacking-fault example from the side. Can you see where it went wrong?",
       a: "ABCAB|ABC: the C layer that should follow AB is missing, so for two layers (the 5th and 6th) the stack reads ABAB, a thin slice of HCP inside FCC. That planar defect is a stacking fault.",
       setup: [["off", "#stackGlass"], ["click", '[data-preset="ABCABABC"]'], ["click", "#stackSide"]] },
-    { q: "Look straight down through a see-through ABCABC stack, then through ABABAB. In which one can you see through gaps between the atoms?",
-      a: "In ABAB (HCP) the C positions are never filled, so open channels run straight down through the crystal. In ABCABC (FCC) the A, B and C layers cover every position, so there is no straight path through.",
-      setup: [["click", '[data-preset="ABCABC"]'], ["on", "#stackGlass"], ["click", "#stackTop"]] }
+    { q: "Look straight down an ABCABC stack, then an ABABAB stack. In which one can you see through gaps between the atoms?",
+      a: "In ABAB (HCP) the C positions are never filled, so narrow open channels (about 15% of an atom's width) run straight down through the crystal. In ABCABC (FCC) the A, B and C layers cover every position, so there is no straight path through.",
+      setup: [["click", '[data-preset="ABCABC"]'], ["off", "#stackGlass"], ["click", "#stackTop"]] }
   ]);
   build();
 })();
 
 /* ==================================================================== RAFT */
 (function raft() {
-  // density 0.90 atoms per σ², close to the crystal's 0.92 at low temperature, so a frozen raft has few shrinkage
+  // density 0.90 atoms per σ², close to the crystal's 0.93–0.95 at low temperature, so a frozen raft has few shrinkage
   // holes (at 0.85 every grain boundary opened into a gap); MELT_T is well above melting at this density
   const NX = 40, NY = 46, A0 = Math.sqrt(2 / (Math.sqrt(3) * 0.90)), MELT_T = 1.8;
   const LX = NX * A0, LY = NY * A0 * Math.sqrt(3) / 2;
@@ -1992,7 +2003,7 @@ function clipPlanesFrom(v, defs) {
       for (let i = 0; i < N; i++) { vx[i] *= lam; vy[i] *= lam; }
     }
   }
-  /* cached shaded sprites so 500 atoms draw quickly */
+  /* cached shaded sprites so 1,800 atoms draw quickly */
   const sprites = new Map();
   function sprite(col, rpx) {
     const key = col + "|" + rpx.toFixed(1);
@@ -2018,8 +2029,8 @@ function clipPlanesFrom(v, defs) {
   function legend() {
     const L = $("#raftLegend");
     L.innerHTML = colorBy === "nbr"
-      ? '<span><i style="background:var(--atom)"></i>6 neighbours: perfect crystal</span><span><i style="background:var(--amber)"></i>5</span><span><i style="background:var(--teal)"></i>7</span><span><i style="background:var(--accent)"></i>other</span>'
-      : '<span><i class="rainbow"></i>each colour is one grain orientation</span><span><i style="background:var(--muted)"></i>boundary, defect or liquid</span>';
+      ? '<span><i style="background:var(--atom)"></i>6 neighbours, as in a perfect crystal</span><span><i style="background:var(--amber)"></i>5</span><span><i style="background:var(--teal)"></i>7</span><span><i style="background:var(--accent)"></i>other</span>'
+      : '<span><i class="rainbow"></i>each colour is one grain orientation</span><span><i style="background:var(--muted)"></i>boundary, defect, liquid or glass</span>';
   }
   const cv = $("#raftCv");
   let geom = null;
@@ -2048,7 +2059,7 @@ function clipPlanesFrom(v, defs) {
     if (poke) { ctx.strokeStyle = tok("--accent"); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(poke.x * k, poke.y * k, 1.8 * k, 0, Math.PI * 2); ctx.stroke(); }
     ctx.restore();
     const T = temp(), cr = six();
-    const phase = cr > 0.6 ? "crystal" : cr > 0.35 ? "partly crystalline" : T > 0.45 ? "liquid" : "glass: frozen disorder";
+    const phase = cr > 0.6 ? "crystal" : T > 0.45 ? (cr > 0.5 ? "partly crystalline" : "liquid") : cr > 0.35 ? "partly crystalline" : "glass: frozen disorder";
     $("#raftTnow").textContent = T.toFixed(2) + "  (" + phase + ")";
     $("#raftOrder").textContent = Math.round(100 * cr) + "% of atoms";
     $("#raftN").textContent = x.length;
@@ -2058,7 +2069,7 @@ function clipPlanesFrom(v, defs) {
   $("#raftMelt").addEventListener("click", () => { ramp = null; tau = 0.05; setT(MELT_T); lastCool = "melt"; });
   $("#raftSlow").addEventListener("click", () => { tau = 0.08; ramp = { from: Math.max(T0, 0.8), to: 0.05, n: 0, N: 9000 }; lastCool = "cooling"; });
   $("#raftQuench").addEventListener("click", () => { ramp = null; tau = 0.01; setT(0.02); lastCool = "quench"; });
-  $("#raftReset").addEventListener("click", () => { perfect(3); setT(0.05); forces(); draw(); });
+  $("#raftReset").addEventListener("click", () => { perfect(0); setT(0.05); forces(); draw(); });
   toggle($("#raftPause"), on => { paused = on; $("#raftPause").textContent = on ? "Resume" : "Pause"; });
   pressGroup($("#raftMix"), m => {
     mix = m;
@@ -2109,11 +2120,11 @@ function clipPlanesFrom(v, defs) {
     { q: "Switch to two sizes (it melts), then quench. Does it crystallise?",
       a: "Mostly not. The mixed sizes cannot find a repeating pattern before they freeze, so you get a glass (an amorphous solid).",
       setup: [["off", "#raftPause"], ["click", '#raftColor [data-v="nbr"]'], ["click", '#raftMix [data-v="two"]']] },
-    { q: "This raft was melted and quenched. Find an amber atom touching a teal one inside a grain. What is it?",
+    { q: "This raft was melted and quenched. Most defects are amber atoms lining small gaps along grain boundaries. Rarely, an amber atom touches a teal one inside a grain. What is that pair?",
       a: "A 5–7 pair marks a dislocation in this kind of layer: the end of an extra row of atoms.",
       setup: [["off", "#raftPause"], ["click", '#raftColor [data-v="nbr"]'], ["click", '#raftMix [data-v="one"]'], ["wait", 2500], ["click", "#raftQuench"]] }
   ]);
-  perfect(3); forces(); legend();
+  perfect(0); forces(); legend();
 })();
 
 /* ============================================================ DISLOCATION */
@@ -2129,7 +2140,7 @@ function clipPlanesFrom(v, defs) {
     if (mode !== "disl") return;
     if (done) reset();
     running = false; $("#dislGo").textContent = "Push";
-    const base = xd < -half - 0.5 ? -half - 0.5 : Math.floor(xd + 0.5) + 0.5;
+    const base = xd < -half - 0.5 ? -half - 0.5 : Math.floor(xd - 0.5 + 1e-9) + 0.5;   // the half-integer at or just below xd
     stepTo = Math.min(15, base + 1);
     if (reduceMotion) { xd = stepTo; stepTo = null; }
     draw();
@@ -2149,6 +2160,8 @@ function clipPlanesFrom(v, defs) {
   function shift(xb, yrow) {
     let s;
     if (mode === "rigid") s = t;
+    else if (xd <= -15) s = 0;
+    else if (xd >= 15) s = 1;
     else { const w = 0.9 + 0.55 * Math.abs(yrow); s = 0.5 - Math.atan((xb - xd) / w) / Math.PI; }
     return yrow > 0 ? s / 2 : -s / 2;
   }
@@ -2212,30 +2225,32 @@ function clipPlanesFrom(v, defs) {
       const sx = ox + xd * b, sy = oy;
       ctx.strokeStyle = acc; ctx.lineWidth = 3.5; ctx.lineCap = "round";
       ctx.beginPath(); ctx.moveTo(sx - b * 0.42, sy + b * 0.1); ctx.lineTo(sx + b * 0.42, sy + b * 0.1); ctx.moveTo(sx, sy + b * 0.1); ctx.lineTo(sx, sy - b * 0.62); ctx.stroke(); ctx.lineCap = "butt";
-      ctx.fillStyle = acc; ctx.font = "600 12px " + mono; ctx.textAlign = "center"; ctx.fillText("extra half-plane", ox + (extra + shift(extra, ROWS - 0.5)) * b, oy - (ROWS + 0.2) * b);
+      ctx.fillStyle = acc; ctx.font = "600 12px " + mono; ctx.textAlign = "center"; ctx.fillText("extra half-plane", clamp(ox + (extra + shift(extra, ROWS - 0.5)) * b, 60, w - 60), oy - (ROWS + 0.2) * b);
     }
-    // Burgers circuit: equal atom steps right, up, left, down around the core
+    // Burgers circuit: from the top-left atom go down, right, up, then left, with as many steps left as right and as
+    // many down as up. Around a dislocation it stops short of the start; the gap is the Burgers vector b.
     if (burgers && mode === "disl") {
       const n = 3, path = [];
-      for (let i = -n; i <= n; i++) path.push(P(i, -3));
       const nearestBottom = X => { let k = -half, bd = 1e9; for (let i = -half; i <= half; i++) { const d = Math.abs(P(i, -1)[0] - X); if (d < bd) { bd = d; k = i; } } return k; };
       const nearestTop = X => { let k = -half, bd = 1e9; for (let i = -half; i <= half; i++) { const d = Math.abs(P(i, 0)[0] - X); if (d < bd) { bd = d; k = i; } } return k; };
-      let ci = n; for (let j = -2; j <= -1; j++) path.push(P(ci, j));
-      ci = nearestTop(P(ci, -1)[0]); for (let j = 0; j <= 2; j++) path.push(P(ci, j));
-      for (let s = 1; s <= 2 * n; s++) path.push(P(ci - s, 2));
-      ci = ci - 2 * n; for (let j = 1; j >= 0; j--) path.push(P(ci, j));
+      let ci = -n; for (let j = 2; j >= 0; j--) path.push(P(ci, j));
       ci = nearestBottom(P(ci, 0)[0]); for (let j = -1; j >= -3; j--) path.push(P(ci, j));
+      for (let k = 1; k <= 2 * n; k++) path.push(P(ci + k, -3));
+      ci += 2 * n; for (let j = -2; j <= -1; j++) path.push(P(ci, j));
+      ci = nearestTop(P(ci, -1)[0]); for (let j = 0; j <= 2; j++) path.push(P(ci, j));
+      for (let k = 1; k <= 2 * n; k++) path.push(P(ci - k, 2));
       ctx.strokeStyle = teal; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.beginPath(); path.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
       const s0 = path[0], e0 = path[path.length - 1];
       ball(ctx, s0[0], s0[1], r * 0.75, teal);
-      const gap = Math.hypot(e0[0] - s0[0], e0[1] - s0[1]) / b;
+      const gap = Math.hypot(e0[0] - s0[0], e0[1] - s0[1]) / b, ay0 = s0[1] - b * 0.55;
       ctx.font = "600 12px " + mono; ctx.textAlign = "center";
       if (gap > 0.5) {
+        const dir = Math.sign(s0[0] - e0[0]) || 1;
         ctx.strokeStyle = acc; ctx.fillStyle = acc; ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(e0[0], e0[1] + b * 0.55); ctx.lineTo(s0[0] + 6, s0[1] + b * 0.55); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(s0[0], s0[1] + b * 0.55); ctx.lineTo(s0[0] + 9, s0[1] + b * 0.55 - 5); ctx.lineTo(s0[0] + 9, s0[1] + b * 0.55 + 5); ctx.fill();
-        tag(ctx, "b: the circuit fails to close", (s0[0] + e0[0]) / 2, s0[1] + b * 1.2, "center", acc);
-      } else { tag(ctx, "circuit closes: no dislocation inside", s0[0] + 3 * b, s0[1] + b * 1.2, "center", teal); }
+        ctx.beginPath(); ctx.moveTo(e0[0], ay0); ctx.lineTo(s0[0] - dir * 6, ay0); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(s0[0], ay0); ctx.lineTo(s0[0] - dir * 9, ay0 - 5); ctx.lineTo(s0[0] - dir * 9, ay0 + 5); ctx.fill();
+        tag(ctx, "b: the circuit ends one atom short of its start", (s0[0] + e0[0]) / 2, s0[1] - b * 1.3, "center", acc);
+      } else { tag(ctx, "circuit closes: no dislocation inside", s0[0] + 3 * b, s0[1] - b * 1.3, "center", teal); }
     }
     // shear arrows sized by stress
     const tau = +tauIn.value; const ay = oy - (ROWS + 1.5) * b, by2 = oy + (ROWS + 0.75) * b;
@@ -2243,7 +2258,7 @@ function clipPlanesFrom(v, defs) {
     ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = 2.5;
     const arrow = (x1, y1, x2) => { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y1); ctx.stroke(); const d = Math.sign(x2 - x1); ctx.beginPath(); ctx.moveTo(x2 + d * 2, y1); ctx.lineTo(x2 - d * 9, y1 - 6); ctx.lineTo(x2 - d * 9, y1 + 6); ctx.fill(); };
     arrow(ox - len / 2, ay, ox + len / 2); arrow(ox + len / 2, by2, ox - len / 2);
-    ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "left"; ctx.fillText("τ = " + tau, ox + len / 2 + 10, ay + 4);
+    ctx.fillStyle = muted; ctx.font = "12px " + mono; ctx.textAlign = "left"; ctx.fillText("shear stress τ = " + tau, ox + len / 2 + 10, ay + 4);
     if (done || (mode === "disl" && xd > half + 0.5)) { ctx.fillStyle = acc; ctx.font = "600 12px " + mono; ctx.textAlign = "right"; ctx.fillText("slip step", ox + (half + 0.9) * b, oy - (ROWS + 0.25) * b); }
     $("#dislBroken").textContent = broken + " of " + NC;
     const nd = need(mode === "rigid" ? 0 : clamp(xd, -half, half));
@@ -2260,16 +2275,16 @@ function clipPlanesFrom(v, defs) {
   const fresh = [["click", '#dislMode [data-v="disl"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"]];
   mountGuide("disl", [
     { q: "With a dislocation, how much stress does it take to slip the crystal? Then try the whole plane at once.",
-      a: "A small push moves the dislocation (about 8 on this scale). The whole plane needs nearly the ideal strength (about 95), because every bond across the plane breaks at the same moment.",
+      a: "A small push moves the dislocation (about 8 on this scale). The whole plane needs the ideal strength (about 95), because every bond across the plane breaks at the same moment.",
       setup: fresh.concat([["val", "#dislTau", 5]]) },
     { q: "Turn on the Burgers circuit and step the dislocation into it. What happens to the circuit?",
-      a: "It no longer closes. The missing step is the Burgers vector, one atom spacing along the slip direction.",
+      a: "It no longer closes. The missing step is the Burgers vector: one atom spacing, in the direction the crystal slips.",
       setup: fresh.concat([["on", "#dislBurgers"], ["val", "#dislTau", 30]]) },
     { q: "Push the dislocation all the way through. When it leaves the crystal, look at the right-hand edge. What is left behind?",
-      a: "A step one atom spacing high. Millions of these steps make the slip lines you can see on a deformed metal.",
+      a: "A step one atom spacing wide: the top half now sticks out one atom past the bottom half (at the left end the bottom half sticks out). When many dislocations leave along the same plane, their steps add up into a ledge you can see: a slip line on a polished, deformed metal.",
       setup: fresh.concat([["val", "#dislTau", 30], ["click", "#dislGo"]]) },
     { q: "Add the solute atom, then the grain boundary. What does each one do?",
-      a: "Both pin the dislocation, so a higher stress is needed to keep it moving. That is solid-solution and grain-size strengthening.",
+      a: "The solute atom pins it: the stress needed jumps to 45 until it tears free. The grain boundary stops it outright; in a real metal the dislocations behind it pile up until their combined push starts slip in the next grain. Both raise the stress the metal needs to keep deforming: solid-solution and grain-size strengthening.",
       setup: fresh.concat([["on", "#dislSolute"], ["val", "#dislTau", 30], ["click", "#dislGo"]]) }
   ]);
   tabs.disl = {
@@ -2290,7 +2305,7 @@ function clipPlanesFrom(v, defs) {
         else t = 0.06 * tau / 95;
       } else {
         const nd = need(xd);
-        if (tau > nd) xd += (0.012 + 0.0016 * (tau - nd)) * f;
+        if (tau >= nd) xd += (0.012 + 0.0016 * (tau - nd)) * f;
         if (xd > 15) { xd = 15; done = true; running = false; $("#dislGo").textContent = "Push"; }
       }
       draw();
@@ -2361,11 +2376,11 @@ function clipPlanesFrom(v, defs) {
     Acm: [[0.76, 727], [2.14, 1147]],
     gSol: [[2.14, 1147], [0.17, 1493]],
     liq: [[0.53, 1493], [1.0, 1467], [1.77, 1401.9], [2.52, 1333.4], [3.25, 1262.3], [3.88, 1197.2], [4.30, 1147]],
-    liqC: [[4.30, 1147], [6.70, 1252]],
+    liqC: [[4.30, 1147], [4.7, 1174], [5.0, 1191], [5.5, 1215], [6.0, 1234], [6.4, 1246], [6.70, 1252]],
     dSol: [[0, 1538], [0.09, 1493]], dLiq: [[0, 1538], [0.53, 1493]],
     dgD: [[0, 1394], [0.09, 1493]], dgG: [[0, 1394], [0.17, 1493]]
   };
-  FE.A3 = smooth(FE.A3, [6.7, 1200], 8); FE.liq = smooth(FE.liq, [6.7, 1200], 8);
+  FE.A3 = smooth(FE.A3, [6.7, 1200], 8); FE.liq = smooth(FE.liq, [6.7, 1200], 8); FE.liqC = smooth(FE.liqC, [6.7, 1200], 8);
   const SYS = {
     cuni: {
       title: "Copper–nickel: a complete solid solution", A: "Cu", B: "Ni", MA: 63.55, MB: 58.69, rA: 0.128, rB: 0.125,
@@ -2381,7 +2396,7 @@ function clipPlanesFrom(v, defs) {
         if (T <= TSq(C)) return { k: "α" };
         return { k: "α+L", c1: quadInv(5.945, -0.02245, T), c2: quadInv(4.017, -0.00317, T), p1: "L", p2: "α" };
       },
-      src: "Cu–Ni curves fitted through the melting points of Cu (1085 °C) and Ni (1455 °C) and the 1250 °C tie line of Callister & Rethwisch 10e, Fig. 9.3b and §9.8; within about 15 °C of Fig. 9.3a and of real cupronickel melting ranges.",
+      src: "Cu–Ni curves fitted through the melting points of Cu (1085 °C) and Ni (1455 °C) and the 1250 °C tie line of Callister & Rethwisch 10e, Fig. 9.3b and §9.8; within about 15 °C of Fig. 9.3a. Commercial cupronickels, which also contain some iron and manganese, start to melt somewhat lower.",
       tries: [
         ["Pick “35 wt% Ni” and set 1250 °C. What fraction is liquid? Check it with the lever rule.", "C_L = 31.5, C_α = 42.5 wt% Ni, so W_L = (42.5 − 35)/(42.5 − 31.5) = 0.68. This is Callister's §9.8 example.", [35, 1250]],
         ["Why can Cu and Ni mix in any proportion, when Pb and Sn cannot? Look at the atomic arrangement.", "Both are FCC with nearly the same atom size (0.128 vs 0.125 nm), so a Ni atom can sit on any Cu site. Pb (FCC) and Sn (tetragonal) have different lattices and sizes.", [50, 1150]],
@@ -2400,7 +2415,7 @@ function clipPlanesFrom(v, defs) {
         ["327°C", 3, 338, { num: 1, al: "left" }], ["232°C", 96.5, 246, { num: 1, al: "right" }], ["183°C", 40, 190, { num: 1 }],
         ["18.3", 18.3, 172, { num: 1 }], ["61.9", 61.9, 172, { num: 1 }], ["97.8", 95, 172, { num: 1 }]],
       axes: { t: [100, 50], c: [20, 10], at: [20, 10], f: [100, 50] },
-      alloys: [[63, "63Sn–37Pb · electronics solder"], [50, "50Sn–50Pb"], [40, "40Sn–60Pb · Example 9.2"], [30, "30Sn–70Pb · plumber's solder"], [10, "10Sn–90Pb"]],
+      alloys: [[63, "63Sn–37Pb · near-eutectic electronics solder"], [50, "50Sn–50Pb"], [40, "40Sn–60Pb · Examples 9.2–9.3"], [30, "30Sn–70Pb · plumber's solder"], [10, "10Sn–90Pb"]],
       classify(C, T) {
         if (T >= 183) {
           if (T >= 327) return { k: "L" };
@@ -2420,8 +2435,8 @@ function clipPlanesFrom(v, defs) {
       },
       src: "Pb–Sn curves traced from Callister & Rethwisch 10e, Fig. 9.8 (vector data; invariant points snapped to the labelled 18.3, 61.9, 97.8 wt% Sn and 183 °C). The traced liquidus gives 214 °C at 50 wt% Sn, matching Table 9.1. Dashed solvus below 52 °C is extrapolated.",
       tries: [
-        ["Set 40 wt% Sn and 150 °C. What are the compositions and amounts of α and β?", "C_α ≈ 11 and C_β ≈ 98 wt% Sn; W_α ≈ 0.67, W_β ≈ 0.33 (Callister Example Problem 9.2).", [40, 150]],
-        ["Cool 63Sn–37Pb, then 30Sn–70Pb. Over what temperature range is each one partly liquid?", "63Sn: none; it freezes at 183 °C. 30Sn: from about 256 °C down to 183 °C, a 70-degree 'pasty' range.", [63, 350, "cool"]],
+        ["Set 40 wt% Sn and 150 °C. What are the compositions and amounts of α and β?", "C_α ≈ 11 and C_β ≈ 98 wt% Sn; W_α ≈ 0.67, W_β ≈ 0.33 (Callister Example Problems 9.2 and 9.3).", [40, 150]],
+        ["Cool 63Sn–37Pb, then 30Sn–70Pb. Over what temperature range is each one partly liquid?", "63Sn: almost none. On this diagram (eutectic at 61.9 wt% Sn) it is fully liquid above about 184.5 °C, so it freezes within about 1.5 °C of 183 °C; Callister Table 9.1 treats it as the eutectic. 30Sn: from about 256 °C down to 183 °C, a 70-degree 'pasty' range.", [63, 350, "cool"]],
         ["Which would you pick for a circuit board with heat-sensitive chips, and why?", "The eutectic: lowest melting point, so the least heat reaches the parts, and no pasty range in which a joint can be disturbed.", null]
       ]
     },
@@ -2469,7 +2484,7 @@ function clipPlanesFrom(v, defs) {
         if (C <= sa) return { k: "α" };
         return { k: "α+Fe₃C", c1: sa, c2: 6.70, p1: "α", p2: "Fe₃C" };
       },
-      src: "Fe–Fe₃C diagram after Callister & Rethwisch 10e, Fig. 9.24 (vector data from the book, invariant points snapped to their labelled values; the peritectic compositions 0.09, 0.17 and 0.53 wt% C are the standard ones). It is the metastable diagram with cementite; in grey cast iron, silicon makes graphite form instead. Below 727 °C a slowly cooled structure does not change down to room temperature. “Steels only” zooms to 0–2.2 wt% C, 400–1200 °C.",
+      src: "Fe–Fe₃C diagram after Callister & Rethwisch 10e, Fig. 9.24 (vector data from the book, invariant points snapped to their labelled values; the peritectic compositions 0.09, 0.17 and 0.53 wt% C are the standard ones). It is the metastable diagram with cementite; in grey cast iron, silicon makes graphite form instead. Below 727 °C a slowly cooled structure barely changes down to room temperature. “Steels only” zooms to 0–2.2 wt% C, 400–1200 °C.",
       tries: [
         ["Pick 0.45% C and cool it. At what temperature does ferrite first appear, and what happens at 727 °C?", "About 778 °C (the A₃ line). At 727 °C the remaining austenite, now 0.76% C, turns into pearlite all at once.", [0.45, 1200, "cool"]],
         ["What fraction of a slowly cooled 0.45% C steel is pearlite?", "W_p = (0.45 − 0.022)/(0.76 − 0.022) ≈ 0.58 (Callister Eq. 9.20).", [0.45, 600]],
@@ -2486,7 +2501,7 @@ function clipPlanesFrom(v, defs) {
       dots: [[0, 1538], [0.09, 1493], [0.17, 1493], [0.53, 1493], [0, 1394], [2.14, 1147], [4.30, 1147], [0, 912], [0.76, 727], [0.022, 727]],
       labels: [["L", 5.3, 1350], ["γ + L", 1.85, 1330], ["γ, Austenite", 0.7, 1060, { mix: 1 }], ["γ + Fe₃C", 4.0, 950], ["α + Fe₃C", 3.3, 560],
         ["L + Fe₃C", 6.0, 1171, { sz: 12 }], ["Cementite (Fe₃C)", 5.55, 470, { rm: 1, sz: 12, lead: [6.68, 430] }],
-        ["δ", 0.62, 1440, { lead: [0.035, 1462] }], ["α + γ", 1.05, 830, { lead: [0.27, 800] }], ["α, Ferrite", 0.62, 640, { mix: 1, lead: [0.012, 660] }],
+        ["δ", 0.62, 1440, { lead: [0.035, 1462] }], ["α + γ", 1.45, 790, { lead: [0.27, 800] }], ["α, Ferrite", 0.62, 640, { mix: 1, lead: [0.012, 660] }],
         ["1538°C", 0.08, 1572, { num: 1, al: "left" }], ["1493°C", 0.8, 1530, { num: 1, al: "left" }], ["1394°C", 0.08, 1366, { num: 1, al: "left" }],
         ["1147°C", 3.2, 1163, { num: 1 }], ["2.14", 2.14, 1127, { num: 1 }], ["4.30", 4.30, 1127, { num: 1 }], ["912°C", 0.08, 932, { num: 1, al: "left" }],
         ["727°C", 3.5, 743, { num: 1 }], ["0.76", 0.76, 707, { num: 1 }], ["0.022", 1.35, 675, { num: 1, lead: [0.03, 722] }]]
@@ -2727,7 +2742,10 @@ function clipPlanesFrom(v, defs) {
       // Austenite in the ledeburite: 52 % at 1147 °C, falling to 40 % at 727 °C as it gives up carbon to the cementite.
       const eut = Math.abs(c - 4.30) < 0.03, hypo = c < 4.30;
       const cg = k === "γ+Fe₃C" ? r.c1 : 0.76;
-      return { kind: "white", prim: eut ? null : hypo ? "γ" : "Fe₃C", fp: eut ? 0 : hypo ? (4.30 - c) / (4.30 - 2.14) : (c - 4.30) / (6.70 - 4.30), fg: (6.70 - 4.30) / (6.70 - cg), pearl: k === "α+Fe₃C" };
+      // fp0: primary crystals at 1147 °C. Below it the primary austenite also gives up carbon as cementite on its surface,
+      // so it shrinks to fp (its mass fraction falls in the ratio (6.70 − 2.14)/(6.70 − C_γ)).
+      const fp0 = eut ? 0 : hypo ? (4.30 - c) / (4.30 - 2.14) : (c - 4.30) / (6.70 - 4.30);
+      return { kind: "white", prim: eut ? null : hypo ? "γ" : "Fe₃C", fp0, fp: hypo ? fp0 * (6.70 - 2.14) / (6.70 - cg) : fp0, fg: (6.70 - 4.30) / (6.70 - cg), pearl: k === "α+Fe₃C" };
     }
     if (k === "γ") return { kind: "grains", ph: "γ", twins: true };
     if (k === "L+γ") return { kind: "mushy", ph: "γ", f: lv.w1 };
@@ -2776,14 +2794,14 @@ function clipPlanesFrom(v, defs) {
       switch (spec.kind) {
         case "liquid": put(o, "L", Lk.L + 0.04 * F.lf[o]); grp[o] = 0; break;
         case "mushy":
-          if ((spec.plates ? F.cNd : F.dArr)[o] < thr) { put(o, spec.ph, shade(Lk[spec.ph], 0.5 + 0.3 * (F.tone[F.dOwn[o]] - 0.5)) * (spec.cored ? 0.7 + 0.45 * F.dArr[o] / 255 : 1)); grp[o] = 1; if (spec.f > 0.96 && F.eD[o]) dark[o] = 0.5; }
+          if ((spec.plates ? F.cNd : F.dArr)[o] < thr) { put(o, spec.ph, shade(Lk[spec.ph], 0.5 + 0.3 * (F.tone[F.dOwn[o]] - 0.5)) * (spec.cored ? 1.15 - 0.45 * F.dArr[o] / 255 : 1)); grp[o] = 1; if (spec.f > 0.96 && F.eD[o]) dark[o] = 0.5; }
           else { put(o, "L", Lk.L + 0.04 * F.lf[o]); grp[o] = 0; }
           break;
         case "grains": {
-          const fer = sysKey === "fec" && spec.ph === "α", own = fer ? F.sFOwn : sysKey === "fec" ? F.sOwn : F.dOwn, e = fer ? F.eF : sysKey === "fec" ? F.eS : F.eD;
+          const own = sysKey === "fec" ? F.sOwn : F.dOwn, e = sysKey === "fec" ? F.eS : F.eD;
           let tone = F.tone[own[o]];
           if (spec.twins && F.sTw[o]) tone = 1 - tone;      // a twin is the same phase in a mirrored orientation
-          put(o, spec.ph, spec.cored ? shade(Lk[spec.ph], 0.5 + 0.4 * (tone - 0.5)) * (0.7 + 0.45 * F.dArr[o] / 255) : shade(Lk[spec.ph], tone)); grp[o] = 1;
+          put(o, spec.ph, spec.cored ? shade(Lk[spec.ph], 0.5 + 0.4 * (tone - 0.5)) * (1.15 - 0.45 * F.dArr[o] / 255) : shade(Lk[spec.ph], tone)); grp[o] = 1;
           if (e[o]) dark[o] = 0.42; else if (spec.twins && F.eT[o]) dark[o] = 0.72;
           break;
         }
@@ -2807,7 +2825,9 @@ function clipPlanesFrom(v, defs) {
         }
         case "white": {     // white cast iron: primary dendrites or plates, then ledeburite islands in cementite
           const prim = spec.fp > 0 && (spec.prim === "γ" ? F.dArr[o] : F.cNd[o]) < thrP;
+          const rim = !prim && spec.prim === "γ" && F.dArr[o] < T8(spec.fp0);   // cementite given up by the primary austenite
           if (prim && spec.prim === "Fe₃C") { put(o, "Fe₃C", Lk["Fe₃C"]); grp[o] = 1; }
+          else if (rim) { put(o, "Fe₃C", Lk["Fe₃C"]); grp[o] = 2; }
           else if (prim || F.lSp[o] < ledCut) {
             if (spec.pearl) { pearl(o, prim ? 1 : 3); dark[o] = Math.min(dark[o], 0.72); }
             else { put(o, "γ", shade(Lk["γ"], prim ? F.tone[F.dOwn[o]] : 0.5)); grp[o] = prim ? 1 : 3; }
@@ -2825,8 +2845,8 @@ function clipPlanesFrom(v, defs) {
     }
     { const g = [0, 0, 0, 0, 0]; for (let o = 0; o < N2; o++) g[grp[o]]++; window.__micro = { kind: spec.kind, areas: g.map(v => v / N2) }; }  // for the tests
     // second-phase particles, stamped on top
-    const stamp = (cx, cy, rr, p) => {
-      const g = look ? Lk[p] : 0.5;
+    const stamp = (cx, cy, rr, p, gOver) => {
+      const g = look ? (gOver !== undefined ? gOver : Lk[p]) : 0.5;
       for (let yy = Math.floor(cy - rr - 1); yy <= cy + rr + 1; yy++) for (let xx = Math.floor(cx - rr - 1); xx <= cx + rr + 1; xx++) {
         const dd = Math.hypot(xx + 0.5 - cx, yy + 0.5 - cy); if (dd > rr) continue;
         const o = ((yy + n) % n) * n + (xx + n) % n;
@@ -2845,7 +2865,7 @@ function clipPlanesFrom(v, defs) {
     if (spec.kind === "grains" && spec.tert > 0) {
       const want = Math.round(spec.tert * 9e4);
       let k = 0;
-      for (let i = 0; i < F.dots.length && k < want; i++) { const q = F.dots[i], o = (q.y | 0) * n + (q.x | 0); if (F.eF[o]) { stamp(q.x, q.y, 1.1, "Fe₃C"); dark[o] = 0.6; k++; } }
+      for (let i = 0; i < F.dots.length && k < want; i++) { const q = F.dots[i], o = (q.y | 0) * n + (q.x | 0); if (F.eS[o]) { stamp(q.x, q.y, 1.2, "Fe₃C", 0.3); k++; } }
     }
     // etched boundaries between phases, film grain, tint
     const tint = look ? Lk.tint.map(v => v / 255) : [1, 1, 1];
@@ -2880,14 +2900,16 @@ function clipPlanesFrom(v, defs) {
     "cuni-annealed": ["Cu–30 wt% Zn brass, annealed: single-phase FCC grains with annealing twins", DOIT(427, "Micrograph 427, R F Cochrane")],
     "dendrites": ["Chill-cast brass: dendrites", DOIT(420, "Micrograph 420, R F Cochrane")],
     "fec-white-hypo": ["White cast iron, 3.4 wt% C, as cast: dark pearlite dendrites (once austenite) in white ledeburite", DOIT(365, "Micrograph 365, R F Cochrane")],
-    "fec-ledeburite": ["Eutectic white cast iron (4.17 wt% C with silicon): transformed ledeburite, pearlite islands in cementite", DOIT(375, "Micrograph 375, R F Cochrane")]
+    "fec-ledeburite": ["Eutectic white cast iron (4.17 wt% C, with Si, Mn and Cr): transformed ledeburite, pearlite islands in cementite", DOIT(375, "Micrograph 375, R F Cochrane")]
   };
   /* the closest real photograph for a simulated state: [key, note] or null */
   function realKey(spec) {
     if (sysKey === "fec") {
+      if (spec.kind === "proeu" && spec.host === "δ") return null;
+      if (spec.kind === "grains" && spec.ph === "δ") return ["fec-ferrite", "a stand-in: δ-ferrite is BCC like this room-temperature ferrite, but in a carbon steel it turns into austenite on cooling"];
       if (spec.kind === "grains") return spec.ph === "γ" ? ["fec-austenite", "a stand-in: plain-carbon steel cannot keep austenite at room temperature, but this alloyed steel does"] : ["fec-ferrite"];
-      if (spec.kind === "proeu") return spec.pro === "α" ? [C < 0.3 ? "fec-hypo-low" : "fec-hypo-net", "after cooling: the ferrite that grew on the austenite grain boundaries is white; the austenite it surrounded has since become pearlite"] : ["fec-hyper-13", "after cooling: the cementite film on the austenite grain boundaries is white; the austenite inside has since become pearlite"];
-      if (spec.kind === "pearlite") return spec.f === 0 ? ["fec-pearlite"] : spec.pro === "α" ? [C < 0.3 ? "fec-hypo-low" : "fec-hypo-mid"] : [C < 1.15 ? "fec-hyper-10" : "fec-hyper-13"];
+      if (spec.kind === "proeu") return spec.pro === "α" ? [C <= 0.022 ? "fec-ferrite" : C < 0.3 ? "fec-hypo-low" : "fec-hypo-net", "after cooling: the ferrite that grew on the austenite grain boundaries is white; the austenite it surrounded has since become pearlite"] : ["fec-hyper-13", "after cooling: the cementite film on the austenite grain boundaries is white; the austenite inside has since become pearlite"];
+      if (spec.kind === "pearlite") return spec.f === 0 ? ["fec-pearlite"] : spec.pro === "α" ? [C < 0.3 ? "fec-hypo-low" : C < 0.63 ? "fec-hypo-mid" : "fec-pearlite"] : [C < 1.15 ? "fec-hyper-10" : "fec-hyper-13"];
       if (spec.kind === "white") return spec.prim === "Fe₃C" ? null : [spec.prim === "γ" ? "fec-white-hypo" : "fec-ledeburite", spec.pearl ? null : "after cooling: the austenite has since become pearlite"];
       if (spec.kind === "mushy" && spec.ph === "γ") return C > 2.14 ? ["fec-white-hypo", "after it has frozen: the austenite dendrites (now pearlite) and the ledeburite that the last liquid became"] : ["dendrites", "a stand-in: a different alloy, frozen quickly so its dendrites are kept"];
       return null;
@@ -2897,7 +2919,7 @@ function clipPlanesFrom(v, defs) {
       if (spec.kind === "grains") return spec.cored ? ["cuni-cored"] : ["cuni-annealed", "a stand-in: another single-phase FCC copper alloy; no openly licensed photo of annealed Cu–Ni was found"];
       return null;
     }
-    if (spec.kind === "eutectic") return [spec.fp === 0 ? "pbsn-eutectic" : spec.prim === "α" ? "pbsn-hypo" : "pbsn-hyper"];
+    if (spec.kind === "eutectic") return [spec.fp < 0.06 ? "pbsn-eutectic" : spec.prim === "α" ? "pbsn-hypo" : "pbsn-hyper"];
     if (spec.kind === "precip" && spec.host === "α") return ["pbsn-alpha-ppt"];
     if (spec.kind === "mushy") return [spec.ph === "α" ? "pbsn-hypo" : "pbsn-hyper", "after it has frozen: the primary crystals grew in the pasty range, and the liquid around them became eutectic"];
     return null;
@@ -2930,7 +2952,7 @@ function clipPlanesFrom(v, defs) {
     switch (spec.kind) {
       case "liquid": return [["liquid", "L"]];
       case "mushy": return [[nm[spec.ph] + (spec.plates ? " plates" : " crystals"), spec.ph], ["liquid", "L"]];
-      case "grains": return [[nm[spec.ph] + (spec.twins ? " grains, with twins" : spec.cored ? " grains: Ni-rich cores dark" : " grains"), spec.ph]].concat(spec.tert > 0 ? [["Fe₃C on boundaries", "Fe₃C"]] : []);
+      case "grains": return [[nm[spec.ph] + (spec.twins ? " grains, with twins" : spec.cored ? " grains: Ni-rich cores light" : " grains"), spec.ph]].concat(spec.tert > 0 ? [["Fe₃C on boundaries", "Fe₃C"]] : []);
       case "precip": return [[nm[spec.host], spec.host], [nm[spec.ppt] + " particles", spec.ppt]];
       case "eutectic": return (spec.fp > 0 ? [["primary " + nm[spec.prim], spec.prim]] : []).concat([["eutectic: α + β layers", "eut"]]);
       case "proeu": return [[nm[spec.pro] + (spec.pro === "Fe₃C" ? " film, growing" : ", growing"), spec.pro], [nm[spec.host || "γ"], spec.host || "γ"]];
@@ -2990,13 +3012,13 @@ function clipPlanesFrom(v, defs) {
   /* The liquid: atoms still touching their neighbours but with no repeating pattern, a little less dense than
      the crystal, and always jostling (soft discs pushed apart wherever they overlap). */
   let liq = null;
-  function liquidAtoms(w, h, s) {
+  function liquidAtoms(w, h, s, dens) {
     const H = h - 26;
-    if (liq && liq.w === w && liq.h === h && liq.s === s) return liq;
-    const rnd = rng(11), n = Math.round(0.9 * w * H / (s * s)), pts = [];
+    if (liq && liq.w === w && liq.h === h && liq.s === s && liq.dens === dens) return liq;
+    const rnd = rng(11), n = Math.round(dens * w * H / (s * s)), pts = [];
     const nc = Math.max(1, Math.round(Math.sqrt(n * w / H))), nr = Math.ceil(n / nc);
     for (let i = 0; i < n; i++) pts.push({ x: ((i % nc) + 0.5 + (rnd() - 0.5) * 0.9) * w / nc, y: (((i / nc) | 0) + 0.5 + (rnd() - 0.5) * 0.9) * H / nr, u: rnd() });
-    liq = { w, h, s, H, pts };
+    liq = { w, h, s, H, pts, dens };
     for (let k = 0; k < 60; k++) liquidStep(0.3);
     return liq;
   }
@@ -3024,7 +3046,8 @@ function clipPlanesFrom(v, defs) {
     // widths follow the mass fractions, with a minimum so a small phase stays visible
     const minW = 0.16; let f0 = parts.length > 1 ? clamp(parts[0].f, minW, 1 - minW) : 1;
     const s = Math.min(w, h) / 12.5;
-    if (ph.indexOf("L") >= 0) liquidAtoms(w, h, s);
+    // liquid about 4% less dense than the crystal beside it (the BCC net drawn for δ is 1/1.06² as dense as FCC's)
+    if (ph.indexOf("L") >= 0) liquidAtoms(w, h, s, 0.96 * (ph.indexOf("δ") >= 0 ? 1 / (1.06 * 1.06) : 1));
     const regions = parts.length > 1 ? [[0, w * f0], [w * f0, w]] : [[0, w]];
     const big = Math.max(sys.rA, sys.rB);
     parts.forEach((pt, i) => {
@@ -3040,6 +3063,7 @@ function clipPlanesFrom(v, defs) {
       if (i === 0) { tag(ctx, t1 + " · " + t2, 8, 16, "left", tok("--ink")); tag(ctx, t3, 8, 40, "left", tok("--accent")); }
       else { tag(ctx, t3, w - 8, h - 62, "right", tok("--accent")); tag(ctx, t1 + " · " + t2, w - 8, h - 38, "right", tok("--ink")); }
     });
+    if (parts.length > 1 && (parts[0].f < minW || parts[0].f > 1 - minW)) { ctx.font = "italic 12px " + FONT.body(); ctx.fillStyle = tok("--muted"); ctx.textAlign = "right"; ctx.fillText("widths not to scale: the small phase is drawn wider", w - 8, h - 86); }
     // species key
     const els = sysKey === "fec" ? ["Fe", "C"] : [sys.A, sys.B];
     let lx = 8; ctx.font = "600 12px " + FONT.mono(); ctx.textBaseline = "middle";
@@ -3053,7 +3077,7 @@ function clipPlanesFrom(v, defs) {
     if (p === "L") return "no lattice: random, moving";
     if (sysKey === "cuni") return "FCC, (100) plane";
     if (sysKey === "pbsn") return p === "α" ? "FCC, lead's lattice" : "tetragonal, tin's lattice";
-    return { "α": "BCC, (100) plane", "δ": "BCC, (100) plane", "γ": "FCC, (100) plane", "Fe₃C": "3 Fe : 1 C, ordered (simplified)" }[p];
+    return { "α": "BCC, (100) plane", "δ": "BCC, (100) plane", "γ": "FCC, (100) plane", "Fe₃C": "3 Fe : 1 C (simplified)" }[p];
   }
   function drawPhaseAtoms(ctx, pt, x0, x1, w, h, s, big, idx) {
     const host = sys.A, sol = sys.B;
@@ -3118,21 +3142,23 @@ function clipPlanesFrom(v, defs) {
       if (Math.abs(C - 61.9) < 0.35) return "<b>100% eutectic.</b> The whole alloy froze at one temperature, 183 °C, as colonies of fine alternating layers of α and β, each colony growing from its own starting point. 183 °C is the lowest melting point of any lead–tin alloy, which is why 63Sn–37Pb was the standard electronics solder.";
       return "<b>Primary " + (C < 61.9 ? "α" : "β") + " plus eutectic.</b> The large crystals grew as dendrites in the pasty range. The liquid left at 183 °C had the eutectic composition (61.9 wt% Sn) and froze all at once into colonies of fine, alternating α and β layers: lead and tin atoms only have to move sideways a few micrometres, from one layer to the next." + (T < 170 ? " As it cools further, the primary " + (C < 61.9 ? "α holds less tin, which comes out as small β particles inside it (the solvus)." : "β holds less lead, which comes out as small α particles inside it.") : "");
     }
+    if (k === "L") return C > 2.14 ? "<b>Liquid cast iron.</b> Iron and carbon atoms are mixed at random and free to move. Carbon lowers the melting point a lot: iron with 4.30 wt% C is fully liquid down to 1147 °C, almost 400 °C below pure iron, which is why cast irons are easy to cast." : "<b>Liquid steel.</b> Iron and carbon atoms are mixed at random and free to move. Pure iron melts at 1538 °C; the carbon in a steel lowers that a little.";
     if (k === "δ") return "<b>δ-ferrite.</b> Just below its melting point (1538 °C) iron is BCC again, like ferrite, and holds at most 0.09 wt% C. In welding and continuous casting it is often the first solid to form.";
     if (k === "δ+L") return "<b>δ-ferrite crystals growing in liquid.</b> The first solid of a low-carbon steel is BCC δ-ferrite, which holds very little carbon, so the carbon piles up in the liquid.";
-    if (k === "δ+γ") return "<b>δ-ferrite turning into austenite.</b> Below 1493 °C the FCC austenite is the stable form; it starts on the δ grain boundaries and grows into the grains.";
+    if (k === "δ+γ") return "<b>δ-ferrite turning into austenite.</b> Somewhere between 1493 and 1394 °C, depending on the carbon content, FCC austenite becomes the stable form. It starts on the δ grain boundaries and grows into the grains.";
     if (k === "L+γ" && C > 2.14) return "<b>Austenite dendrites growing in liquid cast iron.</b> Austenite holds at most 2.14 wt% C, so the liquid keeps getting richer in carbon until, at 1147 °C, it reaches 4.30 wt% and freezes all at once.";
     if (k === "L+Fe₃C") return "<b>Cementite plates growing in liquid.</b> Above 4.30 wt% C the first solid is cementite, which grows as long, flat plates. The liquid loses carbon to them until it reaches 4.30 wt% at 1147 °C.";
     if (C > 2.14 && k === "γ+Fe₃C") return "<b>White cast iron: " + (Math.abs(C - 4.30) < 0.03 ? "all ledeburite" : C < 4.30 ? "austenite dendrites + ledeburite" : "cementite plates + ledeburite") + ".</b> At 1147 °C the last liquid (4.30 wt% C) froze all at once into ledeburite: rows of rounded austenite islands in a continuous matrix of cementite (the eutectic reaction). Cementite is hard and brittle, so white iron is very hard and wear-resistant but cannot be machined or bent. As it cools, the austenite gives carbon to the cementite.";
     if (C > 2.14) return "<b>Transformed ledeburite.</b> At 727 °C every austenite region, in the " + (C < 4.27 ? "primary dendrites and in the " : "") + "ledeburite islands, became pearlite. The iron is now dark pearlite in a white cementite matrix: very hard, brittle, used for grinding balls and mill liners. Grey and ductile irons avoid it because silicon makes the carbon form graphite instead of cementite.";
     if (k === "γ") return "<b>Austenite.</b> FCC iron with carbon squeezed into the gaps between iron atoms (an interstitial solid solution). FCC's gaps are larger than BCC's, so austenite holds up to 2.14 wt% C. Steel is forged and rolled here, and heat treatments start here. The straight-sided bands inside some grains are annealing twins.";
     if (k === "L+γ") return "<b>Austenite crystals growing in liquid steel.</b>";
-    if (k === "α+γ") return "<b>Ferrite forming.</b> Below the A₃ line, ferrite crystals start on the austenite grain boundaries (atoms there are already disordered, so new crystals start most easily) and grow along and into the grains. Ferrite holds almost no carbon, so it pushes carbon into the austenite left behind, which reaches 0.76 wt% C at 727 °C.";
+    if (k === "α+γ") return "<b>Ferrite forming.</b> Below the A₃ line, ferrite crystals start on the austenite grain boundaries (atoms there are already disordered, so new crystals start most easily) and grow along and into the grains." + (C > 0.022 ? " Ferrite holds almost no carbon, so it pushes carbon into the austenite left behind, which reaches 0.76 wt% C at 727 °C." : " With this little carbon, all of the austenite becomes ferrite before 727 °C.");
     if (k === "γ+Fe₃C") return "<b>Cementite forming.</b> Below the A_cm line, hard, brittle cementite (Fe₃C) forms along the austenite grain boundaries.";
     if (k === "α" ) return "<b>Ferrite.</b> BCC iron. Its gaps are small, so it holds at most 0.022 wt% C (about one carbon atom per thousand iron atoms). Ferrite is soft and ductile.";
+    if (C <= 0.022) return "<b>Ferrite with a trace of cementite.</b> Below the solvus line ferrite holds even less carbon, so the small excess comes out as tiny cementite particles, mostly on the grain boundaries. With so little carbon there was never any austenite left to reach 0.76 wt% C, so there is no pearlite.";
     if (Math.abs(C - 0.76) < 0.012) return "<b>100% pearlite.</b> At 727 °C all the austenite turned into pearlite: alternating plates of ferrite and cementite (the eutectoid reaction). Each colony starts on an austenite grain boundary and grows as a block of parallel plates; carbon only has to move sideways about a micrometre, out of the growing ferrite and into the cementite next to it.";
     if (C < 0.76) {
-      const cls = C < 0.25 ? "Low-carbon steels (below about 0.25% C) are soft, ductile, weldable and the cheapest steels: car bodies, I-beams, pipelines, cans." : "Medium-carbon steels (0.25–0.6% C) are usually quenched and tempered for strength: railway wheels and track, gears, crankshafts.";
+      const cls = C < 0.25 ? "Low-carbon steels (below about 0.25% C) are soft, ductile, weldable and the cheapest steels: car bodies, I-beams, pipelines, cans." : C >= 0.6 ? "High-carbon steels (0.6–1.4% C) are the hardest and strongest plain-carbon steels but the least ductile; they are used hardened for knives, springs and high-strength wire." : "Medium-carbon steels (0.25–0.6% C) are usually quenched and tempered for strength: railway wheels and track, gears, crankshafts.";
       return "<b>Ferrite plus pearlite.</b> The light grains are ferrite that formed above 727 °C; the dark layered regions are pearlite. More carbon means more pearlite: stronger and harder, but less ductile. " + cls + " (Callister §11.2)";
     }
     return "<b>Pearlite with a cementite network.</b> Cementite formed along the old austenite grain boundaries above 727 °C. High-carbon steels (0.6–1.4% C) are the hardest and strongest plain-carbon steels but the least ductile; they are used hardened for knives, springs and high-strength wire. (Callister §11.2)";
@@ -3375,7 +3401,7 @@ const LESSONS = {
         goals: [{ t: "Move the atoms to the spacing where that force is zero", ok: s => near(s.x, 1, 0.025) }],
         why: "That spacing is r₀. The pull of the opposite charges and the push of the overlapping electron clouds balance, so the net force is zero and the energy is at its lowest. Every bonded pair sits at its own r₀." },
       { k: "idea", h: "An energy well",
-        p: "<p>The energy curve (top graph) adds two parts. <b>Attraction</b> lowers the energy as the atoms approach. <b>Repulsion</b> rises very steeply once the electron clouds overlap. Their sum dips to a minimum at r₀: an energy well.</p><p class=\"lsn-eq\">bond energy E₀ = depth of the well</p><p>E₀ is the energy needed to pull the pair completely apart, in kJ per mole of bonds (Callister §2.5).</p>",
+        p: "<p>The energy curve (top graph) adds two parts. <b>Attraction</b> lowers the energy as the atoms approach. <b>Repulsion</b> rises very steeply once the electron clouds overlap. Their sum dips to a minimum at r₀: an energy well.</p><p class=\"lsn-eq\">bond energy E₀ = depth of the well</p><p>E₀ is the energy needed to pull the pair completely apart. For a solid, Callister lists it in kJ per mole of atoms (or ions, or molecules), §2.5 and Table 2.3.</p>",
         show: ["#bondParts"], setup: [["on", "#bondParts"], ["val", "#bondR", 1]] },
       { k: "try", h: "Pull until it breaks",
         p: "<p>Pull the atoms apart and watch the force graph.</p>",
@@ -3385,20 +3411,20 @@ const LESSONS = {
       { k: "try", h: "Four ways to bond",
         p: "<p>Pick substances with each kind of bond and compare the pictures and the depth of the wells.</p>",
         show: ["#bondChips < .group"], setup: [["click", '#bondView [data-v="curves"]'], ["val", "#bondR", 1]],
-        goals: [{ t: "An ionic bond", ok: s => s.type === "ionic" || s.seen.includes("ionic") }, { t: "A covalent bond", ok: s => s.seen.includes("covalent") }, { t: "A metallic bond", ok: s => s.seen.includes("metallic") }, { t: "A van der Waals bond", ok: s => s.seen.includes("vdw") }],
-        why: "Ionic: electrons handed over. Covalent: electron pairs shared in fixed directions. Metallic: outer electrons shared by the whole crystal. Van der Waals: nothing exchanged, only a flickering imbalance of charge. The first three are about 100 to 1000 kJ/mol; van der Waals and hydrogen bonds are 10 to 100 times weaker." },
+        goals: [{ t: "An ionic bond (NaCl, already shown)", ok: s => s.type === "ionic" || s.seen.includes("ionic") }, { t: "A covalent bond", ok: s => s.seen.includes("covalent") }, { t: "A metallic bond", ok: s => s.seen.includes("metallic") }, { t: "A van der Waals bond", ok: s => s.seen.includes("vdw") }],
+        why: "Ionic: electrons handed over. Covalent: electron pairs shared in fixed directions. Metallic: outer electrons shared by the whole crystal. Van der Waals: nothing exchanged, only a flickering imbalance of charge. The first three range from about 60 to 1500 kJ/mol; van der Waals bonds are about 4 to 30 kJ/mol and hydrogen bonds up to about 50 (Callister Table 2.3)." },
       { k: "predict", h: "Which melts hotter?",
         p: "<p>Tungsten's bond energy is 850 kJ/mol. Mercury's is 62 kJ/mol. Both are metals.</p>",
         q: { opts: ["Tungsten, by thousands of degrees", "About the same: both are metals", "Mercury: its atoms are heavier"], ans: 0, then: [["click", '#bondChips [data-i="12"]'], ["click", '#bondView [data-v="scatter"]']] },
         why: "Tungsten melts at 3414 °C; mercury is liquid at room temperature. To melt a solid, heat must shake atoms out of their wells, so a deeper well needs a higher temperature. The chart shows the trend across all twenty substances." },
       { k: "apply", h: "Melting doesn't break every bond",
-        p: "<p>Inside a Cl₂ molecule the two atoms share a covalent bond of 121 kJ/mol, yet solid chlorine melts at −101 °C. Which bonds break when it melts?</p>",
+        p: "<p>Inside a Cl₂ molecule the two atoms share a covalent bond (121 kJ per mole of chlorine atoms in Table 2.3), yet solid chlorine melts at −101 °C. Which bonds break when it melts?</p>",
         q: { opts: ["The weak van der Waals bonds between the molecules", "The covalent bond inside each molecule", "Both"], ans: 0, then: [["click", '#bondChips [data-i="16"]']] },
         why: "Melting only has to free the molecules from each other (31 kJ/mol between Cl₂ molecules). The strong bond inside each molecule survives. Polymers work the same way: strong chains, weak bonds between chains, so they soften at modest temperatures." },
-      { k: "apply", h: "Stiffness comes from the well",
-        p: "<p>Young's modulus E measures stiffness: the stress needed per unit of stretch (σ = Eε). Near r₀, which well has steeper walls, argon's (7.7 kJ/mol) or tungsten's (850 kJ/mol)?</p>",
-        q: { opts: ["Tungsten: steeper walls, so more force for the same stretch and a higher E", "Argon: a shallow well is easier to measure", "Neither: both atoms sit at r₀"], ans: 0, then: [["click", '#bondView [data-v="curves"]'], ["click", '#bondChips [data-i="13"]'], ["wait", 900], ["click", '#bondChips [data-i="12"]']] },
-        why: "The slope of the force curve at r₀ sets the stiffness, and it grows with the depth of the well. Tungsten's E is about 400 GPa (Callister Table 6.1); solid argon is very soft. Strong bonds give stiff, high-melting materials." }
+      { k: "apply", h: "Stiffness comes from the bond",
+        p: "<p>Young's modulus E measures stiffness. <b>Stress</b> σ is force per unit area; <b>strain</b> ε is the stretch divided by the original length; σ = Eε, so E is the stress needed per unit of strain. On the force graph, whose curve is steeper where it crosses zero at r₀: argon's (7.7 kJ/mol) or tungsten's (850 kJ/mol)?</p>",
+        q: { opts: ["Tungsten's: more force for the same stretch, so a higher E", "Argon's: weak bonds stretch more, so they are stiffer", "Neither: both atoms sit at r₀"], ans: 0, then: [["click", '#bondView [data-v="curves"]'], ["click", '#bondChips [data-i="13"]'], ["wait", 900], ["click", '#bondChips [data-i="12"]']] },
+        why: "The slope of the force curve at r₀ sets the stiffness (Callister Eq. 6.6), and in this model it grows with the depth of the well. Tungsten's E is about 407 GPa (Callister Table 6.1); solid argon is very soft. Strong bonds give stiff, high-melting materials." }
     ]
   },
   cells: {
@@ -3424,18 +3450,18 @@ const LESSONS = {
         goals: [{ t: "Look at BCC", ok: (s, m) => saw(m, "b", s.type === "bcc") }, { t: "Look at FCC", ok: (s, m) => saw(m, "f", s.type === "fcc") }, { t: "Look at HCP", ok: (s, m) => saw(m, "h", s.type === "hcp") }],
         why: "In BCC each atom touches 8 others, along the cube's diagonals; the corner atoms never touch each other. In FCC and HCP each atom touches 12, the most that equal spheres can touch. These two are the close-packed structures." },
       { k: "idea", h: "How full is the box?",
-        p: "<p class=\"lsn-eq\">packing fraction = volume of the atoms in the cell ÷ volume of the cell</p><p>FCC and HCP fill 74% of space, BCC 68%, simple cubic 52%. In FCC the atoms touch along a face diagonal, so the cell edge is a = 2R√2. In BCC they touch along the body diagonal: a = 4R/√3.</p>",
+        p: "<p class=\"lsn-eq\">packing fraction = volume of the atoms in the cell ÷ volume of the cell</p><p>FCC and HCP fill 74% of space, BCC 68%, simple cubic 52%. In FCC the atoms touch along a face diagonal, so the cell edge a = 2R√2, where R is the atom's radius (Callister Eq. 3.1). In BCC they touch along the body diagonal: a = 4R/√3 (Eq. 3.4). Callister calls the packing fraction the atomic packing factor (APF).</p>",
         setup: [["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]']] },
       { k: "work", h: "Predict copper's density",
-        p: "<p>Copper is FCC. Its atomic radius is R = 0.128 nm and its atomic weight A = 63.55 g/mol.</p><p class=\"lsn-eq\">ρ = n A / (V N<sub>A</sub>)</p><p>with n atoms per cell, cell volume V = a³ and N<sub>A</sub> = 6.022 × 10²³ per mole.</p>",
+        p: "<p>Copper is FCC. Its atomic radius is R = 0.1278 nm (Callister Table 3.1) and its atomic weight A = 63.55 g/mol.</p><p class=\"lsn-eq\">ρ = n A / (V N<sub>A</sub>)</p><p>with n atoms per cell, cell volume V = a³ and N<sub>A</sub> = 6.022 × 10²³ per mole.</p>",
         setup: [["click", '#cellType [data-v="fcc"]'], ["click", '#cellMode [data-v="hard"]']],
-        n: { pre: "ρ of copper =", post: "g/cm³", ans: 8.94, tol: 0.15, hint: "a = 2R√2 = 0.3615 nm = 3.615 × 10⁻⁸ cm, so V = a³ = 4.72 × 10⁻²³ cm³, and n = 4." },
-        why: "ρ = (4 × 63.55) / (4.72 × 10⁻²³ × 6.022 × 10²³) = 8.94 g/cm³, exactly what a block of copper weighs. A box a third of a nanometre across predicts a property you can hold (Callister Eq. 3.8)." },
+        n: { pre: "ρ of copper =", post: "g/cm³", ans: 8.94, tol: 0.1, hint: "a = 2R√2 = 0.3615 nm = 3.615 × 10⁻⁸ cm, so V = a³ = 4.72 × 10⁻²³ cm³, and n = 4." },
+        why: "ρ = (4 × 63.55) / (4.72 × 10⁻²³ × 6.022 × 10²³) = 8.94 g/cm³, the measured density of copper. A box a third of a nanometre across predicts a property you can hold (Callister Eq. 3.8; Example Problem 3.4 uses R = 0.128 nm and gets 8.89)." },
       { k: "try", h: "Same atoms, different crystal",
         p: "<p>Iron is BCC at room temperature. Heat it.</p>",
         show: ["#ironT < .range"], setup: [["val", "#ironT", 20]],
         goals: [{ t: "Heat it until it changes to FCC", ok: s => s.ironT >= 912 && s.ironT < 1394 }],
-        why: "At 912 °C iron changes from BCC (ferrite) to FCC (austenite): polymorphism. FCC packs tighter, so the iron shrinks a little as it changes. Every heat treatment of steel relies on this change." }
+        why: "At 912 °C iron changes from BCC (ferrite) to FCC (austenite): polymorphism. FCC packs tighter, so the iron shrinks a little as it changes. Hardening steel by quenching relies on this change." }
     ]
   },
   stack: {
@@ -3448,21 +3474,21 @@ const LESSONS = {
       { k: "try", h: "Build hexagonal close-packed",
         p: "<p>Put every new layer back over the one two below it.</p>",
         show: ["#stackAdd < .group", "#stackSeq < .readout"], setup: [["click", "#stackClear"]],
-        goals: [{ t: "Stack at least four layers that repeat every two: A B A B", ok: s => s.seq.length >= 4 && /HCP/.test(s.verdict) }],
+        goals: [{ t: "Stack at least four layers that repeat every two: A B A B", ok: s => s.seq.length >= 4 && /hexagonal close-packed/.test(s.verdict) }],
         why: "ABAB… is hexagonal close-packed (HCP): magnesium, titanium, zinc." },
       { k: "try", h: "Build face-centred cubic",
         p: "<p>This time use all three positions in turn.</p>",
         show: ["#stackAdd < .group", "#stackSeq < .readout"], setup: [["click", "#stackClear"]],
-        goals: [{ t: "Stack at least four layers that repeat every three: A B C A", ok: s => s.seq.length >= 4 && /FCC/.test(s.verdict) && !/fault/.test(s.verdict) }],
+        goals: [{ t: "Stack at least four layers that repeat every three: A B C A", ok: s => s.seq.length >= 4 && /face-centred cubic/.test(s.verdict) }],
         why: "ABCABC… is face-centred cubic (FCC): aluminium, copper, nickel. Viewed along the cube's diagonal, FCC's densest planes are exactly these layers. Same layer, same density; only the order differs." },
       { k: "predict", h: "Look straight down",
-        p: "<p>Make the atoms see-through and look straight down a tall stack.</p>",
-        q: { opts: ["You can see gaps all the way through ABAB (HCP)", "You can see gaps all the way through ABCABC (FCC)", "Neither has gaps"], ans: 0, then: [["click", '[data-preset="ABABAB"]'], ["on", "#stackGlass"], ["click", "#stackTop"]] },
-        why: "In HCP the C positions are never filled, so open channels run straight down through the crystal. In FCC the A, B and C layers between them cover every position." },
+        p: "<p>Look straight down a tall stack of layers.</p>",
+        q: { opts: ["You can see gaps all the way through ABAB (HCP)", "You can see gaps all the way through ABCABC (FCC)", "Neither has gaps"], ans: 0, then: [["click", '[data-preset="ABABAB"]'], ["off", "#stackGlass"], ["click", "#stackTop"]] },
+        why: "In HCP the C positions are never filled, so narrow open channels (the small light dots, about 15% of an atom's width) run straight down through the crystal. In FCC the A, B and C layers between them cover every position." },
       { k: "try", h: "Make a mistake on purpose",
         p: "<p>Real crystals sometimes get the order wrong.</p>",
         show: ["#stackAdd < .group", "#stackSeq < .readout"], setup: [["off", "#stackGlass"], ["click", "#stackClear"], ["click", "#stackSide"]],
-        goals: [{ t: "Build mostly ABC stacking with one layer out of order", ok: s => /stacking fault/.test(s.verdict) }],
+        goals: [{ t: "Build at least six layers of mostly ABC stacking with one layer out of order", ok: s => s.seq.length >= 6 && /stacking fault/.test(s.verdict) }],
         why: "That is a stacking fault: a planar defect where a thin slice of HCP sits inside FCC. Faults form as FCC metals grow and as they deform, and they change how easily the metal deforms." }
     ]
   },
@@ -3471,7 +3497,7 @@ const LESSONS = {
     obj: "Explain how crystals form from a liquid, why the cooling rate sets the grain size, and what vacancies, grain boundaries and glasses are.",
     steps: [
       { k: "watch", h: "1,800 atoms",
-        p: "<p>Each atom attracts and repels its neighbours like the bonded pair in Bonds, and jiggles with heat. Grey atoms have exactly six neighbours in a perfect hexagon: crystal.</p>",
+        p: "<p>Each atom attracts and repels its neighbours like the bonded pair in Bonds, and jiggles with heat. The colour shows how many neighbours each atom touches: grey six, as in a perfect crystal; amber five; teal seven.</p>",
         setup: [["off", "#raftPause"], ["click", "#raftReset"], ["click", '#raftColor [data-v="nbr"]'], ["click", '#raftTool [data-v="remove"]']] },
       { k: "try", h: "Make vacancies",
         p: "<p>Click atoms to remove them.</p>",
@@ -3481,20 +3507,20 @@ const LESSONS = {
       { k: "try", h: "Melt it",
         show: ["#raftMelt < .group"], setup: [],
         goals: [{ t: "Melt the crystal", ok: s => s.T > 1.2 && s.six < 0.4 }],
-        why: "In the liquid the atoms still touch, but the repeating pattern is gone: few atoms have six neighbours in a perfect hexagon." },
+        why: "In the liquid the atoms still touch, and many still have six neighbours, but those neighbours no longer sit in a regular hexagon and the rows no longer line up: the “In crystal sites” count falls below 40%." },
       { k: "try", h: "Freeze it slowly",
-        p: "<p>Slow cooling takes about half a minute.</p>",
+        p: "<p>Slow cooling takes up to about half a minute.</p>",
         show: ["#raftMelt < .group", "#raftColor < .group"], setup: [],
         goals: [{ t: "Press Cool slowly and wait until it has frozen", ok: s => s.lastCool === "slow" }, { t: "Colour the atoms by grain orientation", ok: s => s.colorBy === "grain" }],
         why: "Crystals start (nucleate) at a few places and grow until they meet. Each colour is one grain, where the rows of atoms all point the same way. Where grains meet, the atoms cannot fit both patterns: a grain boundary." },
       { k: "predict", h: "Now cool it in an instant",
         p: "<p>If the same liquid is quenched instead of cooled slowly, what grains will you get?</p>",
         q: { opts: ["More, smaller grains", "Fewer, larger grains", "The same grains"], ans: 0, then: [["click", "#raftMelt"], ["wait", 2500], ["click", "#raftQuench"], ["click", '#raftColor [data-v="grain"]']] },
-        why: "Quenching starts many crystals at once, and they meet before any can grow large. Fine grains make a metal stronger, because grain boundaries block slip (see Dislocations). The grain size of a casting is set by how fast it cools." },
+        why: "Quenching starts many crystals at once, and they meet before any can grow large. Fine grains also make a metal stronger; chapter 5 shows why. The grain size of a casting depends strongly on how fast it cools." },
       { k: "try", h: "Make a glass",
         show: ["#raftMix < .group", "#raftMelt < .group"], setup: [],
         goals: [{ t: "Switch to two atom sizes (it melts)", ok: s => s.mix === "two" }, { t: "Quench it", ok: s => s.mix === "two" && s.lastCool === "quench" && s.T < 0.1 }],
-        why: "With two sizes, the atoms cannot find a repeating pattern before they stop moving. The result is an amorphous solid, a glass: solid, but arranged like a frozen liquid. Window glass and metallic glasses form this way." }
+        why: "With two sizes, the atoms cannot find a repeating pattern before they stop moving. The result is an amorphous solid, a glass: solid, but arranged like a frozen liquid. Metallic glasses are made this way, by mixing atom sizes and cooling fast; window glass is a glass because its tangled silica network crystallizes very slowly." }
     ]
   },
   disl: {
@@ -3502,32 +3528,33 @@ const LESSONS = {
     obj: "Explain why real metals yield at a tiny fraction of their ideal strength, what a dislocation and its Burgers vector are, and how solute atoms and grain boundaries make metals stronger.",
     steps: [
       { k: "predict", h: "Slide a whole plane at once",
-        p: "<p>To slide the top half of a perfect crystal over the bottom half, every bond across the plane must break at the same moment. Compared with how easily real metals bend, how much stress would that take?</p>",
+        p: "<p>A <b>shear stress</b> is a force per unit area that pushes one half of a crystal sideways over the other half. To slide the top half of a perfect crystal over the bottom half, every bond across the plane must break at the same moment. Compared with how easily real metals bend, how much stress would that take?</p>",
         q: { opts: ["Far more than real metals need", "About what real metals need", "Less"], ans: 0, then: [["click", '#dislMode [data-v="rigid"]'], ["click", "#dislReset"]] },
-        why: "That ideal strength is about a tenth of the shear modulus, several GPa. Pure copper starts to slip at about 1 MPa, thousands of times less. Something else must be happening." },
+        why: "That ideal strength is about a tenth of the shear modulus G (the shear version of Young's modulus; 46 GPa for copper, Callister Table 6.1), so several GPa. A single crystal of pure copper starts to slip, that is to deform permanently, at a shear stress of only about 1 MPa: thousands of times less. Something else must be happening." },
       { k: "try", h: "The whole plane",
-        show: ["#dislMode < .group", "#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="rigid"]'], ["click", "#dislReset"], ["val", "#dislTau", 30]],
+        p: "<p>The stress slider is a schematic scale from 0 to 100, where about 95 is the ideal strength of a perfect crystal.</p>",
+        show: ["#dislMode < .group", "#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="rigid"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"], ["val", "#dislTau", 30]],
         goals: [{ t: "Slide the whole plane (raise the stress, then Push)", ok: s => s.mode === "rigid" && s.done }],
         why: "It only moves near 95 on this scale, because every bond across the plane breaks together." },
       { k: "try", h: "With a dislocation",
         p: "<p>The red symbol marks the end of an extra half-plane of atoms squeezed into the top half: an edge dislocation.</p>",
-        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["val", "#dislTau", 15]],
+        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["off", "#dislSolute"], ["off", "#dislGB"], ["off", "#dislBurgers"], ["click", "#dislReset"], ["val", "#dislTau", 15], ["click", "#dislStep"]],
         pins: [{ host: "#dislCv", at: () => tabs.disl && tabs.disl.pin("core"), t: "the dislocation" }],
         goals: [{ t: "Push the dislocation all the way through", ok: s => s.mode === "disl" && s.done }],
-        why: "The dislocation breaks one row of bonds at a time, like moving a rug by pushing a wrinkle along it. It moved at about 8, and the crystal still ended up slipped by one atom spacing. Real metals deform this way, which is why they yield at a tiny fraction of their ideal strength." },
+        why: "The dislocation breaks one row of bonds at a time, like moving a rug by pushing a wrinkle along it. The readout shows it needs only about 8 on this scale, against about 95 for the whole plane, yet the crystal still ends up slipped by one atom spacing. Real metals deform this way, which is why they yield at a tiny fraction of their ideal strength." },
       { k: "try", h: "The Burgers circuit",
-        p: "<p>Take equal numbers of atom steps right, up, left and down. In a perfect crystal you end where you started.</p>",
+        p: "<p>Walk around a loop of atoms, taking as many steps left as right and as many down as up. In a perfect crystal you end where you started.</p>",
         show: ["#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislGB"], ["on", "#dislBurgers"], ["val", "#dislTau", 30]],
         goals: [{ t: "Step the dislocation inside the circuit", ok: s => s.burgers && s.xd > -3 && s.xd < 3 }],
         why: "Around a dislocation the circuit fails to close. The gap is the Burgers vector b: one atom spacing, in the direction the crystal slips." },
       { k: "try", h: "Pin it with a solute atom",
-        show: ["#dislTau < .range"], setup: [["click", "#dislReset"], ["off", "#dislBurgers"], ["off", "#dislGB"], ["on", "#dislSolute"], ["val", "#dislTau", 25], ["click", "#dislGo"]],
+        show: ["#dislTau < .range"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislBurgers"], ["off", "#dislGB"], ["on", "#dislSolute"], ["val", "#dislTau", 25], ["click", "#dislGo"]],
         goals: [{ t: "The big atom stops it. Raise the stress until it breaks free", ok: s => s.solute && s.xd > -2 }],
-        why: "A larger atom distorts the lattice around it. The dislocation is attracted to it and held, so more stress is needed to move it on. That is solid-solution strengthening: copper with 30% nickel yields at 125 MPa, pure copper at 69 MPa (Callister Table 11.6)." },
+        why: "A solute atom of a different size (the big amber atom here) distorts the lattice around it. The dislocation is attracted to that distortion and held, so more stress is needed to move it on. That is solid-solution strengthening: annealed copper with 30 wt% nickel yields at 125 MPa, nearly pure copper at 69 MPa (Callister Table 11.6). Nickel atoms are in fact slightly smaller than copper's; smaller solute atoms pin dislocations too." },
       { k: "try", h: "Run into a grain boundary",
-        show: ["#dislTau < .range"], setup: [["click", "#dislReset"], ["off", "#dislSolute"], ["on", "#dislGB"], ["val", "#dislTau", 40], ["click", "#dislGo"]],
-        goals: [{ t: "Push the dislocation into the boundary", ok: s => s.gb && s.xd > 5.4 && !s.done }],
-        why: "Across the boundary the planes point another way, so the dislocation cannot continue; the next ones pile up behind it. More boundary per volume means a stronger metal: σ<sub>y</sub> = σ₀ + k<sub>y</sub> d<sup>−1/2</sup> (Hall–Petch), where d is the grain size." },
+        show: ["#dislTau < .range", "#dislGo < .chips"], setup: [["click", '#dislMode [data-v="disl"]'], ["click", "#dislReset"], ["off", "#dislSolute"], ["off", "#dislBurgers"], ["on", "#dislGB"], ["val", "#dislTau", 40]],
+        goals: [{ t: "Push the dislocation into the boundary", ok: s => s.gb && s.xd > 5.4 && !s.done }, { t: "Raise the stress to 100. Does it get through?", ok: (s, m) => saw(m, "max", s.gb && s.xd > 5.4 && s.tau >= 100) }],
+        why: "Across the boundary the planes of atoms point another way (the shaded grain; the drawing keeps its rows straight for simplicity), so the dislocation cannot continue, and the next ones pile up behind it. More boundary per volume means a stronger metal: σ<sub>y</sub> = σ₀ + k<sub>y</sub>/√d (Hall–Petch, Callister Eq. 7.7), where d is the average grain diameter and σ₀ and k<sub>y</sub> are constants for the metal. Smaller grains, higher yield strength." },
       { k: "apply", h: "Make a copper part stronger",
         p: "<p>You need a stronger copper part without changing its shape. Which works?</p>",
         q: { opts: ["Alloy it with nickel, or give it finer grains", "Use purer copper", "Grow larger grains"], ans: 0 },
@@ -3539,21 +3566,21 @@ const LESSONS = {
     obj: "Read which phases are present, what each is made of (tie line) and how much of each there is (lever rule); predict the microstructure an alloy forms as it cools; use the diagram to choose an alloy.",
     steps: [
       { k: "idea", h: "A map of phases",
-        p: "<p>Across: composition. Up: temperature. Each region tells you which phases are stable there. A <b>phase</b> is a region of uniform structure and composition: the liquid, or one kind of crystal.</p><p>α is tin dissolved in lead's FCC crystal; β is lead dissolved in tin's crystal.</p>",
+        p: "<p>Across: composition. Up: temperature. Each region tells you which phases are stable there. A <b>phase</b> is a region of uniform structure and composition: the liquid, or one kind of crystal.</p><p>Composition is in weight percent (wt%): the percentage of the alloy's mass that is tin. α is tin dissolved in lead's FCC crystal; β is lead dissolved in tin's crystal. The marked eutectic point is where a liquid can last to the lowest temperature (next step).</p>",
         setup: [pd("pbsn", 40, 300)],
         pins: [{ host: "#pdCv", at: () => tabs.phase.xy(78, 300), t: "liquid" }, { host: "#pdCv", at: () => tabs.phase.xy(7, 150), t: "α: lead-rich crystal" }, { host: "#pdCv", at: () => tabs.phase.xy(50, 90), t: "α + β: two crystals" }, { host: "#pdCv", at: () => tabs.phase.xy(61.9, 183), t: "eutectic point" }] },
       { k: "try", h: "Find the lowest melting point",
         p: "<p>Drag the point on the diagram.</p>",
         setup: [pd("pbsn", 30, 300)],
-        goals: [{ t: "Put the point at the lowest temperature where any liquid can exist", ok: s => s.sys === "pbsn" && near(s.C, 61.9, 1.5) && near(s.T, 183, 5) }],
-        why: "61.9 wt% Sn melts at 183 °C, lower than pure lead (327 °C) or pure tin (232 °C). This point is the eutectic. It is why 63Sn–37Pb was the standard electronics solder: it melts at the lowest temperature, all at once." },
+        goals: [{ t: "Put the point where an alloy is completely liquid at the lowest temperature (the bottom tip of the Liquid region)", ok: s => s.sys === "pbsn" && near(s.C, 61.9, 1.5) && near(s.T, 183, 5) }],
+        why: "61.9 wt% Sn melts at 183 °C, lower than pure lead (327 °C) or pure tin (232 °C). This point is the eutectic (Greek for “easily melted”): here the liquid freezes at one temperature straight into two solids, α and β. It is why 63Sn–37Pb was the standard electronics solder: it melts at the lowest temperature, all at once." },
       { k: "work", h: "How much of each phase?",
-        p: "<p>At 40 wt% Sn and 150 °C the alloy is α + β. The tie line (teal) runs across the region; its ends give the compositions: C<sub>α</sub> ≈ 10.6 and C<sub>β</sub> ≈ 98.4 wt% Sn. The lever rule gives the amounts:</p><p class=\"lsn-eq\">W<sub>α</sub> = (C<sub>β</sub> − C₀) / (C<sub>β</sub> − C<sub>α</sub>)</p>",
+        p: "<p>At 40 wt% Sn and 150 °C the alloy is α + β. The tie line (teal) runs across the region; its ends give the compositions: C<sub>α</sub> ≈ 10.6 and C<sub>β</sub> ≈ 98.4 wt% Sn. C₀ = 40 wt% Sn is the alloy's overall composition. The lever rule gives the amounts:</p><p class=\"lsn-eq\">W<sub>α</sub> = (C<sub>β</sub> − C₀) / (C<sub>β</sub> − C<sub>α</sub>)</p>",
         setup: [pd("pbsn", 40, 150)], quiet: true,
         n: { pre: "W<sub>α</sub> =", ans: 0.67, tol: 0.02, hint: "C₀ = 40 is the alloy. The arm on the far side, C<sub>β</sub> − C₀, over the whole tie line." },
-        why: "W<sub>α</sub> = (98.4 − 40)/(98.4 − 10.6) = 0.67, so two-thirds of the alloy by mass is α and one-third β (Callister Example 9.2). Each phase keeps its own composition; only the amounts change with C₀." },
+        why: "W<sub>α</sub> = (98.4 − 40)/(98.4 − 10.6) = 0.67, so two-thirds of the alloy by mass is α and one-third β (Callister Example Problem 9.3, which reads C<sub>α</sub> ≈ 11 and C<sub>β</sub> ≈ 98 and also gets 0.67). Each phase keeps its own composition; only the amounts change with C₀." },
       { k: "watch", h: "Cool it and watch the structure grow",
-        p: "<p>Above about 235 °C, liquid. Below it, lead-rich α grows as dendrites while the liquid becomes richer in tin. At 183 °C the remaining liquid, now 61.9 wt% Sn, freezes all at once into fine alternating layers of α and β.</p>",
+        p: "<p>Above about 235 °C, liquid. Below it, lead-rich α grows as tree-like crystals called dendrites while the liquid becomes richer in tin. At 183 °C the remaining liquid, now 61.9 wt% Sn, freezes all at once into fine alternating layers of α and β.</p>",
         show: ["#pdLog < .group"], setup: [pd("pbsn", 40, 320)], play: [["wait", 500], ["click", "#pdCool"]],
         goals: [{ t: "Let it cool to room temperature", ok: s => !s.cooling && s.T < 21 }],
         why: "Each step of the log is a line you crossed on the diagram. Click a step to return to it." },
@@ -3571,14 +3598,14 @@ const LESSONS = {
         n: { pre: "Fraction that is liquid, W<sub>L</sub> =", ans: 0.68, tol: 0.02, hint: "W<sub>L</sub> = (C<sub>α</sub> − C₀) / (C<sub>α</sub> − C<sub>L</sub>)." },
         why: "W<sub>L</sub> = (42.5 − 35)/(42.5 − 31.5) = 0.68 (Callister §9.8). The first solid is richer in nickel than the alloy; cooled too fast, the grains stay uneven (cored)." },
       { k: "work", h: "Steel: how much pearlite?",
-        p: "<p>A 0.45 wt% C steel is cooled slowly. Below 727 °C, all the austenite that was left (0.76 wt% C) has become pearlite.</p><p class=\"lsn-eq\">W<sub>p</sub> = (C₀ − 0.022) / (0.76 − 0.022)</p>",
+        p: "<p>In steel, <b>ferrite</b> (α) is BCC iron that holds almost no carbon (at most 0.022 wt%), and <b>cementite</b> (Fe₃C) is a hard, brittle iron carbide with 6.70 wt% C. At 727 °C (the <b>eutectoid</b>: one solid turning into two) austenite with 0.76 wt% C becomes <b>pearlite</b>, fine alternating plates of ferrite and cementite. A 0.45 wt% C steel is cooled slowly: some ferrite forms first (proeutectoid ferrite), and below 727 °C all the austenite that was left has become pearlite. The lever rule across the line from 0.022 to 0.76 gives:</p><p class=\"lsn-eq\">W<sub>p</sub> = (C₀ − 0.022) / (0.76 − 0.022)</p>",
         setup: [pd("fec", 0.45, 600, "steel")], quiet: true,
         n: { pre: "W<sub>p</sub> =", ans: 0.58, tol: 0.02, hint: "C₀ = 0.45 wt% C." },
         why: "W<sub>p</sub> = (0.45 − 0.022)/(0.76 − 0.022) = 0.58 (Callister Eq. 9.20). The other 0.42 is proeutectoid ferrite: the white grains in the micrograph." },
       { k: "apply", h: "Choose the steel",
         p: "<p>A knife blade must stay sharp. A car body panel must bend into shape without cracking. Which carbon content suits each?</p>",
         q: { opts: ["Knife ≈ 1.0 wt% C; panel ≈ 0.1–0.2 wt% C", "Knife ≈ 0.2 wt% C; panel ≈ 1.0 wt% C", "The same steel for both"], ans: 0, then: [pd("fec", 1.0, 600, "steel")] },
-        why: "Cementite is hard and brittle; ferrite is soft and ductile. More carbon means more pearlite and cementite: harder and stronger but less ductile. Low-carbon steel bends and welds; high-carbon steel holds an edge. The phase diagram tells you the amounts that make this trade-off." }
+        why: "Cementite is hard and brittle; ferrite is soft and ductile. More carbon means more pearlite and cementite: harder and stronger but less ductile. Low-carbon steel bends and welds; high-carbon steel, also hardened by quenching, holds an edge. Callister lists 1010 steel (0.10 wt% C) for automobile panels (Table 11.1b) and quenched-and-tempered 1095 (0.95 wt% C) for knives (Table 11.2b)." }
     ]
   }
 };
@@ -3690,8 +3717,9 @@ const learn = (() => {
   function check() {
     const n = step.n, inp = $(".lsn-blank input", box), fb = $(".lsn-fb", box);
     if (!inp || solved) return;
-    const v = parseFloat(inp.value.replace(",", ".").replace(/[^\d.\-eE]/g, ""));
+    let v = parseFloat(inp.value.replace(",", ".").replace(/[^\d.\-eE]/g, ""));
     if (isNaN(v)) { fb.textContent = "Type a number."; return; }
+    if (n.ans < 1 && v > 1 && v <= 100) v /= 100;   // a fraction typed as a percentage (67 for 0.67)
     if (Math.abs(v - n.ans) <= n.tol) { inp.classList.add("ok"); inp.disabled = true; fb.textContent = ""; reveal("Correct."); return; }
     tries++; inp.classList.add("bad"); setTimeout(() => inp.classList.remove("bad"), 600);
     if (tries >= 2) { inp.disabled = true; reveal("The answer is " + n.ans + (n.post ? " " + n.post.replace(/<[^>]+>/g, "") : "") + "."); }
