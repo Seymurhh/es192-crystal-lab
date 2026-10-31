@@ -68,9 +68,35 @@ const log = []; const ok = (c, m) => log.push((c ? "PASS " : "FAIL ") + m);
   const pear = (await read()).match(/Pearlite \| (\d+)%/); ok(pear && Math.abs(+pear[1] - 58) <= 1, "Fe 0.45 pearlite " + (pear && pear[1]) + "% (Callister Eq 9.20: 58%)");
   log.push("INFO Fe 0.45 events: " + s.events.map(e => Math.round(e.T) + " " + e.text).join(" | "));
   await shot("pd-fe-045-700");
-  for (const [c, t, k, n] of [[0.45, 900, "γ", "gamma"], [0.45, 760, "α+γ", "alpha-gamma"], [0.76, 600, "α+Fe₃C", "eutectoid"], [1.0, 600, "α+Fe₃C", "hyper"], [1.0, 800, "γ+Fe₃C", "gamma-cem"], [2.1, 1180, "L+γ", "liq-gamma"], [0.01, 800, "α", "ferrite"], [0.2, 500, "α+Fe₃C", "low-c"]]) {
+  for (const [c, t, k, n] of [[0.45, 900, "γ", "gamma"], [0.45, 760, "α+γ", "alpha-gamma"], [0.76, 600, "α+Fe₃C", "eutectoid"], [1.0, 600, "α+Fe₃C", "hyper"], [1.0, 800, "γ+Fe₃C", "gamma-cem"], [2.1, 1180, "L+γ", "liq-gamma"], [0.01, 800, "α", "ferrite"], [0.2, 500, "α+Fe₃C", "low-c"],
+    [0.05, 1500, "δ", "delta"], [0.07, 1450, "δ+γ", "delta-gamma"], [0.3, 1510, "δ+L", "delta-liq"], [3.0, 1200, "L+γ", "ci-liq-gamma"], [5.5, 1160, "L+Fe₃C", "ci-liq-cem"], [3.0, 1000, "γ+Fe₃C", "ci-white"], [3.0, 600, "α+Fe₃C", "ci-pearlite"]]) {
     await set(c, t); s = await st(); ok(s.r.k === k, `Fe–C ${c}/${t} is ${k} (got ${s.r.k})`); await shot("pd-fe-" + n);
   }
+  await set(3.0, 600); ok((await page.evaluate(() => window.__micro.kind)) === "white", "Fe 3.0/600 micrograph is a white cast iron (transformed ledeburite)");
+  await set(0.45, 1600); s = await st(); ok(s.events.some(e => /peritectic/.test(e.text)), "Fe 0.45 cooled from the melt passes the 1493 °C peritectic");
+  // microstructure: areas match the lever rule (by volume), the real-photo view and the cooling-log thumbnails
+  const micro = () => page.evaluate(() => window.__micro);
+  await set(0.45, 600); let m = await micro();
+  ok(m && m.kind === "pearlite" && Math.abs(m.areas[1] - 0.42) < 0.02, `Fe 0.45/600 micrograph: proeutectoid ferrite area ${m && m.areas[1].toFixed(3)} (lever 0.42)`);
+  await set(0.45, 760); m = await micro(); s = await st();
+  ok(m.kind === "proeu" && Math.abs(m.areas[1] - W(s)[0]) < 0.02, `Fe 0.45/760 micrograph: ferrite area ${m.areas[1].toFixed(3)} (lever ${W(s)[0].toFixed(3)})`);
+  await page.click('#pdMicroMode [data-v="real"]'); await sleep(1200);
+  const real = await page.$eval("#pdReal", e => ({ hidden: e.hidden, w: e.naturalWidth, src: e.getAttribute("src") }));
+  ok(!real.hidden && real.w > 0, "real photo shown for 0.45 % C steel (" + real.src + ")"); await shot("pd-real-fe045");
+  await set(0.45, 1100); await sleep(300);
+  ok(await page.$eval("#pdReal", e => !e.hidden && /austenite/.test(e.getAttribute("src"))), "real photo for austenite is the stainless stand-in");
+  await page.click('#pdMicroMode [data-v="look"]'); await sleep(200);
+  ok(await page.$eval("#pdReal", e => e.hidden), "real photo hidden again in micrograph view");
+  await sys("pbsn"); await set(40, 150); m = await micro();
+  ok(m.kind === "eutectic" && Math.abs(m.areas[1] - 0.455) < 0.02, `Pb–Sn 40/150 micrograph: primary α area ${m.areas[1].toFixed(3)} (0.50 by mass = 0.455 by volume)`);
+  await sleep(400);
+  const th = await page.$$eval("#pdLog canvas", cs => cs.map(c => c.width));
+  ok(th.length === 2 && th.every(w => w > 0), "cooling log has a drawn thumbnail per change (" + th.length + ")");
+  await sys("cuni"); await set(35, 1250); m = await micro();
+  ok(m.kind === "mushy" && Math.abs(m.areas[1] - 0.32) < 0.02, `Cu–Ni 35/1250 micrograph: solid area ${m.areas[1].toFixed(3)} (lever 0.32)`);
+  await page.click("#pdCored"); await set(35, 1100); await shot("pd-cuni-cored");
+  ok(/Cored/.test(await page.$eval("#pdWhy", e => e.textContent)), "Cu–Ni cored option explains coring");
+  await page.click("#pdCored"); await sys("fec");
   // hover/drag on canvas
   const box = await page.$eval("#pdCv", e => { const r = e.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; });
   await page.mouse.click(box.x + box.w * 0.4, box.y + box.h * 0.4); await sleep(200);
