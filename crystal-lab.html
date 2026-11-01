@@ -1230,12 +1230,6 @@ function tubes(parent, segs, r, color) {
     parent.add(t);
   }
 }
-/* thin dashed lines: the unit-cell edges in ball-and-stick view, so they cannot be mistaken for bonds */
-function dashedEdges(parent, segs, color, dash) {
-  const g = new THREE.BufferGeometry().setFromPoints(segs);
-  const l = new THREE.LineSegments(g, new THREE.LineDashedMaterial({ color: lin(color), dashSize: dash, gapSize: dash * 0.8, transparent: true, opacity: 0.9 }));
-  l.computeLineDistances(); l.userData.noFit = true; parent.add(l);
-}
 function boxEdges(c, h) {
   const out = [];
   const P = (x, y, z) => new THREE.Vector3(c.x + x * h, c.y + y * h, c.z + z * h);
@@ -2006,8 +2000,7 @@ function clipPlanesFrom(v, defs) {
     const segs = [];
     for (let ix = 0; ix < reps; ix++) for (let iy = 0; iy < reps; iy++) for (let iz = 0; iz < reps; iz++)
       segs.push(...boxEdges(new THREE.Vector3((ix + .5) * a - off, (iy + .5) * a - off, (iz + .5) * a - off), a / 2));
-    if (mode === "ball") dashedEdges(v.root, segs, tok("--accent"), 0.06 * a);
-    else tubes(v.root, segs, 0.0055 * a, tok("--ink"));
+    if (mode !== "ball") tubes(v.root, segs, 0.0055 * a, tok("--ink"));   // ball and stick: only bonds are drawn
     v.refit();
     stats();
   }
@@ -2041,7 +2034,7 @@ function clipPlanesFrom(v, defs) {
     for (let i = 0; i < 6; i++) segs.push(hv(i, 0), hv(i, H));
     // with the ideal c/a = 1.633 every touching pair is exactly a apart: in-plane neighbours, and each middle-layer
     // atom with three atoms of the layer below and three of the layer above
-    if (mode === "ball") { nnBonds(list.map(p => p.pos), ah, 0.03 * ah); dashedEdges(v.root, segs, tok("--accent"), 0.07 * ah); }
+    if (mode === "ball") nnBonds(list.map(p => p.pos), ah, 0.03 * ah);
     else tubes(v.root, segs, 0.011 * ah, tok("--ink"));
     v.refit();
     stats();
@@ -2102,14 +2095,14 @@ function clipPlanesFrom(v, defs) {
   const KEY = {
     sc: "In simple cubic the atoms touch along the cube edges, so every bond is a cell edge.",
     bcc: "In BCC the corner atoms do not touch each other. Each atom touches 8 others along the cube's body diagonals: the centre atom touches the 8 corners, and each corner atom touches the centre atoms of the 8 cells that share it.",
-    fcc: "In FCC each face-centre atom touches the 4 corner atoms of its face and the 4 face-centre atoms on the faces next to it, along the face diagonals; its other 4 neighbours are in the next cell.",
+    fcc: "In FCC each face-centre atom touches the 4 corner atoms of its face and the 4 face-centre atoms on the faces next to it, along the face diagonals; its other 4 neighbours are in the next cell. Corner atoms never touch each other: a rod that seems to run corner to corner is two bonds meeting at a face-centre atom.",
     hcp: "Every atom touches 12: 6 in its own layer, 3 above and 3 below. Inside this cell each middle (B) atom touches 3 atoms below, 3 above and the other 2 B atoms; the centre atom of the top or bottom face touches the 6 corner atoms and 3 B atoms.",
     nacl: "Each Na⁺ touches 6 Cl⁻ and each Cl⁻ touches 6 Na⁺; ions of the same charge never touch.",
     dia: "Each atom makes exactly 4 covalent bonds to the corners of a tetrahedron. Atoms on the cell's surface also bond to atoms of the next cell, which are not shown."
   };
   const COLKEY = { nacl: "Amber: Na⁺. Teal: Cl⁻.", dia: "One element: teal marks the 4 atoms inside the cell.", hcp: "One element: teal marks the middle (B) layer.", bcc: "One element: teal marks the body-centre atom.", fcc: "One element: teal marks the face-centre atoms.", sc: "" };
   function keyText() {
-    const m = { ball: "Rods are bonds: each joins two atoms that touch (nearest neighbours). Dashed red lines are the edges of the unit cell, not bonds. " + KEY[type],
+    const m = { ball: "Rods are bonds: each joins two atoms that touch (nearest neighbours). No other lines are drawn. " + KEY[type],
       hard: "Atoms at their real size, so atoms that are bonded touch. " + KEY[type],
       cut: "The parts of each atom that lie inside the cell; add them up to count the atoms per cell.",
       nbr: "Rods join the chosen atom to every " + (type === "nacl" ? "ion" : "atom") + " it touches." }[mode];
@@ -2181,6 +2174,7 @@ function clipPlanesFrom(v, defs) {
   });
   tabs.cells = { shown: () => { v.size(); v.dirty = true; }, tick: () => v.render(), theme: () => build(), resize: () => v.size(),
     state: () => ({ type, mode, reps, plane, ironT: +iron.value, combos: Array.from(combos) }) };
+  window.__cells = { root: () => v.root };   // for the tests: every rod must join two touching atoms
   const look111 = () => { v.rotX = 0.6155; v.rotY = -Math.PI / 4; v.zoom = 1; v.dirty = true; };  // view straight down the cube diagonal [111]
   mountGuide("cells", [
     { q: "Choose “Only what's inside the cell” for FCC and click a corner atom, then a face atom. How many whole atoms fit in one cell?",
@@ -4579,7 +4573,7 @@ const LESSONS = {
         n: { pre: "Atoms per BCC cell =", ans: 2, tol: 0.01, hint: "8 corners × ⅛, plus the whole atom in the middle." },
         why: "8 × ⅛ + 1 = 2 atoms." },
       { k: "try", h: "Who touches whom?",
-        p: "<p>In Ball and stick, a rod joins two atoms that touch. The dashed lines are only the edges of the box.</p>",
+        p: "<p>In Ball and stick, a rod joins two atoms that touch. Nothing else is drawn, so every line is a bond.</p>",
         show: ["#cellType < .group"], setup: [["click", '#cellMode [data-v="ball"]'], ["click", '#cellType [data-v="sc"]']],
         goals: [{ t: "Look at BCC", ok: (s, m) => saw(m, "b", s.type === "bcc") }, { t: "Look at FCC", ok: (s, m) => saw(m, "f", s.type === "fcc") }, { t: "Look at HCP", ok: (s, m) => saw(m, "h", s.type === "hcp") }],
         why: "In BCC each atom touches 8 others, along the cube's diagonals; the corner atoms never touch each other. In FCC and HCP each atom touches 12, the most that equal spheres can touch. These two are the close-packed structures." },
